@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1123,10 +1124,12 @@
             
             let deliveryText = freeDelivery ? "مجاني 🎉" : ((deliveryFee === 0 && zoneName === 'مكان آخر') ? "يحدد لاحقاً" : `${deliveryFee} ج.م`);
 
-            // دمج الهاشتاجات في عنوان الإيميل (Subject) ليصبح: 4 جامبو 2 سوبر #عميل_جديد #جامبو #سوبر
-            let itemsString = itemsSummaryArray.join(' '); // دمج بمسافة فقط
+            // إعداد العنوان النظيف لـ TickTick (مثال: 2 جامبو 1 بيض سمان)
+            let tickTickSubject = itemsSummaryArray.join(' '); 
+            
+            // إضافة الهاشتاجات في نهاية تفاصيل المهمة بدلاً من العنوان
             let tagsString = smartTagsArray.join(' ');
-            let tickTickSubject = `${itemsString} ${tagsString}`;
+            orderDetailsForTickTick += `\n\nالتاجات:\n${tagsString}`;
 
             message += `\n═════════════════\n📦 قيمة الطلبات: ${subTotal} ج.م\n🚚 رسوم التوصيل: ${deliveryText}\n💰 *الإجمالي النهائي: ${finalTotal} ج.م*\n`;
 
@@ -1147,8 +1150,8 @@
                 customerAddress: customerAddress || "غير محدد",
                 zoneName: zoneName,
                 finalTotal: finalTotal,
-                tickTickSubject: tickTickSubject,
-                tickTickDescription: orderDetailsForTickTick
+                tickTickSubject: tickTickSubject, // العنوان النظيف
+                tickTickDescription: orderDetailsForTickTick // التفاصيل بالتاجات
             };
 
             try {
@@ -1500,3 +1503,6 @@
     </script>
 </body>
 </html>
+
+
+```
