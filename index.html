@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -304,7 +303,7 @@
                             <button onclick="addNewPromoCode()" class="bg-gray-800 hover:bg-black text-white text-xs px-3 py-1.5 rounded transition-colors">+ كود جديد</button>
                         </div>
                         <label class="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded border"><input type="checkbox" id="admin-show-promo-field" class="accent-brand-cyanDark w-4 h-4"> <span class="text-xs font-bold">إظهار خانة "كود الخصم" للعملاء</span></label>
-                        <div id="admin-promos-container" class="space-y-2"></div>
+                        <div id="admin-promos-container" class="space-y-3"></div>
                     </div>
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
@@ -585,9 +584,21 @@
             const input = document.getElementById('promo-code-input').value.trim().toUpperCase();
             const msg = document.getElementById('promo-message');
             if (input === '') return;
-            const promo = (globalSettings.promoCodes || []).find(p => p.code.toUpperCase() === input);
-            if (promo) { appliedPromo = { ...promo, isLoyalty: false }; msg.innerText = "تم تفعيل كود الخصم بنجاح 🎉"; msg.className = "text-[11px] font-bold mt-1 text-green-600"; msg.classList.remove('hidden'); } 
-            else { msg.innerText = "كود غير صحيح أو منتهي."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); }
+            
+            // تحقق من الكود وأنه لا يزال يمتلك مرات استخدام (إذا كان محدد له)
+            const promo = (globalSettings.promoCodes || []).find(p => p.code.toUpperCase() === input && (p.usesLeft === undefined || p.usesLeft > 0));
+            
+            if (promo) { 
+                appliedPromo = { ...promo, isLoyalty: false }; 
+                msg.innerText = "تم تفعيل كود الخصم بنجاح 🎉"; 
+                msg.className = "text-[11px] font-bold mt-1 text-green-600"; 
+                msg.classList.remove('hidden'); 
+            } 
+            else { 
+                msg.innerText = "كود غير صحيح، أو تم استخدامه مسبقاً وانتهت صلاحيته."; 
+                msg.className = "text-[11px] font-bold mt-1 text-red-500"; 
+                msg.classList.remove('hidden'); 
+            }
             updateUI();
         };
 
@@ -757,10 +768,7 @@
             const orderDate = new Date().toLocaleDateString('ar-EG'); const orderTime = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
             let subTotal = 0; let itemsSummaryArray = []; let smartTagsArray = [isNew ? "#عميل_جديد" : "#عميل_سابق"];
             
-            // --- رسالة الواتساب للعميل ---
             let message = `السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n${isNew ? `👤 الاسم: ${customerName}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n${customerAddress?`🏠 العنوان: ${customerAddress}\n`:''}` : `🔁 عميل سابق\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n`}🕒 الوقت: ${orderDate} - ${orderTime}\n\n🛒 *الطلبات:*\n`;
-            
-            // --- فاتورة مفصلة وكاملة لـ تيك تيك / الإدارة ---
             let orderDetailsForTickTick = `🧾 **تفاصيل الأوردر كاملة:**\n`;
             orderDetailsForTickTick += `👤 الاسم: ${customerName}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n`;
             if (isNew && customerAddress) orderDetailsForTickTick += `🏠 العنوان: ${customerAddress}\n`;
@@ -777,9 +785,8 @@
                 orderDetailsForTickTick += `[ ${item.quantity} ] ${item.name} = ${itemTotal} ج.م\n`;
             }
 
-            let discountAmount = 0; let discountText = ""; let isAutoDiscount = false;
+            let discountAmount = 0; let discountText = "";
             if (appliedPromo) {
-                if (appliedPromo.isAuto) isAutoDiscount = true;
                 if(appliedPromo.type === 'free_delivery') { discountText = `🎁 ${appliedPromo.code}: توصيل مجاني\n`; } 
                 else { discountAmount = appliedPromo.type === 'percent' ? (subTotal * (appliedPromo.discount / 100)) : appliedPromo.discount; discountAmount = Math.round(Math.min(discountAmount, subTotal)); discountText = `🎁 كود (${appliedPromo.code}): -${discountAmount} ج\n`; }
                 message += `\n${discountText}`; 
@@ -792,40 +799,45 @@
 
             message += `\n═════════════════\n📦 قيمة الطلبات: ${subTotal} ج.م\n🚚 رسوم التوصيل: ${deliveryText}\n💰 *الإجمالي النهائي: ${finalTotal} ج.م*\n`;
             
-            // --- إكمال فاتورة تيك تيك ---
             orderDetailsForTickTick += `--------------------------------\n`;
             orderDetailsForTickTick += `📦 قيمة الطلبات: ${subTotal} ج.م\n`;
             if (discountAmount > 0) orderDetailsForTickTick += `🎁 الخصم (${appliedPromo.code}): -${discountAmount} ج.م\n`;
             orderDetailsForTickTick += `🚚 رسوم التوصيل: ${deliveryText}\n`;
             orderDetailsForTickTick += `💰 الإجمالي النهائي: ${finalTotal} ج.م\n`;
 
-            // --- نظام الولاء التلقائي (إنشاء كود حقيقي وتسجيله) ---
+            // --- معالجة وحرق أكواد الخصم وإنشاء أكواد جديدة ---
+            let promoUpdated = false;
+
+            // 1. إذا كان العميل قد استخدم كود، نقوم بتقليل عدد مرات استخدامه
+            if (appliedPromo) {
+                let pIndex = globalSettings.promoCodes.findIndex(p => p.code === appliedPromo.code);
+                if (pIndex !== -1) {
+                    let pObj = globalSettings.promoCodes[pIndex];
+                    if (pObj.usesLeft !== undefined) {
+                        pObj.usesLeft -= 1;
+                        if (pObj.usesLeft <= 0) globalSettings.promoCodes.splice(pIndex, 1); // مسح الكود نهائياً عند الانتهاء
+                    } else if (pObj.isAuto) {
+                        globalSettings.promoCodes.splice(pIndex, 1); // مسح الأكواد التلقائية القديمة
+                    }
+                    promoUpdated = true;
+                }
+            }
+
+            // 2. إذا كان نظام المكافآت مفعلاً، والعميل "لم يستخدم" أي كود في هذا الطلب، نصدر له كود مكافأة جديد
             let earnedLoyalty = false;
             let newPromoCode = "";
             
-            if (globalSettings.rewardActive && (!appliedPromo || !appliedPromo.isAuto)) {
-                // إنشاء كود خصم جديد للعميل
+            if (globalSettings.rewardActive && !appliedPromo) {
                 newPromoCode = "VIP-" + Math.floor(1000 + Math.random() * 9000);
                 earnedLoyalty = true;
                 
-                // إضافته لقائمة الأكواد وحفظه في السيرفر فوراً
-                const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true };
+                // إضافة الكود الجديد برصيد (1 مرة واحدة للاستخدام)
+                const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: 1 };
                 if(!globalSettings.promoCodes) globalSettings.promoCodes = [];
                 globalSettings.promoCodes.push(newPromoObj);
-                
-                if (hasCloud && db) {
-                    db.collection("inventory").doc("settings").set({ promoCodes: globalSettings.promoCodes }, { merge: true });
-                }
+                promoUpdated = true;
                 
                 orderDetailsForTickTick += `\n🎟️ ملاحظة: العميل حصل على كود خصم للمرة القادمة (${newPromoCode})\n`;
-            }
-
-            if (isAutoDiscount && appliedPromo) {
-                // إذا استخدم كود تلقائي، نقوم بمسحه لكي لا يستخدمه مرة أخرى (لأنه كود مخصص لمرة واحدة)
-                globalSettings.promoCodes = globalSettings.promoCodes.filter(p => p.code !== appliedPromo.code);
-                if (hasCloud && db) {
-                     db.collection("inventory").doc("settings").set({ promoCodes: globalSettings.promoCodes }, { merge: true });
-                }
             }
 
             orderDetailsForTickTick += `\n${smartTagsArray.join(' ')}`;
@@ -839,10 +851,16 @@
                 if (hasCloud && db) {
                     const orderData = { customerName, customerPhone, customerAddress: customerAddress||"غير محدد", zone: zoneName, items: [], subtotal: subTotal, discount: discountAmount, deliveryFee: finalDelivery, total: finalTotal, status: "new", isRead: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
                     for (let id in cart) orderData.items.push({ id, name: cart[id].name, quantity: cart[id].quantity, price: cart[id].price });
-                    await db.collection("orders").add(orderData);
+                    
+                    // حفظ كل شيء في قاعدة البيانات (الأوردر، المخزون، الإحصائيات، وتحديث قائمة الأكواد)
+                    await Promise.all([
+                        db.collection("orders").add(orderData),
+                        db.collection('inventory').doc('stats').set({ sales: firebase.firestore.FieldValue.increment(finalTotal), orders: firebase.firestore.FieldValue.increment(1) }, { merge: true }),
+                        promoUpdated ? db.collection("inventory").doc("settings").set({ promoCodes: globalSettings.promoCodes }, { merge: true }) : Promise.resolve()
+                    ]);
+                    
                     let updates = {}; for (let id in cart) updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity);
                     await db.collection('inventory').doc('stock').update(updates);
-                    await db.collection('inventory').doc('stats').set({ sales: firebase.firestore.FieldValue.increment(finalTotal), orders: firebase.firestore.FieldValue.increment(1) }, { merge: true });
                 }
             } catch(e) { console.log("Sync Error", e); }
 
@@ -874,7 +892,7 @@
                     <div class="bg-gray-100 border-2 border-dashed border-gray-300 p-3 rounded-xl mb-4">
                         <span class="text-xs font-bold text-gray-500 block mb-1">انسخ هذا الكود:</span>
                         <span class="font-black text-2xl text-brand-cyanDark tracking-wider select-all">${newPromoCode}</span>
-                        <span class="text-xs font-bold text-gray-600 block mt-1">يمنحك ${rewardDesc}</span>
+                        <span class="text-xs font-bold text-gray-600 block mt-1">يمنحك ${rewardDesc} (يستخدم مرة واحدة)</span>
                     </div>
                     <div class="text-sm font-bold text-brand-navy mt-2">الأوردر وصل السيستم بنجاح وسيتم تجهيزه.</div>`;
                 document.getElementById('alert-icon-container').classList.add('hidden'); document.getElementById('alert-title').classList.add('hidden'); document.getElementById('alert-message').innerHTML = msgHTML;
@@ -973,16 +991,38 @@
 
         window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
         window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
+        
         window.renderAdminPromos = () => { 
             const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
             tempPromoCodes.forEach((p,i) => {
                 const autoBadge = p.isAuto ? `<span class="bg-yellow-100 text-yellow-700 text-[8px] font-black px-1 rounded ml-1">تلقائي</span>` : '';
-                c.innerHTML += `<div class="flex gap-1 items-center bg-gray-50 p-2 border border-gray-200 rounded-lg"><input type="text" value="${p.code}" class="w-20 border rounded p-1 text-xs text-center uppercase font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].code=this.value.toUpperCase()">${autoBadge}<input type="number" value="${p.discount}" class="w-14 border rounded p-1 text-xs text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].discount=parseInt(this.value)"><select class="flex-1 border rounded p-1 text-xs bg-white font-bold text-gray-600 outline-none" onchange="tempPromoCodes[${i}].type=this.value"><option value="fixed" ${p.type==='fixed'?'selected':''}>خصم بالجنيه</option><option value="percent" ${p.type==='percent'?'selected':''}>خصم نسبة %</option></select><button onclick="tempPromoCodes.splice(${i},1);renderAdminPromos()" class="text-red-500 hover:bg-red-100 rounded w-6 h-6 flex justify-center items-center"><i class="fa-solid fa-trash text-[10px]"></i></button></div>`
+                // ضبط الاستخدام الافتراضي للأكواد القديمة
+                if(p.usesLeft === undefined) p.usesLeft = p.isAuto ? 1 : 100;
+                
+                c.innerHTML += `
+                <div class="flex flex-col gap-2 bg-gray-50 p-2 border border-gray-200 rounded-lg mb-2">
+                    <div class="flex gap-1 items-center">
+                        <input type="text" value="${p.code}" placeholder="الكود" class="w-20 border rounded p-1 text-xs text-center uppercase font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].code=this.value.toUpperCase()">
+                        ${autoBadge}
+                        <input type="number" value="${p.discount}" placeholder="خصم" class="w-14 border rounded p-1 text-xs text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].discount=parseInt(this.value)">
+                        <select class="flex-1 border rounded p-1 text-xs bg-white font-bold text-gray-600 outline-none" onchange="tempPromoCodes[${i}].type=this.value">
+                            <option value="fixed" ${p.type==='fixed'?'selected':''}>جنيه</option>
+                            <option value="percent" ${p.type==='percent'?'selected':''}>%</option>
+                            <option value="free_delivery" ${p.type==='free_delivery'?'selected':''}>توصيل مجاني</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2 items-center justify-between">
+                        <label class="flex items-center gap-1 text-[10px] font-bold text-gray-600">
+                            مرات الاستخدام المسموحة:
+                            <input type="number" value="${p.usesLeft}" class="w-12 border rounded p-1 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].usesLeft=parseInt(this.value)">
+                        </label>
+                        <button onclick="tempPromoCodes.splice(${i},1);renderAdminPromos()" class="text-red-500 hover:bg-red-100 rounded w-6 h-6 flex justify-center items-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    </div>
+                </div>`;
             }); 
         };
-        window.addNewPromoCode = () => { tempPromoCodes.push({code:'', discount:0, type:'fixed'}); renderAdminPromos(); };
+        window.addNewPromoCode = () => { tempPromoCodes.push({code:'', discount:0, type:'fixed', usesLeft: 1}); renderAdminPromos(); };
 
-        // --- استعادة دالة رسم الطلبات التي سقطت سهواً ---
         window.renderOrdersList = () => {
             const container = document.getElementById('orders-list-container');
             if(!container) return;
