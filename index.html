@@ -992,35 +992,32 @@
         window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
         window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
         
-        window.renderAdminPromos = () => { 
-            const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
-            tempPromoCodes.forEach((p,i) => {
-                const autoBadge = p.isAuto ? `<span class="bg-yellow-100 text-yellow-700 text-[8px] font-black px-1 rounded ml-1">تلقائي</span>` : '';
-                // ضبط الاستخدام الافتراضي للأكواد القديمة
-                if(p.usesLeft === undefined) p.usesLeft = p.isAuto ? 1 : 100;
-                
-                c.innerHTML += `
-                <div class="flex flex-col gap-2 bg-gray-50 p-2 border border-gray-200 rounded-lg mb-2">
-                    <div class="flex gap-1 items-center">
-                        <input type="text" value="${p.code}" placeholder="الكود" class="w-20 border rounded p-1 text-xs text-center uppercase font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].code=this.value.toUpperCase()">
-                        ${autoBadge}
-                        <input type="number" value="${p.discount}" placeholder="خصم" class="w-14 border rounded p-1 text-xs text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].discount=parseInt(this.value)">
-                        <select class="flex-1 border rounded p-1 text-xs bg-white font-bold text-gray-600 outline-none" onchange="tempPromoCodes[${i}].type=this.value">
-                            <option value="fixed" ${p.type==='fixed'?'selected':''}>جنيه</option>
-                            <option value="percent" ${p.type==='percent'?'selected':''}>%</option>
-                            <option value="free_delivery" ${p.type==='free_delivery'?'selected':''}>توصيل مجاني</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-2 items-center justify-between">
-                        <label class="flex items-center gap-1 text-[10px] font-bold text-gray-600">
-                            مرات الاستخدام المسموحة:
-                            <input type="number" value="${p.usesLeft}" class="w-12 border rounded p-1 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].usesLeft=parseInt(this.value)">
-                        </label>
-                        <button onclick="tempPromoCodes.splice(${i},1);renderAdminPromos()" class="text-red-500 hover:bg-red-100 rounded w-6 h-6 flex justify-center items-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
-                    </div>
-                </div>`;
-            }); 
-        };
+        // جوه ملف admin.js
+window.renderAdminPromos = () => { 
+    const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
+    tempPromoCodes.forEach((p,i) => {
+        if(p.usesLeft === undefined) p.usesLeft = 10; // افتراضي 10 لو مش محدد
+        c.innerHTML += `
+        <div class="bg-gray-50 p-3 border border-gray-200 rounded-xl mb-2">
+            <div class="flex gap-1 items-center mb-2">
+                <input type="text" value="${p.code}" placeholder="الكود" class="w-24 border rounded p-1 text-xs text-center font-bold text-brand-navy" onchange="tempPromoCodes[${i}].code=this.value.toUpperCase()">
+                <input type="number" value="${p.discount}" placeholder="خصم" class="w-14 border rounded p-1 text-xs text-center font-bold" onchange="tempPromoCodes[${i}].discount=parseInt(this.value)">
+                <select class="flex-1 border rounded p-1 text-xs" onchange="tempPromoCodes[${i}].type=this.value">
+                    <option value="fixed" ${p.type==='fixed'?'selected':''}>ج.م</option>
+                    <option value="percent" ${p.type==='percent'?'selected':''}>%</option>
+                </select>
+            </div>
+            <div class="flex justify-between items-center">
+                <label class="text-[10px] font-bold text-gray-500">
+                    متاح لعدد أشخاص: 
+                    <input type="number" value="${p.usesLeft}" class="w-12 border rounded p-1 text-center font-black text-brand-cyanDark" onchange="tempPromoCodes[${i}].usesLeft=parseInt(this.value)">
+                </label>
+                <button onclick="tempPromoCodes.splice(${i},1);window.renderAdminPromos()" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        </div>`;
+    }); 
+};
+
         window.addNewPromoCode = () => { tempPromoCodes.push({code:'', discount:0, type:'fixed', usesLeft: 1}); renderAdminPromos(); };
 
         window.renderOrdersList = () => {
