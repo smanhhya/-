@@ -328,6 +328,15 @@
                 </div>
 
                 <div id="admin-panel-advanced" class="hidden space-y-4">
+                    <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
+                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-language text-brand-cyanDark"></i> نصوص وتسميات النظام</h3>
+                        <label class="text-xs font-bold text-gray-500 block mb-1">تسمية العميل القديم (تظهر في الواتساب والطلبات)</label>
+                        <input type="text" id="admin-old-customer-label" placeholder="مثال: عميل سابق" class="w-full border rounded-lg p-2 mb-3 font-bold text-brand-navy">
+                        <label class="text-xs font-bold text-gray-500 block mb-1">قالب رسالة الواتساب</label>
+                        <p class="text-[10px] text-gray-400 mb-2">استخدم المتغيرات: {تفاصيل_العميل} , {الطلبات} , {الخصم} , {قيمة_الطلبات} , {التوصيل} , {الاجمالي}</p>
+                        <textarea id="admin-whatsapp-template" rows="6" class="w-full border rounded-lg p-2 font-bold text-brand-navy whitespace-pre-wrap" dir="rtl"></textarea>
+                    </div>
+
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-message text-green-500"></i> رسالة نجاح الطلب (العادية)</h3>
                         <input type="text" id="admin-success-title" placeholder="عنوان الرسالة" class="w-full border rounded-lg p-2 mb-2 font-bold text-brand-navy">
@@ -429,7 +438,9 @@
             showPromoField: true, 
             successTitle: "تم استلام الأوردر! 🎉",
             successMessage: "شكراً لثقتك في سمان ههيا.. الأوردر وصل للسيستم بنجاح وهنجهزهولك فوراً. هنتواصل معاك قريباً للتأكيد.",
-            rewardActive: false, rewardType: "fixed", rewardValue: 20, rewardMaxGenerations: 0
+            rewardActive: false, rewardType: "fixed", rewardValue: 20, rewardMaxGenerations: 0,
+            oldCustomerLabel: "عميل سابق",
+            whatsappTemplate: "السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)"
         };
 
         let productsInfo = {
@@ -781,7 +792,7 @@
                 customerName = document.getElementById('customer-name').value.trim(); customerPhone = document.getElementById('customer-phone-new').value.trim(); customerAddress = document.getElementById('customer-address').value.trim();
                 const nameRegex = /^[\u0600-\u06FF\sA-Za-z]+$/;
                 if (customerName.length < 3 || !nameRegex.test(customerName)) { showAlert("تنبيه", "يرجى كتابة اسم صحيح وخالي من الأرقام والرموز."); checkoutBtn.innerHTML = originalBtnHtml; checkoutBtn.disabled = false; return; }
-            } else { customerPhone = document.getElementById('customer-phone-old').value.trim(); customerName = "عميل سابق (" + customerPhone + ")"; }
+            } else { customerPhone = document.getElementById('customer-phone-old').value.trim(); customerName = (globalSettings.oldCustomerLabel || "عميل سابق") + " (" + customerPhone + ")"; }
 
             for (let id in cart) {
                 if(!productsInfo[id]) continue;
@@ -795,28 +806,31 @@
             const orderDate = new Date().toLocaleDateString('ar-EG'); const orderTime = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
             let subTotal = 0; let itemsSummaryArray = []; let smartTagsArray = [isNew ? "#عميل_جديد" : "#عميل_سابق"];
             
-            let message = `السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n${isNew ? `👤 الاسم: ${customerName}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n${customerAddress?`🏠 العنوان: ${customerAddress}\n`:''}` : `🔁 عميل سابق\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n`}🕒 الوقت: ${orderDate} - ${orderTime}\n\n🛒 *الطلبات:*\n`;
+            // بناء متغيرات القالب
+            let customerDetailsStr = isNew ? `👤 الاسم: ${customerName}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n${customerAddress?`🏠 العنوان: ${customerAddress}\n`:''}` : `🔁 ${globalSettings.oldCustomerLabel || "عميل سابق"}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n`;
+            customerDetailsStr += `🕒 الوقت: ${orderDate} - ${orderTime}`;
+
             let orderDetailsForTickTick = `🧾 **تفاصيل الأوردر كاملة:**\n`;
             orderDetailsForTickTick += `👤 الاسم: ${customerName}\n📱 الموبايل: ${customerPhone}\n📍 المنطقة: ${zoneName}\n`;
             if (isNew && customerAddress) orderDetailsForTickTick += `🏠 العنوان: ${customerAddress}\n`;
             orderDetailsForTickTick += `🕒 الوقت: ${orderDate} - ${orderTime}\n`;
             orderDetailsForTickTick += `--------------------------------\n🛒 الطلبات:\n`;
 
+            let itemsStr = "";
             for (let id in cart) {
                 if(!productsInfo[id]) continue;
                 const item = cart[id]; const itemTotal = item.quantity * item.price; subTotal += itemTotal;
                 let shortName = item.name.replace('طبق ', '').split(' (')[0]; itemsSummaryArray.push(`${item.quantity} ${shortName}`);
                 let tagName = "#" + shortName.replace(/ /g, '_'); if(!smartTagsArray.includes(tagName)) smartTagsArray.push(tagName);
                 
-                message += `▪️ ${item.name}\n  └ ${item.quantity} × ${item.price} = ${itemTotal} ج.م\n`;
+                itemsStr += `▪️ ${item.name}\n  └ ${item.quantity} × ${item.price} = ${itemTotal} ج.م\n`;
                 orderDetailsForTickTick += `[ ${item.quantity} ] ${item.name} = ${itemTotal} ج.م\n`;
             }
 
-            let discountAmount = 0; let discountText = "";
+            let discountAmount = 0; let discountTextTemplate = "";
             if (appliedPromo) {
-                if(appliedPromo.type === 'free_delivery') { discountText = `🎁 ${appliedPromo.code}: توصيل مجاني\n`; } 
-                else { discountAmount = appliedPromo.type === 'percent' ? (subTotal * (appliedPromo.discount / 100)) : appliedPromo.discount; discountAmount = Math.round(Math.min(discountAmount, subTotal)); discountText = `🎁 كود (${appliedPromo.code}): -${discountAmount} ج\n`; }
-                message += `\n${discountText}`; 
+                if(appliedPromo.type === 'free_delivery') { discountTextTemplate = `🎁 ${appliedPromo.code}: توصيل مجاني\n`; } 
+                else { discountAmount = appliedPromo.type === 'percent' ? (subTotal * (appliedPromo.discount / 100)) : appliedPromo.discount; discountAmount = Math.round(Math.min(discountAmount, subTotal)); discountTextTemplate = `🎁 كود (${appliedPromo.code}): -${discountAmount} ج\n`; }
             }
 
             const totalAfterPromo = subTotal - discountAmount;
@@ -824,8 +838,19 @@
             const finalDelivery = freeDelivery ? 0 : deliveryFee; const finalTotal = totalAfterPromo + finalDelivery;
             let deliveryText = freeDelivery ? "مجاني 🎉" : ((deliveryFee === 0 && zoneName === 'مكان آخر') ? "يحدد لاحقاً" : `${deliveryFee} ج.م`);
 
-            message += `\n═════════════════\n📦 قيمة الطلبات: ${subTotal} ج.م\n🚚 رسوم التوصيل: ${deliveryText}\n💰 *الإجمالي النهائي: ${finalTotal} ج.م*\n`;
-            
+            // استخدام القالب
+            let template = globalSettings.whatsappTemplate || "السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)";
+
+            let message = template
+                .replace('{تفاصيل_العميل}', customerDetailsStr)
+                .replace('{الطلبات}', itemsStr.trim())
+                .replace('{الخصم}', discountTextTemplate ? discountTextTemplate + '\n' : '')
+                .replace('{قيمة_الطلبات}', subTotal)
+                .replace('{التوصيل}', deliveryText)
+                .replace('{الاجمالي}', finalTotal);
+
+            if(deliveryFee === 0 && zoneName === 'مكان آخر' && !freeDelivery) message += `\n*(الإجمالي غير شامل رسوم التوصيل)*`;
+
             orderDetailsForTickTick += `--------------------------------\n`;
             orderDetailsForTickTick += `📦 قيمة الطلبات: ${subTotal} ج.م\n`;
             if (discountAmount > 0) orderDetailsForTickTick += `🎁 الخصم (${appliedPromo.code}): -${discountAmount} ج.م\n`;
@@ -880,9 +905,6 @@
             }
 
             orderDetailsForTickTick += `\n${smartTagsArray.join(' ')}`;
-
-            if(deliveryFee === 0 && zoneName === 'مكان آخر' && !freeDelivery) message += `*(الإجمالي غير شامل رسوم التوصيل)*\n`;
-            message += `\n(في انتظار تأكيد الحجز وموعد الاستلام)`;
 
             try {
                 fetch('https://api.web3forms.com/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ access_key: WEB3FORMS_ACCESS_KEY, subject: `🛒 ${itemsSummaryArray.join(' ')}`, "التفاصيل": orderDetailsForTickTick }) }).catch(e=>console.log(e));
@@ -989,6 +1011,9 @@
             document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
             document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; document.getElementById('admin-pin-setting').value = globalSettings.adminPin || '1234';
             
+            document.getElementById('admin-old-customer-label').value = globalSettings.oldCustomerLabel || 'عميل سابق';
+            document.getElementById('admin-whatsapp-template').value = globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)';
+
             tempProducts = JSON.parse(JSON.stringify(productsInfo));
             renderAdminProducts(); 
             
@@ -1200,7 +1225,9 @@
                 rewardActive: document.getElementById('admin-reward-active').checked, rewardType: document.getElementById('admin-reward-type').value, rewardValue: parseInt(document.getElementById('admin-reward-value').value) || 0, rewardMaxGenerations: parseInt(document.getElementById('admin-reward-max-generations').value) || 0,
                 bannerActive: document.getElementById('admin-banner-active').checked, bannerText: document.getElementById('admin-banner-text').value.trim(), crossSellActive: document.getElementById('admin-crosssell-active').checked, crossSellProductId: document.getElementById('admin-crosssell-product').value, promoCodes: tempPromoCodes.filter(p=>p.code.trim()), bestSellers: globalSettings.bestSellers,
                 showPromoField: document.getElementById('admin-show-promo-field').checked,
-                successTitle: document.getElementById('admin-success-title').value.trim(), successMessage: document.getElementById('admin-success-message').value.trim(), productsData: tempProducts 
+                successTitle: document.getElementById('admin-success-title').value.trim(), successMessage: document.getElementById('admin-success-message').value.trim(), productsData: tempProducts,
+                oldCustomerLabel: document.getElementById('admin-old-customer-label').value.trim() || 'عميل سابق',
+                whatsappTemplate: document.getElementById('admin-whatsapp-template').value.trim() || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)'
             };
 
             const btn = document.querySelector('#admin-dashboard-modal button[onclick="saveAdminData()"]'); const originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
