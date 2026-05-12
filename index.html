@@ -266,7 +266,7 @@
                 <div id="admin-panel-products" class="hidden space-y-4">
                     <div class="flex justify-between items-center bg-brand-light/30 p-3 rounded-lg border border-brand-cyan/20">
                         <p class="text-xs text-gray-600 font-bold"><i class="fa-solid fa-circle-info text-brand-cyanDark"></i> إدارة المنتجات بالكامل</p>
-                        <button onclick="addNewAdminProduct()" class="bg-brand-cyanDark hover:bg-brand-navy text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-sm"><i class="fa-solid fa-plus"></i> منتج جديد</button>
+                        <button type="button" onclick="addNewAdminProduct()" class="bg-brand-cyanDark hover:bg-brand-navy text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-sm"><i class="fa-solid fa-plus"></i> منتج جديد</button>
                     </div>
                     <div id="admin-inputs-container" class="space-y-4"></div>
                 </div>
@@ -290,7 +290,7 @@
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-map-location-dot text-brand-cyanDark"></i> مناطق التوصيل والأسعار</h3>
                         <div id="admin-zones-container" class="space-y-2 mb-3"></div>
-                        <button onclick="addNewAdminZone()" class="w-full bg-gray-50 text-brand-navy text-sm font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus"></i> إضافة منطقة جديدة</button>
+                        <button type="button" onclick="addNewAdminZone()" class="w-full bg-gray-50 text-brand-navy text-sm font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus"></i> إضافة منطقة جديدة</button>
                     </div>
                 </div>
 
@@ -367,7 +367,7 @@
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="font-black text-brand-navy"><i class="fa-solid fa-ticket text-brand-cyanDark"></i> أكواد الخصم الثابتة</h3>
-                            <button onclick="addNewPromoCode()" class="bg-gray-800 hover:bg-black text-white text-xs px-3 py-1.5 rounded transition-colors">+ كود جديد</button>
+                            <button type="button" onclick="addNewPromoCode()" class="bg-gray-800 hover:bg-black text-white text-xs px-3 py-1.5 rounded transition-colors">+ كود جديد</button>
                         </div>
                         <label class="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded border"><input type="checkbox" id="admin-show-promo-field" class="accent-brand-cyanDark w-4 h-4"> <span class="text-xs font-bold">إظهار خانة "كود الخصم" للعملاء</span></label>
                         <div id="admin-promos-container" class="space-y-3"></div>
@@ -408,17 +408,17 @@
                     <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mt-4">
                         <h3 class="font-black text-red-600 mb-3"><i class="fa-solid fa-trash-can"></i> منطقة الخطر (إعادة ضبط)</h3>
                         <div class="space-y-3">
-                            <button onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
+                            <button type="button" onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-chart-pie"></i> تصفير الإحصائيات فقط (مبيعات وطلبات)
                             </button>
-                            <button onclick="deleteAllOrders()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
+                            <button type="button" onclick="deleteAllOrders()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-trash"></i> مسح جميع سجلات الأوردرات نهائياً
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="saveAdminData()" class="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-xl shadow-lg flex justify-center items-center gap-2 transition-all transform hover:-translate-y-1 sticky bottom-4 z-50 border-2 border-white">
+                <button type="button" onclick="saveAdminData()" class="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-xl shadow-lg flex justify-center items-center gap-2 transition-all transform hover:-translate-y-1 sticky bottom-4 z-50 border-2 border-white">
                     <i class="fa-solid fa-floppy-disk text-xl"></i> حفظ جميع التعديلات
                 </button>
             </div>
@@ -515,7 +515,6 @@
         let dailyStats = { sales: 0, orders: 0 };
         let tempAdminZones = []; let tempPromoCodes = []; let tempProducts = {};
         
-        // المتغيرات المؤقتة الجديدة
         let tempPrices = {};
         let tempStock = {};
         let tempOldPrices = {};
@@ -1180,8 +1179,8 @@
                     <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('edit-p-${id}').classList.toggle('hidden')">
                         <div class="font-black text-brand-navy flex items-center gap-2">
                             <div class="flex flex-col gap-1 ml-1 mr-[-5px]">
-                                <button onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button>
-                                <button onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button>
+                                <button type="button" onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button>
+                                <button type="button" onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button>
                             </div>
                             <img src="${imgSrc}" class="w-8 h-8 rounded object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"> ${p.name}
                         </div>
@@ -1201,7 +1200,7 @@
                             <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم:</label>
                             <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}">
                         </div>
-                        <button onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
+                        <button type="button" onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
                     </div>
                 </div>`;
             });
@@ -1249,9 +1248,40 @@
             globalSettings.bestSellers = newBest;
         };
 
-        window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
+        // --- تعديلات أمان مناطق التوصيل ---
+        window.deleteAdminZone = (index) => {
+            tempAdminZones.splice(index, 1);
+            renderAdminZones();
+        };
+
+        window.updateAdminZone = (index, field, value) => {
+            tempAdminZones[index][field] = value;
+        };
+
+        window.renderAdminZones = () => { 
+            const c = document.getElementById('admin-zones-container'); c.innerHTML=''; 
+            tempAdminZones.forEach((z,i) => {
+                c.innerHTML += `
+                <div class="flex gap-2 items-center">
+                    <input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="updateAdminZone(${i}, 'name', this.value)">
+                    <input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="updateAdminZone(${i}, 'price', parseInt(this.value) || 0)">
+                    <button type="button" onclick="deleteAdminZone(${i})" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                </div>`;
+            }); 
+        };
+        
         window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
         
+        // --- تعديلات أمان البروموكود ---
+        window.deletePromoCode = (index) => {
+            tempPromoCodes.splice(index, 1);
+            renderAdminPromos();
+        };
+
+        window.updatePromoCode = (index, field, value) => {
+            tempPromoCodes[index][field] = value;
+        };
+
         window.renderAdminPromos = () => { 
             const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
             tempPromoCodes.forEach((p,i) => {
@@ -1262,10 +1292,10 @@
                 <div class="flex flex-col gap-2 bg-gray-50 p-2 border border-gray-200 rounded-lg mb-2 relative overflow-hidden">
                     ${p.customerPhone ? `<div class="absolute top-0 right-0 w-1 h-full bg-purple-500"></div>` : ''}
                     <div class="flex gap-1 items-center">
-                        <input type="text" value="${p.code}" placeholder="الكود" class="w-20 border rounded p-1 text-xs text-center uppercase font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].code=this.value.toUpperCase()">
+                        <input type="text" value="${p.code}" placeholder="الكود" class="w-20 border rounded p-1 text-xs text-center uppercase font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="updatePromoCode(${i}, 'code', this.value.toUpperCase())">
                         ${autoBadge}
-                        <input type="number" value="${p.discount}" placeholder="خصم" class="w-14 border rounded p-1 text-xs text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].discount=parseInt(this.value)">
-                        <select class="flex-1 border rounded p-1 text-xs bg-white font-bold text-gray-600 outline-none" onchange="tempPromoCodes[${i}].type=this.value">
+                        <input type="number" value="${p.discount}" placeholder="خصم" class="w-14 border rounded p-1 text-xs text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="updatePromoCode(${i}, 'discount', parseInt(this.value) || 0)">
+                        <select class="flex-1 border rounded p-1 text-xs bg-white font-bold text-gray-600 outline-none" onchange="updatePromoCode(${i}, 'type', this.value)">
                             <option value="fixed" ${p.type==='fixed'?'selected':''}>جنيه</option>
                             <option value="percent" ${p.type==='percent'?'selected':''}>%</option>
                             <option value="free_delivery" ${p.type==='free_delivery'?'selected':''}>توصيل مجاني</option>
@@ -1274,15 +1304,15 @@
                     
                     <div class="flex items-center bg-white border rounded p-1 border-gray-300">
                         <i class="fa-solid fa-mobile-screen text-gray-400 text-[10px] w-4 text-center"></i>
-                        <input type="text" value="${p.customerPhone || ''}" placeholder="رقم الموبايل أو اسم العميل (اختياري)" class="flex-1 text-[10px] font-bold text-brand-navy outline-none bg-transparent" onchange="tempPromoCodes[${i}].customerPhone=this.value" dir="ltr" style="text-align: right;">
+                        <input type="text" value="${p.customerPhone || ''}" placeholder="رقم الموبايل أو اسم العميل (اختياري)" class="flex-1 text-[10px] font-bold text-brand-navy outline-none bg-transparent" onchange="updatePromoCode(${i}, 'customerPhone', this.value)" dir="ltr" style="text-align: right;">
                     </div>
 
                     <div class="flex gap-2 items-center justify-between">
                         <label class="flex items-center gap-1 text-[10px] font-bold text-gray-600">
                             متاح لعدد أشخاص:
-                            <input type="number" value="${p.usesLeft}" class="w-12 border rounded p-1 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].usesLeft=parseInt(this.value)">
+                            <input type="number" value="${p.usesLeft}" class="w-12 border rounded p-1 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="updatePromoCode(${i}, 'usesLeft', parseInt(this.value) || 0)">
                         </label>
-                        <button onclick="tempPromoCodes.splice(${i},1);renderAdminPromos()" class="text-red-500 hover:bg-red-100 rounded w-6 h-6 flex justify-center items-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                        <button type="button" onclick="deletePromoCode(${i})" class="text-red-500 hover:bg-red-100 rounded w-6 h-6 flex justify-center items-center"><i class="fa-solid fa-trash text-[10px]"></i></button>
                     </div>
                 </div>`;
             }); 
@@ -1457,7 +1487,11 @@
                 adminPin: document.getElementById('admin-pin-setting').value.trim() || '1234',
                 freeDeliveryActive: document.getElementById('admin-free-delivery-active').checked, 
                 freeDeliveryThreshold: parseInt(document.getElementById('admin-free-delivery-threshold').value) || 0, 
-                deliveryZones: tempAdminZones.filter(z=>z.name.trim()),
+                
+                // حماية لمناطق التوصيل والبروموكودات
+                deliveryZones: tempAdminZones.filter(z => z && z.name && String(z.name).trim() !== ''),
+                promoCodes: tempPromoCodes.filter(p => p && p.code && String(p.code).trim() !== ''), 
+                
                 rewardActive: document.getElementById('admin-reward-active').checked, 
                 rewardType: document.getElementById('admin-reward-type').value, 
                 rewardValue: parseInt(document.getElementById('admin-reward-value').value) || 0, 
@@ -1466,7 +1500,6 @@
                 bannerText: document.getElementById('admin-banner-text').value.trim(), 
                 crossSellActive: document.getElementById('admin-crosssell-active').checked, 
                 crossSellProductId: document.getElementById('admin-crosssell-product').value, 
-                promoCodes: tempPromoCodes.filter(p=>p.code.trim()), 
                 bestSellers: globalSettings.bestSellers,
                 showPromoField: document.getElementById('admin-show-promo-field').checked,
                 successTitle: document.getElementById('admin-success-title').value.trim(), 
@@ -1483,7 +1516,6 @@
             if(hasCloud && db) {
                 try {
                     await Promise.all([ 
-                        // إضافة { merge: true } لمنع مسح أي حقول أخرى في قاعدة البيانات
                         db.collection("inventory").doc("settings").set(newSettings, { merge: true }), 
                         db.collection("inventory").doc("stock").set(tempStock), 
                         db.collection("inventory").doc("prices").set(tempPrices), 
