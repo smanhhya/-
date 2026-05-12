@@ -1040,7 +1040,32 @@
 
         window.openAdminLogin = () => { document.getElementById('admin-login-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-login-modal').classList.remove('opacity-0'),10); document.getElementById('admin-pin-input').value=''; };
         window.closeAdminLogin = () => { document.getElementById('admin-login-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-login-modal').classList.add('hidden'),300); };
-        window.verifyAdminPin = () => { if(document.getElementById('admin-pin-input').value === (globalSettings.adminPin||'1234')) { closeAdminLogin(); openAdminDashboard(); } else showAlert("خطأ", "الرمز السري غير صحيح!"); };
+                window.verifyAdminPin = () => { 
+            const email = document.getElementById('admin-email-input').value.trim();
+            const pass = document.getElementById('admin-password-input').value.trim();
+            const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]');
+            const origHtml = btn.innerHTML;
+            
+            if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
+            btn.disabled = true;
+
+            firebase.auth().signInWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    closeAdminLogin(); 
+                    openAdminDashboard();
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                    document.getElementById('admin-password-input').value = '';
+                })
+                .catch((error) => {
+                    btn.innerHTML = origHtml;
+                    btn.disabled = false;
+                    showAlert("خطأ", "بيانات الدخول غير صحيحة، أو ليس لديك صلاحية!");
+                });
+        };
+
 
         let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all';
         
