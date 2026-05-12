@@ -1310,7 +1310,7 @@ window.generateBulkWhatsAppLinks = () => {
         const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
 
         // إضافة الكود للسيستم
-        tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1 });
+tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1, customerPhone: num });
 
         // تظبيط الرسالة والرقم للواتساب
         const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
@@ -1359,8 +1359,8 @@ window.generateBulkWhatsAppLinks = () => {
                 const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
 
                 // إضافة الكود للسيستم
-                tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1 });
-
+                tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1, customerPhone: num });
+                
                 // تظبيط الرسالة والرقم للواتساب
                 const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
                 let waNumber = num;
