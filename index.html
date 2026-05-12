@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -685,7 +684,7 @@
             updateUI();
         };
 
-                window.getCardActionHTML = function(id) {
+        window.getCardActionHTML = function(id) {
             if (globalSettings.storeOpen === false) return `<div class="w-full bg-gray-100 text-gray-400 font-bold py-2 rounded-xl text-sm border border-gray-200 text-center cursor-not-allowed">مغلق</div>`;
             const stock = globalStock[id] || 0; const pInfo = productsInfo[id] || {};
             const isPreorderMode = stock <= 0 && pInfo.allowPreorder;
@@ -769,7 +768,6 @@
             else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; }
             saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); 
         };
-
 
         window.updateUI = function() {
             let totalItems = 0, subTotalPrice = 0; const cartItemsContainer = document.getElementById('cart-items');
@@ -888,7 +886,7 @@
                 if (customerName.length < 3 || !nameRegex.test(customerName)) { showAlert("تنبيه", "يرجى كتابة اسم صحيح وخالي من الأرقام والرموز."); checkoutBtn.innerHTML = originalBtnHtml; checkoutBtn.disabled = false; return; }
             } else { customerPhone = document.getElementById('customer-phone-old').value.trim(); customerName = (globalSettings.oldCustomerLabel || "عميل سابق") + " (" + customerPhone + ")"; }
 
-                        for (let id in cart) {
+            for (let id in cart) {
                 if(!productsInfo[id]) continue;
                 // هنتخطى فحص المخزون لو الأوردر عبارة عن حجز مسبق
                 if (!cart[id].isPreorder && cart[id].quantity > globalStock[id]) {
@@ -897,7 +895,6 @@
                     saveCart(); updateUI(); renderProducts(); checkoutBtn.innerHTML = originalBtnHtml; checkoutBtn.disabled = false; return;
                 }
             }
-
 
             const orderDate = new Date().toLocaleDateString('ar-EG'); const orderTime = new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
             let subTotal = 0; let itemsSummaryArray = []; let smartTagsArray = [isNew ? "#عميل_جديد" : "#عميل_سابق"];
@@ -1015,15 +1012,14 @@
                     ]);
                     
                     let updates = {}; 
-for (let id in cart) { 
-    if(!cart[id].isPreorder) {
-        updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity); 
-    }
-} 
-if(Object.keys(updates).length > 0) {
-    await db.collection('inventory').doc('stock').update(updates);
-}
-
+                    for (let id in cart) { 
+                        if(!cart[id].isPreorder) {
+                            updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity); 
+                        }
+                    } 
+                    if(Object.keys(updates).length > 0) {
+                        await db.collection('inventory').doc('stock').update(updates);
+                    }
                 }
             } catch(e) { console.log("Sync Error", e); }
 
@@ -1153,91 +1149,89 @@ if(Object.keys(updates).length > 0) {
         };
 
         window.renderAdminProducts = () => {
-    const container = document.getElementById('admin-inputs-container'); container.innerHTML = '';
-    Object.keys(tempProducts).forEach(id => {
-        const p = tempProducts[id]; const stock = globalStock[id] || 0; const price = globalPrices[id] || p.basePrice; const oldPrice = globalOldPrices[id] || price; const isDisc = globalDiscounts[id] || false; const isBest = globalSettings.bestSellers?.includes(id) || false;
-        const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
-        container.innerHTML += `<div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm mb-3">
-            <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('edit-p-${id}').classList.toggle('hidden')">
-                <div class="font-black text-brand-navy flex items-center gap-2">
-                    <div class="flex flex-col gap-1 ml-1 mr-[-5px]">
-                        <button onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button>
-                        <button onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button>
+            const container = document.getElementById('admin-inputs-container'); container.innerHTML = '';
+            Object.keys(tempProducts).forEach(id => {
+                const p = tempProducts[id]; const stock = globalStock[id] || 0; const price = globalPrices[id] || p.basePrice; const oldPrice = globalOldPrices[id] || price; const isDisc = globalDiscounts[id] || false; const isBest = globalSettings.bestSellers?.includes(id) || false;
+                const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
+                container.innerHTML += `<div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm mb-3">
+                    <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('edit-p-${id}').classList.toggle('hidden')">
+                        <div class="font-black text-brand-navy flex items-center gap-2">
+                            <div class="flex flex-col gap-1 ml-1 mr-[-5px]">
+                                <button onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button>
+                                <button onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button>
+                            </div>
+                            <img src="${imgSrc}" class="w-8 h-8 rounded object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"> ${p.name}
+                        </div>
+                        <div class="text-xs bg-gray-50 border px-2 py-1 rounded font-bold text-gray-600">تعديل <i class="fa-solid fa-chevron-down"></i></div>
                     </div>
-                    <img src="${imgSrc}" class="w-8 h-8 rounded object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"> ${p.name}
-                </div>
-                <div class="text-xs bg-gray-50 border px-2 py-1 rounded font-bold text-gray-600">تعديل <i class="fa-solid fa-chevron-down"></i></div>
-            </div>
-            <div id="edit-p-${id}" class="hidden mt-4 space-y-3 border-t pt-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div><label class="text-[10px] font-bold text-gray-500">الاسم</label><input type="text" id="p-name-${id}" value="${p.name}" class="w-full border p-2 rounded text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>
-                    <div><label class="text-[10px] font-bold text-gray-500">الوزن / الوصف</label><input type="text" id="p-weight-${id}" value="${p.weight}" class="w-full border p-2 rounded text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>
-                    <div><label class="text-[10px] font-bold text-gray-500">السعر (ج)</label><input type="number" id="p-price-${id}" value="${price}" class="w-full border p-2 rounded text-xs font-bold text-brand-cyanDark outline-none focus:border-brand-cyan"></div>
-                    <div><label class="text-[10px] font-bold text-gray-500">المخزون المتوفر</label><input type="number" id="p-stock-${id}" value="${stock}" class="w-full border p-2 rounded text-xs font-black outline-none focus:border-brand-cyan ${stock<5?'border-red-500 bg-red-50 text-red-600':'text-brand-navy'}"></div>
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-gray-500">رابط الصورة</label><input type="text" id="p-img-${id}" value="${imgSrc}" class="w-full border p-2 rounded text-[10px] font-bold text-gray-500 outline-none focus:border-brand-cyan" dir="ltr"></div>
-                </div>
-                <div class="flex flex-wrap gap-3 bg-gray-50 p-2 rounded border mb-2">
-                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-extra-${id}" ${p.isExtra?'checked':''} class="accent-brand-cyanDark"> إضافي (بالأسفل)</label>
-                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-best-${id}" ${isBest?'checked':''} class="accent-brand-yellow"> الأكثر طلباً 🔥</label>
-                    <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم:</label>
-                    <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}">
-                </div>
-                <!-- إضافة الحجز المسبق -->
-                <div class="bg-orange-50 p-2 rounded border border-orange-200 flex flex-col gap-2">
-                    <label class="flex items-center gap-1 text-[10px] font-bold text-orange-700 cursor-pointer select-none">
-                        <input type="checkbox" id="p-preorder-${id}" ${p.allowPreorder?'checked':''} class="accent-orange-500" onchange="document.getElementById('p-batch-${id}').classList.toggle('hidden', !this.checked)"> تفعيل الحجز المسبق (عند نفاد الكمية)
-                    </label>
-                    <input type="text" id="p-batch-${id}" value="${p.preorderBatch || ''}" placeholder="اسم الدفعة (مثال: دفعة 15-6)" class="w-full border rounded p-1 text-[10px] font-bold text-brand-navy outline-none focus:border-orange-500 ${p.allowPreorder?'':'hidden'}">
-                </div>
-                <button onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
-            </div>
-        </div>`;
-    });
-};
+                    <div id="edit-p-${id}" class="hidden mt-4 space-y-3 border-t pt-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="text-[10px] font-bold text-gray-500">الاسم</label><input type="text" id="p-name-${id}" value="${p.name}" class="w-full border p-2 rounded text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>
+                            <div><label class="text-[10px] font-bold text-gray-500">الوزن / الوصف</label><input type="text" id="p-weight-${id}" value="${p.weight}" class="w-full border p-2 rounded text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>
+                            <div><label class="text-[10px] font-bold text-gray-500">السعر (ج)</label><input type="number" id="p-price-${id}" value="${price}" class="w-full border p-2 rounded text-xs font-bold text-brand-cyanDark outline-none focus:border-brand-cyan"></div>
+                            <div><label class="text-[10px] font-bold text-gray-500">المخزون المتوفر</label><input type="number" id="p-stock-${id}" value="${stock}" class="w-full border p-2 rounded text-xs font-black outline-none focus:border-brand-cyan ${stock<5?'border-red-500 bg-red-50 text-red-600':'text-brand-navy'}"></div>
+                            <div class="col-span-2"><label class="text-[10px] font-bold text-gray-500">رابط الصورة</label><input type="text" id="p-img-${id}" value="${imgSrc}" class="w-full border p-2 rounded text-[10px] font-bold text-gray-500 outline-none focus:border-brand-cyan" dir="ltr"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-3 bg-gray-50 p-2 rounded border mb-2">
+                            <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-extra-${id}" ${p.isExtra?'checked':''} class="accent-brand-cyanDark"> إضافي (بالأسفل)</label>
+                            <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-best-${id}" ${isBest?'checked':''} class="accent-brand-yellow"> الأكثر طلباً 🔥</label>
+                            <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم:</label>
+                            <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}">
+                        </div>
+                        <!-- إضافة الحجز المسبق -->
+                        <div class="bg-orange-50 p-2 rounded border border-orange-200 flex flex-col gap-2">
+                            <label class="flex items-center gap-1 text-[10px] font-bold text-orange-700 cursor-pointer select-none">
+                                <input type="checkbox" id="p-preorder-${id}" ${p.allowPreorder?'checked':''} class="accent-orange-500" onchange="document.getElementById('p-batch-${id}').classList.toggle('hidden', !this.checked)"> تفعيل الحجز المسبق (عند نفاد الكمية)
+                            </label>
+                            <input type="text" id="p-batch-${id}" value="${p.preorderBatch || ''}" placeholder="اسم الدفعة (مثال: دفعة 15-6)" class="w-full border rounded p-1 text-[10px] font-bold text-brand-navy outline-none focus:border-orange-500 ${p.allowPreorder?'':'hidden'}">
+                        </div>
+                        <button onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
+                    </div>
+                </div>`;
+            });
+        };
 
-window.addNewAdminProduct = () => { 
-    const newId = 'p_' + Date.now(); 
-    tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false, allowPreorder: false, preorderBatch: "" }; 
-    globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; 
-    renderAdminProducts(); 
-    setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); 
-};
+        window.addNewAdminProduct = () => { 
+            const newId = 'p_' + Date.now(); 
+            tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false, allowPreorder: false, preorderBatch: "" }; 
+            globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; 
+            renderAdminProducts(); 
+            setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); 
+        };
 
-window.deleteAdminProduct = (id) => { 
-    if(!confirm('هل أنت متأكد من حذف هذا المنتج تماماً من المتجر؟')) return; 
-    delete tempProducts[id]; delete globalStock[id]; delete globalPrices[id]; delete globalOldPrices[id]; delete globalDiscounts[id]; 
-    renderAdminProducts(); 
-};
+        window.deleteAdminProduct = (id) => { 
+            if(!confirm('هل أنت متأكد من حذف هذا المنتج تماماً من المتجر؟')) return; 
+            delete tempProducts[id]; delete globalStock[id]; delete globalPrices[id]; delete globalOldPrices[id]; delete globalDiscounts[id]; 
+            renderAdminProducts(); 
+        };
 
-window.syncAdminProductsFromDOM = () => {
-    if(!document.getElementById('admin-inputs-container') || document.getElementById('admin-inputs-container').innerHTML === '') return;
-    let newBest = [];
-    Object.keys(tempProducts).forEach(id => {
-        if(!document.getElementById(`p-name-${id}`)) return; 
-        tempProducts[id].name = document.getElementById(`p-name-${id}`).value; 
-        tempProducts[id].weight = document.getElementById(`p-weight-${id}`).value; 
-        tempProducts[id].images = [document.getElementById(`p-img-${id}`).value]; 
-        tempProducts[id].isExtra = document.getElementById(`p-extra-${id}`).checked;
-        tempProducts[id].allowPreorder = document.getElementById(`p-preorder-${id}`).checked; 
-        tempProducts[id].preorderBatch = document.getElementById(`p-batch-${id}`).value;
-        globalPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; 
-        globalStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; 
-        globalOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; 
-        globalDiscounts[id] = document.getElementById(`p-disc-${id}`).checked;
-        if(document.getElementById(`p-best-${id}`).checked) newBest.push(id);
-    });
-    globalSettings.bestSellers = newBest;
-};
-;
+        window.syncAdminProductsFromDOM = () => {
+            if(!document.getElementById('admin-inputs-container') || document.getElementById('admin-inputs-container').innerHTML === '') return;
+            let newBest = [];
+            Object.keys(tempProducts).forEach(id => {
+                if(!document.getElementById(`p-name-${id}`)) return; 
+                tempProducts[id].name = document.getElementById(`p-name-${id}`).value; 
+                tempProducts[id].weight = document.getElementById(`p-weight-${id}`).value; 
+                tempProducts[id].images = [document.getElementById(`p-img-${id}`).value]; 
+                tempProducts[id].isExtra = document.getElementById(`p-extra-${id}`).checked;
+                tempProducts[id].allowPreorder = document.getElementById(`p-preorder-${id}`).checked; 
+                tempProducts[id].preorderBatch = document.getElementById(`p-batch-${id}`).value;
+                globalPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; 
+                globalStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; 
+                globalOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; 
+                globalDiscounts[id] = document.getElementById(`p-disc-${id}`).checked;
+                if(document.getElementById(`p-best-${id}`).checked) newBest.push(id);
+            });
+            globalSettings.bestSellers = newBest;
+        };
 
         window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
         window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
         
-                window.renderAdminPromos = () => { 
+        window.renderAdminPromos = () => { 
             const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
             tempPromoCodes.forEach((p,i) => {
                 const autoBadge = p.isAuto ? `<span class="bg-yellow-100 text-yellow-700 text-[8px] font-black px-1 rounded ml-1">تلقائي</span>` : '';
-                // ضبط الاستخدام الافتراضي للأكواد القديمة
                 if(p.usesLeft === undefined) p.usesLeft = p.isAuto ? 1 : 100;
                 
                 c.innerHTML += `
@@ -1254,7 +1248,6 @@ window.syncAdminProductsFromDOM = () => {
                         </select>
                     </div>
                     
-                    <!-- خانة رقم العميل / الملاحظات -->
                     <div class="flex items-center bg-white border rounded p-1 border-gray-300">
                         <i class="fa-solid fa-mobile-screen text-gray-400 text-[10px] w-4 text-center"></i>
                         <input type="text" value="${p.customerPhone || ''}" placeholder="رقم الموبايل أو اسم العميل (اختياري)" class="flex-1 text-[10px] font-bold text-brand-navy outline-none bg-transparent" onchange="tempPromoCodes[${i}].customerPhone=this.value" dir="ltr" style="text-align: right;">
@@ -1336,7 +1329,6 @@ window.syncAdminProductsFromDOM = () => {
                 snap.forEach(d=>ordersList.push({id:d.id, ...d.data()})); 
                 renderOrdersList(); 
                 
-                // تحديث عداد الطلبات الجديدة (الباج الأحمر)
                 const newOrdersCount = ordersList.filter(o => o.status === 'new').length;
                 const badge = document.getElementById('orders-tab-badge');
                 if(badge) {
@@ -1388,7 +1380,7 @@ window.syncAdminProductsFromDOM = () => {
             }
         };
 
-                        // === بداية كود إنشاء روابط الواتساب الجماعية ===
+        // === بداية كود إنشاء روابط الواتساب الجماعية ===
         window.generateBulkWhatsAppLinks = () => {
             const numbersRaw = document.getElementById('admin-bulk-numbers').value.trim();
             const messageTemplate = document.getElementById('admin-bulk-message').value.trim() || "شكراً لثقتك! كود الخصم بتاعك: {الكود}";
@@ -1397,7 +1389,6 @@ window.syncAdminProductsFromDOM = () => {
 
             if(!numbersRaw) { showAlert("تنبيه", "يرجى إدخال أرقام الموبايلات أولاً"); return; }
 
-            // تصفية الأرقام (بياخد سطر سطر ويمسح المسافات)
             const numbers = numbersRaw.split('\n').map(n => n.trim()).filter(n => n.length >= 10);
 
             if(numbers.length === 0) { showAlert("تنبيه", "لم يتم العثور على أرقام صحيحة"); return; }
@@ -1406,20 +1397,15 @@ window.syncAdminProductsFromDOM = () => {
             linksContainer.innerHTML = '<p class="text-xs font-black text-brand-navy mb-2 border-b pb-2"><i class="fa-solid fa-check-double text-green-500"></i> اضغط "إرسال" قدام كل رقم:</p>';
 
             numbers.forEach(num => {
-                // عمل كود عشوائي
                 const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
-
-                // إضافة الكود للسيستم
                 tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1, customerPhone: num });
 
-                // تظبيط الرسالة والرقم للواتساب
                 const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
                 let waNumber = num;
-                if(waNumber.startsWith('0')) waNumber = '2' + waNumber; // تظبيط مفتاح مصر
+                if(waNumber.startsWith('0')) waNumber = '2' + waNumber; 
 
                 const waLink = `https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(finalMessage)}`;
 
-                // عمل زرار الإرسال
                 linksContainer.innerHTML += `
                     <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg shadow-sm">
                         <span class="text-xs font-bold text-gray-600" dir="ltr">${num}</span>
@@ -1430,9 +1416,7 @@ window.syncAdminProductsFromDOM = () => {
                 `;
             });
 
-            // تحديث واجهة الأكواد عشان الإدمن يشوفها
             renderAdminPromos();
-
             linksContainer.classList.remove('hidden');
             showAlert("تم التجهيز بنجاح 🎉", `تم إنشاء أكواد لـ ${numbers.length} عميل. \n\n⚠️ مهم جداً: انزل تحت في لوحة التحكم ودوس "حفظ جميع التعديلات" عشان الأكواد تتفعل في السيستم وتقدر تبعت الرسايل.`);
         };
