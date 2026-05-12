@@ -1014,8 +1014,16 @@
                         promoUpdated ? db.collection("inventory").doc("settings").set({ promoCodes: globalSettings.promoCodes, rewardMaxGenerations: globalSettings.rewardMaxGenerations, rewardActive: globalSettings.rewardActive }, { merge: true }) : Promise.resolve()
                     ]);
                     
-                    let updates = {}; for (let id in cart) updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity);
-                    await db.collection('inventory').doc('stock').update(updates);
+                    let updates = {}; 
+for (let id in cart) { 
+    if(!cart[id].isPreorder) {
+        updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity); 
+    }
+} 
+if(Object.keys(updates).length > 0) {
+    await db.collection('inventory').doc('stock').update(updates);
+}
+
                 }
             } catch(e) { console.log("Sync Error", e); }
 
