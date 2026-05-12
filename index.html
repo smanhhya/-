@@ -293,16 +293,78 @@
                 </div>
 
                 <div id="admin-panel-marketing" class="hidden space-y-4">
-                    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-gift text-green-500"></i> نظام الولاء (إنشاء كود خصم تلقائي للعميل)</h3>
-                        <p class="text-[10px] text-gray-500 font-bold mb-3">النظام ده بيعمل كود خصم حقيقي (مثال: VIP-1234) للعميل بعد ما يطلب ويظهره له عشان يستخدمه المرة الجاية، والكود ده بيتسجل عندك في أكواد الخصم عشان تعرفه.</p>
-                        <label class="flex items-center gap-2 mb-3"><input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span></label>
-                        <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
-                            <div><label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label><select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy"><option value="fixed">خصم مبلغ (ج.م)</option><option value="percent">خصم نسبة (%)</option><option value="free_delivery">توصيل مجاني</option></select></div>
-                            <div><label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label><input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center"></div>
-                            <div class="col-span-2 mt-2"><label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار (لو عايز تطلع الكود لـ 10 عملاء بس اكتب 10، لو مفتوح اكتب 0)</label><input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="مثال: 10"></div>
-                        </div>
-                    </div>
+    
+    <!-- بداية نظام الولاء -->
+    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
+        <h3 class="font-black text-brand-navy mb-3">
+            <i class="fa-solid fa-gift text-green-500"></i> نظام الولاء (إنشاء كود خصم تلقائي للعميل)
+        </h3>
+        <p class="text-[10px] text-gray-500 font-bold mb-3">النظام ده بيعمل كود خصم حقيقي (مثال: VIP-1234) للعميل بعد ما يطلب ويظهره له عشان يستخدمه المرة الجاية، والكود ده بيتسجل عندك في أكواد الخصم عشان تعرفه.</p>
+        <label class="flex items-center gap-2 mb-3">
+            <input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> 
+            <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span>
+        </label>
+        <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
+            <div>
+                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label>
+                <select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
+                    <option value="fixed">خصم مبلغ (ج.م)</option>
+                    <option value="percent">خصم نسبة (%)</option>
+                    <option value="free_delivery">توصيل مجاني</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
+                <input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center">
+            </div>
+            <div class="col-span-2 mt-2">
+                <label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار (لو عايز تطلع الكود لـ 10 عملاء بس اكتب 10، لو مفتوح اكتب 0)</label>
+                <input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="مثال: 10">
+            </div>
+        </div>
+    </div>
+    <!-- نهاية نظام الولاء -->
+
+    <!-- بداية كود الإرسال الجماعي -->
+    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-purple-500">
+        <h3 class="font-black text-brand-navy mb-3">
+            <i class="fa-solid fa-users text-purple-500"></i> إرسال أكواد شكر لعملاء سابقين
+        </h3>
+        <p class="text-[10px] text-gray-500 font-bold mb-3">حط أرقام العملاء هنا وهنعمل لكل واحد كود خصم عشوائي (يستخدم مرة واحدة) ونجهزلك رسايل الواتساب.</p>
+
+        <label class="text-[10px] text-gray-500 font-bold block mb-1">أرقام الموبايلات (رقم في كل سطر)</label>
+        <textarea id="admin-bulk-numbers" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left bg-gray-50 focus:bg-white transition-colors" dir="ltr" placeholder="01234567890&#10;01098765432"></textarea>
+
+        <label class="text-[10px] text-gray-500 font-bold block mb-1 mt-3">رسالة الواتساب (اكتب {الكود} عشان يظهر الكود للعميل)</label>
+        <textarea id="admin-bulk-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-gray-50 focus:bg-white transition-colors">شكراً لثقتك في سمان ههيا! الدفعة خلصت على خير، وعشان إنت عميل مميز، عملنالك كود خصم تستخدمه الأوردر الجاي: {الكود}</textarea>
+
+        <div class="grid grid-cols-2 gap-2 mt-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
+            <div>
+                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع الخصم</label>
+                <select id="admin-bulk-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
+                    <option value="fixed">خصم مبلغ (ج.م)</option>
+                    <option value="percent">خصم نسبة (%)</option>
+                    <option value="free_delivery">توصيل مجاني</option>
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
+                <input type="number" id="admin-bulk-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center" value="20">
+            </div>
+        </div>
+
+        <button type="button" onclick="generateBulkWhatsAppLinks()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex justify-center items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> توليد الأكواد وتجهيز الرسايل
+        </button>
+
+        <div id="bulk-whatsapp-links" class="mt-4 space-y-2 hidden max-h-48 overflow-y-auto cart-scroll bg-gray-50 p-3 rounded-xl border border-gray-200">
+            <!-- الرسايل هتظهر هنا -->
+        </div>
+    </div>
+    <!-- نهاية كود الإرسال الجماعي -->
+
+</div>
+
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-bullhorn text-red-500"></i> شريط الإعلانات العلوي</h3>
