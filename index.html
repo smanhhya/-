@@ -514,6 +514,13 @@
 
         let dailyStats = { sales: 0, orders: 0 };
         let tempAdminZones = []; let tempPromoCodes = []; let tempProducts = {};
+        
+        // المتغيرات المؤقتة الجديدة
+        let tempPrices = {};
+        let tempStock = {};
+        let tempOldPrices = {};
+        let tempDiscounts = {};
+
         let cart = {}; let appliedPromo = null; 
         let db = null; let hasCloud = false; let customerType = 'new'; 
         let isStoreDataLoaded = false; 
@@ -1082,25 +1089,57 @@
         };
 
         window.openAdminDashboard = () => {
+            // التأكد من تحميل البيانات أولاً
+            if (!isStoreDataLoaded) {
+                showAlert("تنبيه", "جاري تحميل بيانات المتجر، يرجى الانتظار ثواني والمحاولة مرة أخرى.");
+                return;
+            }
+
             const storeToggle = document.getElementById('admin-store-open');
             storeToggle.checked = globalSettings.storeOpen !== false;
             const storeOpenLabel = document.getElementById('store-open-label');
             storeOpenLabel.innerText = storeToggle.checked ? 'مفتوح' : 'مغلق';
             storeOpenLabel.className = storeToggle.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
 
-            document.getElementById('admin-store-name').value = globalSettings.storeName || ''; document.getElementById('admin-store-desc').value = globalSettings.storeDesc || ''; document.getElementById('admin-store-phone').value = globalSettings.storePhone || ''; document.getElementById('admin-min-order').value = globalSettings.minOrder || 0;
-            document.getElementById('admin-free-delivery-active').checked = globalSettings.freeDeliveryActive; document.getElementById('admin-free-delivery-threshold').value = globalSettings.freeDeliveryThreshold || 0; tempAdminZones = JSON.parse(JSON.stringify(globalDeliveryZones||[])); renderAdminZones();
-            document.getElementById('admin-reward-active').checked = globalSettings.rewardActive; document.getElementById('admin-reward-type').value = globalSettings.rewardType || 'fixed'; document.getElementById('admin-reward-value').value = globalSettings.rewardValue || 0; document.getElementById('admin-reward-max-generations').value = globalSettings.rewardMaxGenerations || 0; document.getElementById('admin-banner-active').checked = globalSettings.bannerActive; document.getElementById('admin-banner-text').value = globalSettings.bannerText || ''; document.getElementById('admin-crosssell-active').checked = globalSettings.crossSellActive; const csSelect = document.getElementById('admin-crosssell-product'); csSelect.innerHTML=''; Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); tempPromoCodes = JSON.parse(JSON.stringify(globalSettings.promoCodes||[])); renderAdminPromos();
-            document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
-            document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; document.getElementById('admin-pin-setting').value = globalSettings.adminPin || '1234';
+            document.getElementById('admin-store-name').value = globalSettings.storeName || ''; 
+            document.getElementById('admin-store-desc').value = globalSettings.storeDesc || ''; 
+            document.getElementById('admin-store-phone').value = globalSettings.storePhone || ''; 
+            document.getElementById('admin-min-order').value = globalSettings.minOrder || 0;
+            document.getElementById('admin-free-delivery-active').checked = globalSettings.freeDeliveryActive; 
+            document.getElementById('admin-free-delivery-threshold').value = globalSettings.freeDeliveryThreshold || 0; 
             
+            tempAdminZones = JSON.parse(JSON.stringify(globalDeliveryZones||[])); renderAdminZones();
+            
+            document.getElementById('admin-reward-active').checked = globalSettings.rewardActive; 
+            document.getElementById('admin-reward-type').value = globalSettings.rewardType || 'fixed'; 
+            document.getElementById('admin-reward-value').value = globalSettings.rewardValue || 0; 
+            document.getElementById('admin-reward-max-generations').value = globalSettings.rewardMaxGenerations || 0; 
+            document.getElementById('admin-banner-active').checked = globalSettings.bannerActive; 
+            document.getElementById('admin-banner-text').value = globalSettings.bannerText || ''; 
+            document.getElementById('admin-crosssell-active').checked = globalSettings.crossSellActive; 
+            
+            const csSelect = document.getElementById('admin-crosssell-product'); csSelect.innerHTML=''; 
+            Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); 
+            
+            tempPromoCodes = JSON.parse(JSON.stringify(globalSettings.promoCodes||[])); renderAdminPromos();
+            document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
+            document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; 
+            document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; 
+            document.getElementById('admin-pin-setting').value = globalSettings.adminPin || '1234';
             document.getElementById('admin-old-customer-label').value = globalSettings.oldCustomerLabel || 'عميل سابق';
             document.getElementById('admin-whatsapp-template').value = globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)';
 
+            // نسخ البيانات للمتغيرات المؤقتة عشان منأثرش على المتجر الحقيقي إلا بعد الحفظ
             tempProducts = JSON.parse(JSON.stringify(productsInfo));
-            renderAdminProducts(); 
+            tempPrices = { ...globalPrices };
+            tempStock = { ...globalStock };
+            tempOldPrices = { ...globalOldPrices };
+            tempDiscounts = { ...globalDiscounts };
             
-            document.getElementById('admin-dashboard-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.remove('opacity-0'),10); switchAdminTab('stats');
+            renderAdminProducts(); 
+            document.getElementById('admin-dashboard-modal').classList.remove('hidden'); 
+            setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.remove('opacity-0'),10); 
+            switchAdminTab('stats');
         };
 
         window.closeAdminDashboard = () => { document.getElementById('admin-dashboard-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.add('hidden'),300); };
@@ -1129,7 +1168,13 @@
         window.renderAdminProducts = () => {
             const container = document.getElementById('admin-inputs-container'); container.innerHTML = '';
             Object.keys(tempProducts).forEach(id => {
-                const p = tempProducts[id]; const stock = globalStock[id] || 0; const price = globalPrices[id] || p.basePrice; const oldPrice = globalOldPrices[id] || price; const isDisc = globalDiscounts[id] || false; const isBest = globalSettings.bestSellers?.includes(id) || false;
+                const p = tempProducts[id]; 
+                const stock = tempStock[id] || 0; 
+                const price = tempPrices[id] || p.basePrice; 
+                const oldPrice = tempOldPrices[id] || price; 
+                const isDisc = tempDiscounts[id] || false; 
+                const isBest = globalSettings.bestSellers?.includes(id) || false;
+                
                 const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
                 container.innerHTML += `<div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm mb-3">
                     <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('edit-p-${id}').classList.toggle('hidden')">
@@ -1165,14 +1210,21 @@
         window.addNewAdminProduct = () => { 
             const newId = 'p_' + Date.now(); 
             tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false }; 
-            globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; 
+            tempStock[newId] = 0; 
+            tempPrices[newId] = 0; 
+            tempOldPrices[newId] = 0; 
+            tempDiscounts[newId] = false; 
             renderAdminProducts(); 
             setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); 
         };
 
         window.deleteAdminProduct = (id) => { 
             if(!confirm('هل أنت متأكد من حذف هذا المنتج تماماً من المتجر؟')) return; 
-            delete tempProducts[id]; delete globalStock[id]; delete globalPrices[id]; delete globalOldPrices[id]; delete globalDiscounts[id]; 
+            delete tempProducts[id]; 
+            delete tempStock[id]; 
+            delete tempPrices[id]; 
+            delete tempOldPrices[id]; 
+            delete tempDiscounts[id]; 
             renderAdminProducts(); 
         };
 
@@ -1185,10 +1237,13 @@
                 tempProducts[id].weight = document.getElementById(`p-weight-${id}`).value; 
                 tempProducts[id].images = [document.getElementById(`p-img-${id}`).value]; 
                 tempProducts[id].isExtra = document.getElementById(`p-extra-${id}`).checked;
-                globalPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; 
-                globalStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; 
-                globalOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; 
-                globalDiscounts[id] = document.getElementById(`p-disc-${id}`).checked;
+                
+                // استخدام المتغيرات المؤقتة
+                tempPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; 
+                tempStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; 
+                tempOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; 
+                tempDiscounts[id] = document.getElementById(`p-disc-${id}`).checked;
+                
                 if(document.getElementById(`p-best-${id}`).checked) newBest.push(id);
             });
             globalSettings.bestSellers = newBest;
@@ -1395,24 +1450,75 @@
             syncAdminProductsFromDOM(); 
             const newSettings = {
                 storeOpen: document.getElementById('admin-store-open').checked, 
-                storeName: document.getElementById('admin-store-name').value.trim() || 'المتجر', storeDesc: document.getElementById('admin-store-desc').value.trim(), storePhone: document.getElementById('admin-store-phone').value.trim(), minOrder: parseInt(document.getElementById('admin-min-order').value) || 0, adminPin: document.getElementById('admin-pin-setting').value.trim() || '1234',
-                freeDeliveryActive: document.getElementById('admin-free-delivery-active').checked, freeDeliveryThreshold: parseInt(document.getElementById('admin-free-delivery-threshold').value) || 0, deliveryZones: tempAdminZones.filter(z=>z.name.trim()),
-                rewardActive: document.getElementById('admin-reward-active').checked, rewardType: document.getElementById('admin-reward-type').value, rewardValue: parseInt(document.getElementById('admin-reward-value').value) || 0, rewardMaxGenerations: parseInt(document.getElementById('admin-reward-max-generations').value) || 0,
-                bannerActive: document.getElementById('admin-banner-active').checked, bannerText: document.getElementById('admin-banner-text').value.trim(), crossSellActive: document.getElementById('admin-crosssell-active').checked, crossSellProductId: document.getElementById('admin-crosssell-product').value, promoCodes: tempPromoCodes.filter(p=>p.code.trim()), bestSellers: globalSettings.bestSellers,
+                storeName: document.getElementById('admin-store-name').value.trim() || 'المتجر', 
+                storeDesc: document.getElementById('admin-store-desc').value.trim(), 
+                storePhone: document.getElementById('admin-store-phone').value.trim(), 
+                minOrder: parseInt(document.getElementById('admin-min-order').value) || 0, 
+                adminPin: document.getElementById('admin-pin-setting').value.trim() || '1234',
+                freeDeliveryActive: document.getElementById('admin-free-delivery-active').checked, 
+                freeDeliveryThreshold: parseInt(document.getElementById('admin-free-delivery-threshold').value) || 0, 
+                deliveryZones: tempAdminZones.filter(z=>z.name.trim()),
+                rewardActive: document.getElementById('admin-reward-active').checked, 
+                rewardType: document.getElementById('admin-reward-type').value, 
+                rewardValue: parseInt(document.getElementById('admin-reward-value').value) || 0, 
+                rewardMaxGenerations: parseInt(document.getElementById('admin-reward-max-generations').value) || 0,
+                bannerActive: document.getElementById('admin-banner-active').checked, 
+                bannerText: document.getElementById('admin-banner-text').value.trim(), 
+                crossSellActive: document.getElementById('admin-crosssell-active').checked, 
+                crossSellProductId: document.getElementById('admin-crosssell-product').value, 
+                promoCodes: tempPromoCodes.filter(p=>p.code.trim()), 
+                bestSellers: globalSettings.bestSellers,
                 showPromoField: document.getElementById('admin-show-promo-field').checked,
-                successTitle: document.getElementById('admin-success-title').value.trim(), successMessage: document.getElementById('admin-success-message').value.trim(), productsData: tempProducts,
+                successTitle: document.getElementById('admin-success-title').value.trim(), 
+                successMessage: document.getElementById('admin-success-message').value.trim(), 
+                productsData: tempProducts,
                 oldCustomerLabel: document.getElementById('admin-old-customer-label').value.trim() || 'عميل سابق',
                 whatsappTemplate: document.getElementById('admin-whatsapp-template').value.trim() || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)'
             };
 
-            const btn = document.querySelector('#admin-dashboard-modal button[onclick="saveAdminData()"]'); const originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
+            const btn = document.querySelector('#admin-dashboard-modal button[onclick="saveAdminData()"]'); 
+            const originalHtml = btn.innerHTML; 
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
+            
             if(hasCloud && db) {
                 try {
-                    await Promise.all([ db.collection("inventory").doc("settings").set(newSettings), db.collection("inventory").doc("stock").set(globalStock), db.collection("inventory").doc("prices").set(globalPrices), db.collection("inventory").doc("old_prices").set(globalOldPrices), db.collection("inventory").doc("discounts_status").set(globalDiscounts) ]);
-                    btn.innerHTML = originalHtml; closeAdminDashboard(); document.getElementById('alert-icon-container').className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; document.getElementById('alert-icon').className = "fa-solid fa-check"; showAlert("تم بنجاح", "تم حفظ جميع التعديلات بنجاح.");
-                } catch(e) { btn.innerHTML = originalHtml; showAlert("خطأ", "حدث خطأ أثناء الحفظ. تحقق من اتصالك بالإنترنت."); }
+                    await Promise.all([ 
+                        // إضافة { merge: true } لمنع مسح أي حقول أخرى في قاعدة البيانات
+                        db.collection("inventory").doc("settings").set(newSettings, { merge: true }), 
+                        db.collection("inventory").doc("stock").set(tempStock), 
+                        db.collection("inventory").doc("prices").set(tempPrices), 
+                        db.collection("inventory").doc("old_prices").set(tempOldPrices), 
+                        db.collection("inventory").doc("discounts_status").set(tempDiscounts) 
+                    ]);
+                    
+                    btn.innerHTML = originalHtml; 
+                    closeAdminDashboard(); 
+                    document.getElementById('alert-icon-container').className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; 
+                    document.getElementById('alert-icon').className = "fa-solid fa-check"; 
+                    showAlert("تم بنجاح", "تم حفظ جميع التعديلات بنجاح.");
+                } catch(e) { 
+                    btn.innerHTML = originalHtml; 
+                    showAlert("خطأ", "حدث خطأ أثناء الحفظ. تحقق من اتصالك بالإنترنت."); 
+                }
             } else {
-                Object.assign(globalSettings, newSettings); productsInfo = tempProducts; globalDeliveryZones = newSettings.deliveryZones; closeAdminDashboard(); btn.innerHTML = originalHtml; applySettingsToUI(); renderDeliveryZones(); const container = document.getElementById('products-container'); if(container) container.innerHTML = '<div class="text-center py-10 text-brand-cyanDark"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i><p class="font-bold text-sm">جاري التحديث...</p></div>'; setTimeout(() => renderProducts(), 500); updateUI(); showAlert("تم محلياً", "تم الحفظ مؤقتاً لأن المتصفح غير متصل بقاعدة البيانات.");
+                Object.assign(globalSettings, newSettings); 
+                productsInfo = tempProducts; 
+                globalPrices = tempPrices;
+                globalStock = tempStock;
+                globalOldPrices = tempOldPrices;
+                globalDiscounts = tempDiscounts;
+                globalDeliveryZones = newSettings.deliveryZones; 
+                
+                closeAdminDashboard(); 
+                btn.innerHTML = originalHtml; 
+                applySettingsToUI(); 
+                renderDeliveryZones(); 
+                
+                const container = document.getElementById('products-container'); 
+                if(container) container.innerHTML = '<div class="text-center py-10 text-brand-cyanDark"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i><p class="font-bold text-sm">جاري التحديث...</p></div>'; 
+                setTimeout(() => renderProducts(), 500); 
+                updateUI(); 
+                showAlert("تم محلياً", "تم الحفظ مؤقتاً لأن المتصفح غير متصل بقاعدة البيانات.");
             }
         };
     </script>
