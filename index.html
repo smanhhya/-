@@ -612,17 +612,7 @@
         };
 
         window.addToCart = function(id) { if (!globalSettings.storeOpen || getAvailableStock(id) <= 0) return; if (cart[id]) cart[id].quantity++; else cart[id] = { quantity: 1, price: globalPrices[id] || productsInfo[id].basePrice, name: productsInfo[id].name }; saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
-        
-        window.updateQuantity = function(id, delta) { 
-            if (!cart[id] || !globalSettings.storeOpen) return; 
-            if (delta === 1) { if (getAvailableStock(id) > 0) cart[id].quantity++; } 
-            else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; } 
-            saveCart(); 
-            requestAnimationFrame(() => {
-                updateUI(); 
-                renderProducts();
-            }); 
-        };
+        window.updateQuantity = function(id, delta) { if (!cart[id] || !globalSettings.storeOpen) return; if (delta === 1) { if (getAvailableStock(id) > 0) cart[id].quantity++; } else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; } saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
 
         window.updateUI = function() {
             let totalItems = 0, subTotalPrice = 0; const cartContainer = document.getElementById('cart-items'); if(cartContainer) cartContainer.innerHTML = '';
@@ -744,9 +734,7 @@
             if (wantsWhatsApp) {
                 document.getElementById('alert-icon-container').className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; document.getElementById('alert-icon').className = "fa-brands fa-whatsapp";
                 showAlert("جاري التحويل...", "هيتم تحويلك للواتساب عشان تأكد الحجز.");
-                let adminPhoneRaw = globalSettings.storePhone || "";
-                let adminPhoneFormatted = adminPhoneRaw.startsWith("0") ? adminPhoneRaw.substring(1) : adminPhoneRaw;
-                setTimeout(() => { window.location.href = `https://api.whatsapp.com/send?phone=20${adminPhoneFormatted}&text=${encodeURIComponent(message)}`; }, 2000); 
+                setTimeout(() => { window.location.href = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`; }, 2000); 
             } else {
                 document.getElementById('alert-icon-container').className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; document.getElementById('alert-icon').className = "fa-solid fa-check";
                 showAlert(globalSettings.successTitle || "تم استلام الأوردر! 🎉", globalSettings.successMessage || "شكراً لثقتك.. الأوردر وصل بنجاح.");
@@ -946,24 +934,7 @@
         };
 
         window.addNewAdminProduct = () => { const newId = 'p_' + Date.now(); tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false }; globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; renderAdminProducts(); setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); };
-        
-        window.deleteAdminProduct = (id) => { 
-            if(!confirm('هل أنت متأكد من حذف هذا المنتج تماماً من المتجر؟')) return; 
-            delete tempProducts[id]; 
-            delete globalStock[id]; 
-            delete globalPrices[id]; 
-            delete globalOldPrices[id]; 
-            delete globalDiscounts[id]; 
-            
-            // تأمين وحل مشكلة الاقتراح الذكي
-            if(globalSettings.crossSellProductId === id) {
-                globalSettings.crossSellProductId = '';
-                globalSettings.crossSellActive = false;
-                document.getElementById('admin-crosssell-active').checked = false;
-            }
-            
-            renderAdminProducts(); 
-        };
+        window.deleteAdminProduct = (id) => { if(!confirm('هل أنت متأكد من حذف هذا المنتج تماماً من المتجر؟')) return; delete tempProducts[id]; delete globalStock[id]; delete globalPrices[id]; delete globalOldPrices[id]; delete globalDiscounts[id]; renderAdminProducts(); };
 
         window.syncAdminProductsFromDOM = () => {
             if(!document.getElementById('admin-inputs-container') || document.getElementById('admin-inputs-container').innerHTML === '') return;
@@ -1029,8 +1000,7 @@
                 const code = `VIP-${phone.slice(-3)}${Math.floor(10 + Math.random() * 89)}`;
                 tempPromoCodes.push({ code: code, type: type, discount: val, usesLeft: 1, isAuto: true });
                 const msg = template.replace(/{كود}/g, code);
-                let phoneFormatted = phone.startsWith("0") ? phone.substring(1) : phone;
-                const waLink = `https://api.whatsapp.com/send?phone=20${phoneFormatted}&text=${encodeURIComponent(msg)}`;
+                const waLink = `https://api.whatsapp.com/send?phone=20${phone}&text=${encodeURIComponent(msg)}`;
 
                 if(resultsContainer) {
                     resultsContainer.innerHTML += `
@@ -1110,42 +1080,6 @@
                 productsInfo = tempProducts; 
                 globalDeliveryZones = newSettings.deliveryZones; 
                 closeAdminDashboard(); btn.innerHTML = originalHtml; applySettingsToUI(); renderDeliveryZones(); const c = document.getElementById('products-container'); if(c) c.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-3xl"></i></div>'; setTimeout(() => renderProducts(), 500); updateUI(); 
-            }
-        };
-
-        window.resetStatsOnly = async () => {
-            if(!confirm("هل أنت متأكد من تصفير الإحصائيات (المبيعات والطلبات)؟ هذا الإجراء لا يمكن التراجع عنه.")) return;
-            if(hasCloud && db) {
-                try {
-                    await db.collection('inventory').doc('stats').set({ sales: 0, orders: 0 });
-                    showAlert("تم", "تم تصفير الإحصائيات بنجاح.");
-                    if(document.getElementById('stat-sales-today')) document.getElementById('stat-sales-today').innerText = "0"; 
-                    if(document.getElementById('stat-sales-week')) document.getElementById('stat-sales-week').innerText = "0"; 
-                    if(document.getElementById('stat-sales-month')) document.getElementById('stat-sales-month').innerText = "0"; 
-                    if(document.getElementById('stat-sales-all')) document.getElementById('stat-sales-all').innerText = "0";
-                } catch(e) { showAlert("خطأ", "حدث خطأ أثناء التصفير."); }
-            }
-        };
-
-        window.deleteAllOrders = async () => {
-            if(!confirm("هل أنت متأكد من مسح جميع الطلبات بشكل نهائي؟ تأكد من مراجعة كل الطلبات قبل المسح.")) return;
-            if(hasCloud && db) {
-                const btn = document.querySelector('button[onclick="deleteAllOrders()"]');
-                const origHtml = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المسح...';
-                try {
-                    const snap = await db.collection("orders").get();
-                    const batch = db.batch();
-                    snap.forEach(doc => batch.delete(doc.ref));
-                    await batch.commit();
-                    ordersList = [];
-                    renderOrdersList();
-                    showAlert("تم", "تم مسح جميع الطلبات بنجاح.");
-                } catch(e) {
-                    showAlert("خطأ", "حدث خطأ أثناء مسح الطلبات.");
-                } finally {
-                    btn.innerHTML = origHtml;
-                }
             }
         };
     </script>
