@@ -294,78 +294,68 @@
 
                 <div id="admin-panel-marketing" class="hidden space-y-4">
     
-    <!-- بداية نظام الولاء -->
-    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
-        <h3 class="font-black text-brand-navy mb-3">
-            <i class="fa-solid fa-gift text-green-500"></i> نظام الولاء (إنشاء كود خصم تلقائي للعميل)
-        </h3>
-        <p class="text-[10px] text-gray-500 font-bold mb-3">النظام ده بيعمل كود خصم حقيقي (مثال: VIP-1234) للعميل بعد ما يطلب ويظهره له عشان يستخدمه المرة الجاية، والكود ده بيتسجل عندك في أكواد الخصم عشان تعرفه.</p>
-        <label class="flex items-center gap-2 mb-3">
-            <input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> 
-            <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span>
-        </label>
-        <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
-            <div>
-                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label>
-                <select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
-                    <option value="fixed">خصم مبلغ (ج.م)</option>
-                    <option value="percent">خصم نسبة (%)</option>
-                    <option value="free_delivery">توصيل مجاني</option>
-                </select>
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
-                <input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center">
-            </div>
-            <div class="col-span-2 mt-2">
-                <label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار (لو عايز تطلع الكود لـ 10 عملاء بس اكتب 10، لو مفتوح اكتب 0)</label>
-                <input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="مثال: 10">
-            </div>
-        </div>
-    </div>
-    <!-- نهاية نظام الولاء -->
+                    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
+                        <h3 class="font-black text-brand-navy mb-3">
+                            <i class="fa-solid fa-gift text-green-500"></i> نظام الولاء (إنشاء كود خصم تلقائي للعميل)
+                        </h3>
+                        <p class="text-[10px] text-gray-500 font-bold mb-3">النظام ده بيعمل كود خصم حقيقي (مثال: VIP-1234) للعميل بعد ما يطلب ويظهره له عشان يستخدمه المرة الجاية، والكود ده بيتسجل عندك في أكواد الخصم عشان تعرفه.</p>
+                        <label class="flex items-center gap-2 mb-3">
+                            <input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> 
+                            <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
+                            <div>
+                                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label>
+                                <select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
+                                    <option value="fixed">خصم مبلغ (ج.م)</option>
+                                    <option value="percent">خصم نسبة (%)</option>
+                                    <option value="free_delivery">توصيل مجاني</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
+                                <input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center">
+                            </div>
+                            <div class="col-span-2 mt-2">
+                                <label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار (لو عايز تطلع الكود لـ 10 عملاء بس اكتب 10، لو مفتوح اكتب 0)</label>
+                                <input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="مثال: 10">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-purple-500">
+                        <h3 class="font-black text-brand-navy mb-3">
+                            <i class="fa-solid fa-users text-purple-500"></i> إرسال أكواد شكر لعملاء سابقين
+                        </h3>
+                        <p class="text-[10px] text-gray-500 font-bold mb-3">حط أرقام العملاء هنا وهنعمل لكل واحد كود خصم عشوائي (يستخدم مرة واحدة) ونجهزلك رسايل الواتساب.</p>
 
-    <!-- بداية كود الإرسال الجماعي -->
-    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-purple-500">
-        <h3 class="font-black text-brand-navy mb-3">
-            <i class="fa-solid fa-users text-purple-500"></i> إرسال أكواد شكر لعملاء سابقين
-        </h3>
-        <p class="text-[10px] text-gray-500 font-bold mb-3">حط أرقام العملاء هنا وهنعمل لكل واحد كود خصم عشوائي (يستخدم مرة واحدة) ونجهزلك رسايل الواتساب.</p>
+                        <label class="text-[10px] text-gray-500 font-bold block mb-1">أرقام الموبايلات (رقم في كل سطر)</label>
+                        <textarea id="admin-bulk-numbers" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left bg-gray-50 focus:bg-white transition-colors" dir="ltr" placeholder="01234567890&#10;01098765432"></textarea>
 
-        <label class="text-[10px] text-gray-500 font-bold block mb-1">أرقام الموبايلات (رقم في كل سطر)</label>
-        <textarea id="admin-bulk-numbers" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left bg-gray-50 focus:bg-white transition-colors" dir="ltr" placeholder="01234567890&#10;01098765432"></textarea>
+                        <label class="text-[10px] text-gray-500 font-bold block mb-1 mt-3">رسالة الواتساب (اكتب {الكود} عشان يظهر الكود للعميل)</label>
+                        <textarea id="admin-bulk-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-gray-50 focus:bg-white transition-colors">شكراً لثقتك في سمان ههيا! الدفعة خلصت على خير، وعشان إنت عميل مميز، عملنالك كود خصم تستخدمه الأوردر الجاي: {الكود}</textarea>
 
-        <label class="text-[10px] text-gray-500 font-bold block mb-1 mt-3">رسالة الواتساب (اكتب {الكود} عشان يظهر الكود للعميل)</label>
-        <textarea id="admin-bulk-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-gray-50 focus:bg-white transition-colors">شكراً لثقتك في سمان ههيا! الدفعة خلصت على خير، وعشان إنت عميل مميز، عملنالك كود خصم تستخدمه الأوردر الجاي: {الكود}</textarea>
+                        <div class="grid grid-cols-2 gap-2 mt-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
+                            <div>
+                                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع الخصم</label>
+                                <select id="admin-bulk-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
+                                    <option value="fixed">خصم مبلغ (ج.م)</option>
+                                    <option value="percent">خصم نسبة (%)</option>
+                                    <option value="free_delivery">توصيل مجاني</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
+                                <input type="number" id="admin-bulk-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center" value="20">
+                            </div>
+                        </div>
 
-        <div class="grid grid-cols-2 gap-2 mt-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
-            <div>
-                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع الخصم</label>
-                <select id="admin-bulk-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
-                    <option value="fixed">خصم مبلغ (ج.م)</option>
-                    <option value="percent">خصم نسبة (%)</option>
-                    <option value="free_delivery">توصيل مجاني</option>
-                </select>
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
-                <input type="number" id="admin-bulk-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center" value="20">
-            </div>
-        </div>
+                        <button type="button" onclick="generateBulkWhatsAppLinks()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> توليد الأكواد وتجهيز الرسايل
+                        </button>
 
-        <button type="button" onclick="generateBulkWhatsAppLinks()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex justify-center items-center gap-2">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> توليد الأكواد وتجهيز الرسايل
-        </button>
-
-        <div id="bulk-whatsapp-links" class="mt-4 space-y-2 hidden max-h-48 overflow-y-auto cart-scroll bg-gray-50 p-3 rounded-xl border border-gray-200">
-            <!-- الرسايل هتظهر هنا -->
-        </div>
-    </div>
-    <!-- نهاية كود الإرسال الجماعي -->
-
-</div>
-
-
+                        <div id="bulk-whatsapp-links" class="mt-4 space-y-2 hidden max-h-48 overflow-y-auto cart-scroll bg-gray-50 p-3 rounded-xl border border-gray-200">
+                            </div>
+                    </div>
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-bullhorn text-red-500"></i> شريط الإعلانات العلوي</h3>
                         <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-banner-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل الشريط</span></label>
@@ -686,15 +676,7 @@
 
         window.getCardActionHTML = function(id) {
             if (globalSettings.storeOpen === false) return `<div class="w-full bg-gray-100 text-gray-400 font-bold py-2 rounded-xl text-sm border border-gray-200 text-center cursor-not-allowed">مغلق</div>`;
-            const stock = globalStock[id] || 0; const pInfo = productsInfo[id] || {};
-            const isPreorderMode = stock <= 0 && pInfo.allowPreorder;
             const inCart = cart[id]?.quantity || 0; const available = getAvailableStock(id);
-
-            if (isPreorderMode) {
-                if (inCart > 0) return `<div class="flex items-center justify-between bg-orange-50 border border-orange-300 rounded-xl p-1 h-[40px]"><div onclick="updateQuantity('${id}', 1)" class="w-9 h-full bg-white text-orange-600 rounded-lg shadow-sm font-black text-xl flex items-center justify-center cursor-pointer select-none">+</div><span class="font-black text-brand-navy text-lg min-w-[28px] text-center select-none">${inCart}</span><div onclick="updateQuantity('${id}', -1)" class="w-9 h-full bg-white text-red-500 rounded-lg shadow-sm font-black text-2xl flex items-center justify-center cursor-pointer select-none pb-1">-</div></div>`;
-                return `<div onclick="addToCart('${id}')" class="w-full bg-orange-500 text-white hover:bg-orange-600 font-black py-2 rounded-xl transition-colors shadow-sm text-sm flex justify-center items-center gap-2 cursor-pointer select-none"><i class="fa-solid fa-clock"></i> احجز لـ (${pInfo.preorderBatch || 'الدفعة القادمة'})</div>`;
-            }
-
             if (available === 0 && inCart === 0) return `<div class="w-full bg-gray-100 text-gray-400 font-bold py-2 rounded-xl text-sm border border-gray-200 text-center cursor-not-allowed">نفدت الكمية</div>`;
             if (inCart > 0) return `<div class="flex items-center justify-between bg-brand-light/50 border border-brand-cyan/40 rounded-xl p-1 h-[40px]"><div onclick="updateQuantity('${id}', 1)" class="w-9 h-full bg-white text-brand-cyanDark rounded-lg shadow-sm font-black text-xl flex items-center justify-center cursor-pointer select-none">+</div><span class="font-black text-brand-navy text-lg min-w-[28px] text-center select-none">${inCart}</span><div onclick="updateQuantity('${id}', -1)" class="w-9 h-full bg-white text-red-500 rounded-lg shadow-sm font-black text-2xl flex items-center justify-center cursor-pointer select-none pb-1">-</div></div>`;
             return `<div onclick="addToCart('${id}')" class="w-full bg-brand-cyanDark text-white hover:bg-brand-navy font-black py-2 rounded-xl transition-colors shadow-sm text-sm flex justify-center items-center gap-2 cursor-pointer select-none"><i class="fa-solid fa-plus"></i> إضافة للسلة</div>`;
@@ -707,18 +689,10 @@
             
             container.innerHTML = ''; extrasContainer.innerHTML = ''; let mainProductsCount = 0;
             Object.keys(productsInfo).forEach(id => {
-                const item = productsInfo[id]; const stock = globalStock[id] || 0; const available = getAvailableStock(id);
-                const isPreorderMode = stock <= 0 && item.allowPreorder;
+                const item = productsInfo[id]; const available = getAvailableStock(id);
                 const currentPrice = globalPrices[id] || item.basePrice; const oldPrice = globalOldPrices[id];
                 const isDiscountActive = globalDiscounts[id]; const isBestSeller = globalSettings.bestSellers && globalSettings.bestSellers.includes(id);
-                
-                let stockHtml = '';
-                if (isPreorderMode) {
-                    stockHtml = `<div class="text-[10px] font-bold px-1.5 py-0.5 rounded border bg-orange-50 text-orange-600 shrink-0"><i class="fa-solid fa-clock"></i> متاح للحجز المسبق</div>`;
-                } else {
-                    const stockBadgeClass = available <= 10 ? (available === 0 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600') : 'bg-green-50 text-green-700';
-                    stockHtml = `<div class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${stockBadgeClass} shrink-0">المتاح: <span id="stock-display-${id}">${available}</span></div>`;
-                }
+                const stockBadgeClass = available <= 10 ? (available === 0 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600') : 'bg-green-50 text-green-700';
 
                 let priceHtml = ''; let saleBadgeHtml = '';
                 if (isDiscountActive) {
@@ -731,10 +705,10 @@
 
                 if (!item.isExtra) {
                     mainProductsCount++;
-                    container.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[130px] relative">${saleBadgeHtml}<div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0"><div><h3 class="text-sm md:text-base font-black text-brand-navy truncate mb-1">${item.name}</h3><div class="flex items-center justify-between gap-2 mb-1">${priceHtml}<span class="bg-gray-50 text-gray-500 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 font-bold whitespace-nowrap"><i class="fa-solid fa-scale-balanced mr-1"></i> ${item.weight}</span></div></div><div class="flex items-center justify-between mt-auto">${stockHtml}<div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div></div></div><div class="w-32 shrink-0 relative bg-gray-100 border-r border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'" class="w-full h-full object-cover"></div></div>`;
+                    container.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[130px] relative">${saleBadgeHtml}<div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0"><div><h3 class="text-sm md:text-base font-black text-brand-navy truncate mb-1">${item.name}</h3><div class="flex items-center justify-between gap-2 mb-1">${priceHtml}<span class="bg-gray-50 text-gray-500 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 font-bold whitespace-nowrap"><i class="fa-solid fa-scale-balanced mr-1"></i> ${item.weight}</span></div></div><div class="flex items-center justify-between mt-auto"><div class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${stockBadgeClass} shrink-0">المتاح: <span id="stock-display-${id}">${available}</span></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div></div></div><div class="w-32 shrink-0 relative bg-gray-100 border-r border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'" class="w-full h-full object-cover"></div></div>`;
                 } else {
                     let extraPriceHtml = isDiscountActive ? `<div class="flex gap-2 items-center"><span class="text-red-600 font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</span><span class="text-[10px] text-gray-400 line-through">${oldPrice}</span></div>` : `<div class="text-brand-cyanDark font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</div>`;
-                    extrasContainer.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-300' : 'border-gray-200'} overflow-hidden flex flex-row items-center p-2.5 gap-3 h-[90px] relative">${isDiscountActive ? `<div class="absolute top-1 right-1 bg-red-500 w-2 h-2 rounded-full sale-badge"></div>` : ''}<div class="flex-1 min-w-0"><h4 class="font-black text-brand-navy text-xs sm:text-sm truncate">${item.name}</h4>${extraPriceHtml}<div class="mt-1">${stockHtml}</div></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div><div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative overflow-hidden rounded-xl border border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f8fafc\\'/></svg>'" class="w-full h-full object-cover"></div></div>`;
+                    extrasContainer.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-300' : 'border-gray-200'} overflow-hidden flex flex-row items-center p-2.5 gap-3 h-[90px] relative">${isDiscountActive ? `<div class="absolute top-1 right-1 bg-red-500 w-2 h-2 rounded-full sale-badge"></div>` : ''}<div class="flex-1 min-w-0"><h4 class="font-black text-brand-navy text-xs sm:text-sm truncate">${item.name}</h4>${extraPriceHtml}<div class="text-[10px] font-bold px-1.5 py-0.5 rounded inline-flex border ${stockBadgeClass} shrink-0 mt-1">المتاح: <span id="stock-display-${id}">${available}</span></div></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div><div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative overflow-hidden rounded-xl border border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f8fafc\\'/></svg>'" class="w-full h-full object-cover"></div></div>`;
                 }
             });
             if(mainProductsCount === 0) container.innerHTML = '<div class="text-center py-10 text-gray-400 font-bold">لا توجد منتجات حالياً</div>';
@@ -742,29 +716,14 @@
 
         window.addToCart = function(id) {
             if (globalSettings.storeOpen === false) return;
-            const stock = globalStock[id] || 0; const pInfo = productsInfo[id] || {};
-            const isPreorderMode = stock <= 0 && pInfo.allowPreorder;
-
-            if (!isPreorderMode && getAvailableStock(id) <= 0) { showAlert("عذراً", "الكمية المتاحة لا تكفي حالياً."); return; }
-            
-            if (cart[id]) cart[id].quantity++; 
-            else {
-                let itemName = pInfo.name;
-                if (isPreorderMode) itemName += ` (حجز: ${pInfo.preorderBatch || 'الدفعة القادمة'})`;
-                cart[id] = { quantity: 1, price: globalPrices[id] || pInfo.basePrice, name: itemName, isPreorder: isPreorderMode };
-            }
+            if (getAvailableStock(id) <= 0) { showAlert("عذراً", "الكمية المتاحة لا تكفي حالياً."); return; }
+            if (cart[id]) cart[id].quantity++; else cart[id] = { quantity: 1, price: globalPrices[id] || productsInfo[id].basePrice, name: productsInfo[id].name };
             saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); 
         };
 
         window.updateQuantity = function(id, delta) {
             if (!cart[id] || globalSettings.storeOpen === false) return; 
-            const stock = globalStock[id] || 0; const pInfo = productsInfo[id] || {};
-            const isPreorderMode = stock <= 0 && pInfo.allowPreorder;
-
-            if (delta === 1) { 
-                if (isPreorderMode || getAvailableStock(id) > 0) cart[id].quantity++; 
-                else showAlert("عذراً", "لا يوجد مخزون إضافي متاح."); 
-            } 
+            if (delta === 1) { if (getAvailableStock(id) > 0) cart[id].quantity++; else showAlert("عذراً", "لا يوجد مخزون إضافي متاح."); } 
             else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; }
             saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); 
         };
@@ -888,8 +847,7 @@
 
             for (let id in cart) {
                 if(!productsInfo[id]) continue;
-                // هنتخطى فحص المخزون لو الأوردر عبارة عن حجز مسبق
-                if (!cart[id].isPreorder && cart[id].quantity > globalStock[id]) {
+                if (cart[id].quantity > globalStock[id]) {
                     showAlert("تنبيه", `المنتج ${productsInfo[id].name} لم يعد متوفر بهذه الكمية، لقد تم حجزه بواسطة عميل آخر للتو.`);
                     cart[id].quantity = globalStock[id]; if(cart[id].quantity === 0) delete cart[id];
                     saveCart(); updateUI(); renderProducts(); checkoutBtn.innerHTML = originalBtnHtml; checkoutBtn.disabled = false; return;
@@ -1012,14 +970,8 @@
                     ]);
                     
                     let updates = {}; 
-                    for (let id in cart) { 
-                        if(!cart[id].isPreorder) {
-                            updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity); 
-                        }
-                    } 
-                    if(Object.keys(updates).length > 0) {
-                        await db.collection('inventory').doc('stock').update(updates);
-                    }
+                    for (let id in cart) updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity);
+                    await db.collection('inventory').doc('stock').update(updates);
                 }
             } catch(e) { console.log("Sync Error", e); }
 
@@ -1052,7 +1004,6 @@
                         <span class="text-xs font-bold text-gray-500 block mb-1">كود الخصم الخاص بك:</span>
                         <span class="font-black text-3xl text-brand-cyanDark tracking-wider select-all block mb-2">${newPromoCode}</span>
                         
-                        <!-- زرار النسخ الجديد -->
                         <button onclick="navigator.clipboard.writeText('${newPromoCode}'); this.innerHTML='<i class=\\'fa-solid fa-check\\'></i> تم النسخ بنجاح'; this.classList.replace('bg-brand-navy', 'bg-green-500'); setTimeout(() => { this.innerHTML='<i class=\\'fa-regular fa-copy\\'></i> انسخ الكود'; this.classList.replace('bg-green-500', 'bg-brand-navy'); }, 2000);" class="w-full bg-brand-navy hover:bg-gray-800 text-white text-sm py-2 rounded-lg font-bold transition-colors flex justify-center items-center gap-2 shadow-sm">
                             <i class="fa-regular fa-copy"></i> انسخ الكود
                         </button>
@@ -1178,13 +1129,6 @@
                             <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم:</label>
                             <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}">
                         </div>
-                        <!-- إضافة الحجز المسبق -->
-                        <div class="bg-orange-50 p-2 rounded border border-orange-200 flex flex-col gap-2">
-                            <label class="flex items-center gap-1 text-[10px] font-bold text-orange-700 cursor-pointer select-none">
-                                <input type="checkbox" id="p-preorder-${id}" ${p.allowPreorder?'checked':''} class="accent-orange-500" onchange="document.getElementById('p-batch-${id}').classList.toggle('hidden', !this.checked)"> تفعيل الحجز المسبق (عند نفاد الكمية)
-                            </label>
-                            <input type="text" id="p-batch-${id}" value="${p.preorderBatch || ''}" placeholder="اسم الدفعة (مثال: دفعة 15-6)" class="w-full border rounded p-1 text-[10px] font-bold text-brand-navy outline-none focus:border-orange-500 ${p.allowPreorder?'':'hidden'}">
-                        </div>
                         <button onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
                     </div>
                 </div>`;
@@ -1193,7 +1137,7 @@
 
         window.addNewAdminProduct = () => { 
             const newId = 'p_' + Date.now(); 
-            tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false, allowPreorder: false, preorderBatch: "" }; 
+            tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false }; 
             globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; 
             renderAdminProducts(); 
             setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); 
@@ -1214,8 +1158,6 @@
                 tempProducts[id].weight = document.getElementById(`p-weight-${id}`).value; 
                 tempProducts[id].images = [document.getElementById(`p-img-${id}`).value]; 
                 tempProducts[id].isExtra = document.getElementById(`p-extra-${id}`).checked;
-                tempProducts[id].allowPreorder = document.getElementById(`p-preorder-${id}`).checked; 
-                tempProducts[id].preorderBatch = document.getElementById(`p-batch-${id}`).value;
                 globalPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; 
                 globalStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; 
                 globalOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; 
