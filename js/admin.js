@@ -178,14 +178,12 @@ window.syncAdminProductsFromDOM = () => {
 window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
 window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
 
-// --- تحديث نظام عرض أكواد الخصم بإضافة القيود الجديدة ---
 window.renderAdminPromos = () => { 
     const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
     tempPromoCodes.forEach((p,i) => {
         const autoBadge = p.isAuto ? `<span class="bg-yellow-100 text-yellow-700 text-[8px] font-black px-1 rounded ml-1">تلقائي</span>` : '';
         if(p.usesLeft === undefined) p.usesLeft = p.isAuto ? 1 : 100;
         
-        // تجهيز القيم الافتراضية للخصائص الجديدة عشان لو كود قديم
         p.minOrder = p.minOrder || 0;
         p.maxDiscount = p.maxDiscount || 0;
         p.expiryDate = p.expiryDate || '';
@@ -208,7 +206,7 @@ window.renderAdminPromos = () => {
             <div class="grid grid-cols-2 gap-2 mt-1">
                 <div>
                     <label class="text-[10px] font-bold text-gray-500 block mb-0.5">الحد الأدنى للطلب (ج)</label>
-                    <input type="number" value="${p.minOrder}" placeholder="مثال: 150" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].minOrder=parseInt(this.value) || 0">
+                    <input type="number" value="${p.minOrder}" placeholder="بدون حد" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].minOrder=parseInt(this.value) || 0">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-500 block mb-0.5">الحد الأقصى للخصم (ج)</label>
@@ -237,7 +235,6 @@ window.renderAdminPromos = () => {
     }); 
 };
 
-// --- تحديث دالة إضافة الكود للتعرف على الخانات الجديدة ---
 window.addNewPromoCode = () => { 
     tempPromoCodes.push({
         code: '', 
@@ -373,15 +370,10 @@ window.generateBulkWhatsAppLinks = () => {
     const linksContainer = document.getElementById('bulk-whatsapp-links');
     linksContainer.innerHTML = '<p class="text-xs font-black text-brand-navy mb-2 border-b pb-2"><i class="fa-solid fa-check-double text-green-500"></i> اضغط "إرسال" قدام كل رقم:</p>';
 
-    // حساب تاريخ الصلاحية الافتراضي (بعد 14 يوم من اليوم)
-    const defaultExpiry = new Date();
-    defaultExpiry.setDate(defaultExpiry.getDate() + 14);
-    const formattedExpiry = defaultExpiry.toISOString().split('T')[0];
-
     numbers.forEach(num => {
         const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
         
-        // حفظ الكود الجديد مع الشروط الافتراضية
+        // الأكواد هتطلع من غير أي قيود تلقائية بناءً على رغبتك
         tempPromoCodes.push({ 
             code: randomCode, 
             type: rewardType, 
@@ -391,7 +383,7 @@ window.generateBulkWhatsAppLinks = () => {
             customerPhone: num,
             minOrder: 0,
             maxDiscount: 0,
-            expiryDate: formattedExpiry
+            expiryDate: '' // بدون تاريخ انتهاء إجباري
         });
 
         const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
