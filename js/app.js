@@ -24,14 +24,23 @@ function applySettingsToUI() {
     const phoneStr = globalSettings.storePhone || "01208027294"; document.getElementById('footer-phone').innerText = phoneStr; document.getElementById('footer-phone-link').href = `tel:${phoneStr}`;
     const wrapper = document.getElementById('store-wrapper'); const msg = document.getElementById('store-closed-msg'); const mainCartBtn = document.getElementById('main-cart-btn');
     const isOpen = globalSettings.storeOpen !== false; 
-    if(!isOpen) { wrapper.classList.add('store-closed-overlay'); if(msg) msg.classList.remove('hidden'); if(mainCartBtn) mainCartBtn.disabled = true; } 
-    else { wrapper.classList.remove('store-closed-overlay'); if(msg) msg.classList.add('hidden'); if(mainCartBtn) mainCartBtn.disabled = false; }
+    if(!isOpen) { 
+        wrapper.classList.add('store-closed-overlay'); 
+        if(msg) { 
+            msg.classList.remove('hidden'); 
+            // قراءة الرسالة الدايناميكية للإغلاق
+            const msgDiv = msg.querySelector('div');
+            if(msgDiv) msgDiv.innerText = globalSettings.closedMessage || 'المتجر مغلق حالياً، نعود قريباً!';
+        } 
+        if(mainCartBtn) mainCartBtn.disabled = true; 
+    } else { wrapper.classList.remove('store-closed-overlay'); if(msg) msg.classList.add('hidden'); if(mainCartBtn) mainCartBtn.disabled = false; }
     const minWarn = document.getElementById('min-order-warning');
     if (globalSettings.minOrder > 0) { document.getElementById('min-order-value').innerText = globalSettings.minOrder; minWarn.classList.remove('hidden'); } else { minWarn.classList.add('hidden'); }
     const promoContainer = document.getElementById('promo-input-container');
     if(promoContainer) { if(globalSettings.showPromoField !== false) promoContainer.classList.remove('hidden'); else { promoContainer.classList.add('hidden'); if(appliedPromo && !appliedPromo.isLoyalty) appliedPromo = null; } }
     applyUITexts();
 }
+
 
 function renderDeliveryZones() {
     const select = document.getElementById('delivery-zone'); if (!select) return;
@@ -112,15 +121,27 @@ window.renderProducts = function() {
     if(!isStoreDataLoaded) return; const container = document.getElementById('products-container'); const extrasContainer = document.getElementById('extras-container'); if(!container || !extrasContainer) return;
     container.innerHTML = ''; extrasContainer.innerHTML = ''; let mainProductsCount = 0;
     Object.keys(productsInfo).forEach(id => {
-        const item = productsInfo[id]; const available = getAvailableStock(id); const currentPrice = globalPrices[id] || item.basePrice; const oldPrice = globalOldPrices[id]; const isDiscountActive = globalDiscounts[id]; const isBestSeller = globalSettings.bestSellers && globalSettings.bestSellers.includes(id); const stockBadgeClass = available <= 10 ? (available === 0 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600') : 'bg-green-50 text-green-700';
+        const item = productsInfo[id]; 
+        if(item.isVisible === false) return; // إخفاء المنتج لو مقفول من الإدارة
+
+        const available = getAvailableStock(id); const currentPrice = globalPrices[id] || item.basePrice; const oldPrice = globalOldPrices[id]; const isDiscountActive = globalDiscounts[id]; const isBestSeller = globalSettings.bestSellers && globalSettings.bestSellers.includes(id); const stockBadgeClass = available <= 10 ? (available === 0 ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600') : 'bg-green-50 text-green-700';
+        
         let priceHtml = ''; let saleBadgeHtml = '';
         if (isDiscountActive) { saleBadgeHtml = `<div class="absolute top-4 left-4 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg sale-badge z-10"><i class="fa-solid fa-tag"></i> عرض</div>`; priceHtml = `<div class="flex flex-col"><span class="text-[11px] text-gray-400 line-through decoration-red-500 font-bold">${oldPrice} ج.م</span><span class="font-black text-red-600 text-xl"><span id="price-display-${id}">${currentPrice}</span> <span class="text-[10px] text-gray-500">ج.م</span></span></div>`; } else priceHtml = `<span class="font-black text-brand-cyanDark text-lg"><span id="price-display-${id}">${currentPrice}</span> <span class="text-[10px] text-gray-400">ج.م</span></span>`;
         let bestSellerHtml = isBestSeller ? `<div class="absolute bottom-2 right-2 bg-brand-navy text-brand-yellow text-[10px] font-black px-2 py-1 rounded shadow z-10 border border-brand-yellow/30">الأكثر طلباً 🔥</div>` : ''; const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : '';
-        if (!item.isExtra) { mainProductsCount++; container.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[130px] relative">${saleBadgeHtml}<div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0"><div><h3 class="text-sm md:text-base font-black text-brand-navy truncate mb-1">${item.name}</h3><div class="flex items-center justify-between gap-2 mb-1">${priceHtml}<span class="bg-gray-50 text-gray-500 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 font-bold whitespace-nowrap"><i class="fa-solid fa-scale-balanced mr-1"></i> ${item.weight}</span></div></div><div class="flex items-center justify-between mt-auto"><div class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${stockBadgeClass} shrink-0">المتاح: <span id="stock-display-${id}">${available}</span></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div></div></div><div class="w-32 shrink-0 relative bg-gray-100 border-r border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'" class="w-full h-full object-cover"></div></div>`; } 
-        else { let extraPriceHtml = isDiscountActive ? `<div class="flex gap-2 items-center"><span class="text-red-600 font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</span><span class="text-[10px] text-gray-400 line-through">${oldPrice}</span></div>` : `<div class="text-brand-cyanDark font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</div>`; extrasContainer.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-300' : 'border-gray-200'} overflow-hidden flex flex-row items-center p-2.5 gap-3 h-[90px] relative">${isDiscountActive ? `<div class="absolute top-1 right-1 bg-red-500 w-2 h-2 rounded-full sale-badge"></div>` : ''}<div class="flex-1 min-w-0"><h4 class="font-black text-brand-navy text-xs sm:text-sm truncate">${item.name}</h4>${extraPriceHtml}<div class="text-[10px] font-bold px-1.5 py-0.5 rounded inline-flex border ${stockBadgeClass} shrink-0 mt-1">المتاح: <span id="stock-display-${id}">${available}</span></div></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div><div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative overflow-hidden rounded-xl border border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f8fafc\\'/></svg>'" class="w-full h-full object-cover"></div></div>`; }
+        
+        // عرض التاجز الجديدة
+        let customTagHtml = '';
+        if(item.tag === 'new') customTagHtml = `<span class="bg-blue-100 text-blue-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-blue-200">🆕 جديد</span>`;
+        else if(item.tag === 'hot') customTagHtml = `<span class="bg-orange-100 text-orange-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-orange-200">🔥 قرب يخلص</span>`;
+        else if(item.tag === 'offer') customTagHtml = `<span class="bg-purple-100 text-purple-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-purple-200">⏱️ عرض محدود</span>`;
+
+        if (!item.isExtra) { mainProductsCount++; container.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[130px] relative">${saleBadgeHtml}<div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0"><div><div class="flex gap-1 items-center mb-1"><h3 class="text-sm md:text-base font-black text-brand-navy truncate">${item.name}</h3>${customTagHtml}</div><div class="flex items-center justify-between gap-2 mb-1">${priceHtml}<span class="bg-gray-50 text-gray-500 text-[10px] px-1.5 py-0.5 rounded border border-gray-200 font-bold whitespace-nowrap"><i class="fa-solid fa-scale-balanced mr-1"></i> ${item.weight}</span></div></div><div class="flex items-center justify-between mt-auto"><div class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${stockBadgeClass} shrink-0">المتاح: <span id="stock-display-${id}">${available}</span></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div></div></div><div class="w-32 shrink-0 relative bg-gray-100 border-r border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'" class="w-full h-full object-cover"></div></div>`; } 
+        else { let extraPriceHtml = isDiscountActive ? `<div class="flex gap-2 items-center"><span class="text-red-600 font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</span><span class="text-[10px] text-gray-400 line-through">${oldPrice}</span></div>` : `<div class="text-brand-cyanDark font-black text-sm"><span id="price-display-${id}">${currentPrice}</span> ج</div>`; extrasContainer.innerHTML += `<div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-300' : 'border-gray-200'} overflow-hidden flex flex-row items-center p-2.5 gap-3 h-[90px] relative">${isDiscountActive ? `<div class="absolute top-1 right-1 bg-red-500 w-2 h-2 rounded-full sale-badge"></div>` : ''}<div class="flex-1 min-w-0"><div class="flex gap-1 items-center"><h4 class="font-black text-brand-navy text-xs sm:text-sm truncate">${item.name}</h4>${customTagHtml}</div>${extraPriceHtml}<div class="text-[10px] font-bold px-1.5 py-0.5 rounded inline-flex border ${stockBadgeClass} shrink-0 mt-1">المتاح: <span id="stock-display-${id}">${available}</span></div></div><div class="w-28 shrink-0" id="card-action-${id}">${window.getCardActionHTML(id)}</div><div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 relative overflow-hidden rounded-xl border border-gray-100">${bestSellerHtml}<img loading="lazy" src="${imgSrc}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f8fafc\\'/></svg>'" class="w-full h-full object-cover"></div></div>`; }
     });
     if(mainProductsCount === 0) container.innerHTML = `<div class="text-center py-10 text-gray-400 font-bold">${globalSettings.uiTexts?.emptyMenuMsg || "لا توجد منتجات حالياً"}</div>`;
 };
+
 
 window.addToCart = function(id) { if (globalSettings.storeOpen === false) return; if (getAvailableStock(id) <= 0) { showAlert("عذراً", "الكمية المتاحة لا تكفي حالياً."); return; } if (cart[id]) cart[id].quantity++; else cart[id] = { quantity: 1, price: globalPrices[id] || productsInfo[id].basePrice, name: productsInfo[id].name }; saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
 window.updateQuantity = function(id, delta) { if (!cart[id] || globalSettings.storeOpen === false) return; if (delta === 1) { if (getAvailableStock(id) > 0) cart[id].quantity++; else showAlert("عذراً", "لا يوجد مخزون إضافي متاح."); } else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; } saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
@@ -215,10 +236,17 @@ window.toggleCart = function() {
 
 window.initiateCheckout = function() {
     if (globalSettings.crossSellActive && globalSettings.crossSellProductId && productsInfo[globalSettings.crossSellProductId] && !cart[globalSettings.crossSellProductId] && getAvailableStock(globalSettings.crossSellProductId) > 0) {
-        const item = productsInfo[globalSettings.crossSellProductId]; document.getElementById('cross-sell-title').innerText = `جرب ${item.name}؟`; document.getElementById('cross-sell-price').innerText = globalPrices[globalSettings.crossSellProductId] || item.basePrice; document.getElementById('cross-sell-img').src = (item.images && item.images.length>0) ? item.images[0] : '';
+        const item = productsInfo[globalSettings.crossSellProductId]; 
+        
+        // قراءة العناوين الدايناميكية للاقتراح
+        document.getElementById('cross-sell-title').innerText = globalSettings.crossSellTitle || `جرب ${item.name}؟`; 
+        document.getElementById('cross-sell-desc').innerText = globalSettings.crossSellDesc || 'مغذي جداً للأطفال وطعمه حكاية!'; 
+        
+        document.getElementById('cross-sell-price').innerText = globalPrices[globalSettings.crossSellProductId] || item.basePrice; document.getElementById('cross-sell-img').src = (item.images && item.images.length>0) ? item.images[0] : '';
         const modal = document.getElementById('cross-sell-modal'); const box = document.getElementById('cross-sell-box'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); }, 10);
     } else finalCheckoutStep();
 };
+
 
 window.acceptCrossSell = function() { addToCart(globalSettings.crossSellProductId); const m = document.getElementById('cross-sell-modal'); m.classList.add('opacity-0'); setTimeout(() => { m.classList.add('hidden'); finalCheckoutStep(); }, 300); };
 window.declineCrossSell = function() { const m = document.getElementById('cross-sell-modal'); m.classList.add('opacity-0'); setTimeout(() => { m.classList.add('hidden'); finalCheckoutStep(); }, 300); };
