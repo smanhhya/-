@@ -535,25 +535,47 @@ window.filterOrders = (f) => {
 
 window.updateOrderStatus = async (id, s) => { 
     if(window.db) { 
-        const btn = window.event ? window.event.target : null;
-        let origText = '';
+        // بنستخدم closest عشان نضمن إننا ماسكين الزرار نفسه حتى لو الضغطة جات على الأيقونة اللي جواه
+        const btn = window.event ? window.event.target.closest('button') : null;
+        let origHTML = '';
+        
         if(btn) {
-            origText = btn.innerText;
+            origHTML = btn.innerHTML; // حفظنا الـ HTML كله عشان نحافظ على الأيقونات الأصلية
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
             btn.disabled = true;
         }
+        
         try {
-            await db.collection("orders").doc(id).update({status: s}); 
-            if(typeof loadOrders === 'function') loadOrders(); 
+            // ضفنا window.db عشان نتأكد إنه بيقرا المتغير العام صح
+            await window.db.collection("orders").doc(id).update({status: s}); 
+            
+            if(typeof loadOrders === 'function') {
+                loadOrders(); 
+            }
+            
+            // اختياري: لو loadOrders مش بتمسح الزرار من الشاشة، رجع الزرار لشكله الطبيعي هنا
+            /*
+            if(btn) {
+                btn.innerHTML = origHTML;
+                btn.disabled = false;
+            }
+            */
+            
         } catch (e) {
+            console.error("Error updating order:", e); // مهم عشان لو حصل خطأ تشوفه في الـ Console
             if(btn) { 
-                btn.innerHTML = origText; 
+                btn.innerHTML = origHTML; 
                 btn.disabled = false; 
             }
-            if(typeof showAlert === 'function') showAlert("خطأ", "حدث خطأ أثناء تحديث حالة الطلب");
+            if(typeof showAlert === 'function') {
+                showAlert("خطأ", "حدث خطأ أثناء تحديث حالة الطلب");
+            }
         }
-    } 
+    } else {
+        console.error("Firebase db is not initialized.");
+    }
 };
+
 
 window.deleteAllOrders = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من مسح جميع الطلبات من السجل؟ لا يمكن التراجع عن هذا الإجراء!")) return;
