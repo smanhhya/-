@@ -56,7 +56,7 @@ window.openAdminLogin = () => {
             alert("تأكد من وجود نافذة تسجيل الدخول في ملف الـ HTML بـ id='admin-login-modal'");
         }
     }
-};  //  ← القفل دا مهم جداً، هو اللي بيغلق الدالة كلها
+};
 
 window.closeAdminLogin = () => { 
     const modal = document.getElementById('admin-login-modal');
@@ -74,7 +74,7 @@ window.verifyAdminPin = () => {
     
     const email = emailInput.value.trim();
     const pass = passInput.value.trim();
-    const btn = window.event ? window.event.target : document.querySelector('#admin-login-modal button');
+    const btn = window.event ? window.event.target.closest('button') || window.event.target : document.querySelector('#admin-login-modal button');
     
     let origHtml = 'تسجيل الدخول';
     if(btn) {
@@ -90,7 +90,6 @@ window.verifyAdminPin = () => {
         return; 
     }
     
-    // تفعيل الجلسة المستمرة
     if(window.firebase) {
         firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
             .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
@@ -155,13 +154,11 @@ window.openAdminDashboard = () => {
     }
 
     if(window.globalSettings) {
-        // تحميل بيانات المتجر
         if(document.getElementById('admin-store-name')) document.getElementById('admin-store-name').value = globalSettings.storeName || ''; 
         if(document.getElementById('admin-store-desc')) document.getElementById('admin-store-desc').value = globalSettings.storeDesc || ''; 
         if(document.getElementById('admin-store-phone')) document.getElementById('admin-store-phone').value = globalSettings.storePhone || ''; 
         if(document.getElementById('admin-min-order')) document.getElementById('admin-min-order').value = globalSettings.minOrder || 0;
         
-        // تحميل بيانات التوصيل والمناديب
         if(document.getElementById('admin-free-delivery-active')) document.getElementById('admin-free-delivery-active').checked = !!globalSettings.freeDeliveryActive; 
         if(document.getElementById('admin-free-delivery-threshold')) document.getElementById('admin-free-delivery-threshold').value = globalSettings.freeDeliveryThreshold || 0; 
         tempAdminZones = window.globalDeliveryZones ? JSON.parse(JSON.stringify(globalDeliveryZones)) : []; 
@@ -170,7 +167,6 @@ window.openAdminDashboard = () => {
         tempDrivers = globalSettings.drivers ? JSON.parse(JSON.stringify(globalSettings.drivers)) : [];
         renderAdminDrivers();
 
-        // التسويق
         if(document.getElementById('admin-reward-active')) document.getElementById('admin-reward-active').checked = !!globalSettings.rewardActive; 
         if(document.getElementById('admin-reward-type')) document.getElementById('admin-reward-type').value = globalSettings.rewardType || 'fixed'; 
         if(document.getElementById('admin-reward-value')) document.getElementById('admin-reward-value').value = globalSettings.rewardValue || 0; 
@@ -191,7 +187,6 @@ window.openAdminDashboard = () => {
         renderAdminPromos();
         if(document.getElementById('admin-show-promo-field')) document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
         
-        // المتقدم
         if(document.getElementById('admin-success-title')) document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; 
         if(document.getElementById('admin-success-message')) document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; 
         if(document.getElementById('admin-whatsapp-template')) document.getElementById('admin-whatsapp-template').value = globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)';
@@ -201,7 +196,6 @@ window.openAdminDashboard = () => {
         if(document.getElementById('admin-dispatch-template')) document.getElementById('admin-dispatch-template').value = globalSettings.dispatchTemplate || '📦 طلب جديد من {اسم_العميل}\n📱 {رقم_العميل}\n📍 {المنطقة} - {العنوان}\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n💰 إجمالي الطلب: {إجمالي_الطلب} ج.م\n🚚 التوصيل: {التوصيل}\n⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م';
     }
 
-    // القاموس
     const textsCont = document.getElementById('admin-texts-container');
     if(textsCont && window.textsConfig) {
         textsCont.innerHTML = '';
@@ -275,7 +269,6 @@ window.renderAdminProducts = () => {
         const isDisc = (window.globalDiscounts && globalDiscounts[id]) || false; 
         const isBest = (window.globalSettings && globalSettings.bestSellers?.includes(id)) || false;
         const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
-        // استخدام صورة بديلة خفيفة لتجنب مشاكل علامات التنصيص
         const fallbackImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
 
         container.innerHTML += `<div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm mb-3">
@@ -520,7 +513,6 @@ window.loadOrders = async () => {
         snap.forEach(d => ordersList.push({id: d.id, ...d.data()})); 
         renderOrdersList();
         
-        // تحديث التوزيع تلقائياً للطلبات (قيد التجهيز) فقط
         dispatchOrdersList = ordersList.filter(o => o.status === 'processing');
         if(currentAdminTab === 'dispatch') renderDispatchOrders();
     } catch(e) { 
@@ -533,36 +525,26 @@ window.filterOrders = (f) => {
     renderOrdersList(); 
 };
 
+// الدالة المُعدلة لضمان عدم حدوث خطأ عند الضغط على الأيقونة
 window.updateOrderStatus = async (id, s) => { 
     if(window.db) { 
-        // بنستخدم closest عشان نضمن إننا ماسكين الزرار نفسه حتى لو الضغطة جات على الأيقونة اللي جواه
         const btn = window.event ? window.event.target.closest('button') : null;
         let origHTML = '';
         
         if(btn) {
-            origHTML = btn.innerHTML; // حفظنا الـ HTML كله عشان نحافظ على الأيقونات الأصلية
+            origHTML = btn.innerHTML; 
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; 
             btn.disabled = true;
         }
         
         try {
-            // ضفنا window.db عشان نتأكد إنه بيقرا المتغير العام صح
             await window.db.collection("orders").doc(id).update({status: s}); 
             
             if(typeof loadOrders === 'function') {
                 loadOrders(); 
             }
-            
-            // اختياري: لو loadOrders مش بتمسح الزرار من الشاشة، رجع الزرار لشكله الطبيعي هنا
-            /*
-            if(btn) {
-                btn.innerHTML = origHTML;
-                btn.disabled = false;
-            }
-            */
-            
         } catch (e) {
-            console.error("Error updating order:", e); // مهم عشان لو حصل خطأ تشوفه في الـ Console
+            console.error("Error updating order:", e); 
             if(btn) { 
                 btn.innerHTML = origHTML; 
                 btn.disabled = false; 
@@ -576,11 +558,10 @@ window.updateOrderStatus = async (id, s) => {
     }
 };
 
-
 window.deleteAllOrders = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من مسح جميع الطلبات من السجل؟ لا يمكن التراجع عن هذا الإجراء!")) return;
     
-    const btn = document.querySelector('button[onclick="window.deleteAllOrders()"]') || (window.event ? window.event.target : null); 
+    const btn = document.querySelector('button[onclick="window.deleteAllOrders()"]') || (window.event ? window.event.target.closest('button') : null); 
     let originalHtml = 'مسح السجل';
     if(btn) {
         originalHtml = btn.innerHTML;
@@ -614,7 +595,7 @@ window.deleteAllOrders = async () => {
 window.resetStatsOnly = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من تصفير عدادات الإحصائيات (مبيعات اليوم والطلبات) لتبدأ من صفر؟")) return;
     
-    const btn = document.querySelector('button[onclick="window.resetStatsOnly()"]') || (window.event ? window.event.target : null); 
+    const btn = document.querySelector('button[onclick="window.resetStatsOnly()"]') || (window.event ? window.event.target.closest('button') : null); 
     let originalHtml = 'تصفير';
     if(btn) {
         originalHtml = btn.innerHTML;
@@ -832,8 +813,6 @@ window.generateBulkWhatsAppLinks = () => {
 };
 
 // ==================== دوال الحفظ المفصولة ====================
-
-// دالة مساعدة لرفع التعديلات للسحابة
 const updateSettingsDB = async (updates, btnSelector) => {
     const btn = document.querySelector(btnSelector);
     let origHtml = '';
