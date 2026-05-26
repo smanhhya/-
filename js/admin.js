@@ -31,15 +31,11 @@ if (storeOpenToggle) {
     });
 }
 
-// ==// ==================== نظام تسجيل الدخول والخروج المستمر ====================
 window.openAdminLogin = () => { 
     console.log("1. تم الضغط على الزر والدالة تعمل بنجاح");
     
-    // التحقق لو الإدمن مسجل دخول بالفعل (مع تأمين قراءة الفايربيز)
     if(window.firebase && window.firebase.auth && window.firebase.auth().currentUser) {
         console.log("2. الإدمن مسجل دخول بالفعل. جاري فتح اللوحة...");
-        
-        // استخدام window. لضمان الوصول للدالة
         if (typeof window.openAdminDashboard === "function") {
             window.openAdminDashboard();
         } else {
@@ -49,7 +45,6 @@ window.openAdminLogin = () => {
     } else {
         console.log("2. الإدمن غير مسجل دخول. جاري إظهار نافذة كلمة المرور...");
         const modal = document.getElementById('admin-login-modal');
-        
         if(modal) {
             modal.classList.remove('hidden'); 
             setTimeout(() => modal.classList.remove('opacity-0'), 10); 
@@ -62,7 +57,6 @@ window.openAdminLogin = () => {
         }
     }
 };
-
 window.closeAdminLogin = () => { 
     const modal = document.getElementById('admin-login-modal');
     if(modal) {
