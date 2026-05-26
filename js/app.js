@@ -48,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { if(!isStoreDataLoaded) { isStoreDataLoaded = true; Object.keys(productsInfo).forEach(id => { if(globalStock[id] === undefined) globalStock[id] = 0; if(globalPrices[id] === undefined) globalPrices[id] = productsInfo[id].basePrice; }); renderProducts(); applySettingsToUI(); } }, 3000);
 });
 
-// --- التعديل الأول: setupEventListeners ---
 window.setupEventListeners = function() {
     const ids = ['customer-name', 'customer-phone'];
     ids.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', updateUI); });
@@ -126,7 +125,21 @@ window.renderProducts = function() {
 window.addToCart = function(id) { if (globalSettings.storeOpen === false) return; if (getAvailableStock(id) <= 0) { showAlert("عذراً", "الكمية المتاحة لا تكفي حالياً."); return; } if (cart[id]) cart[id].quantity++; else cart[id] = { quantity: 1, price: globalPrices[id] || productsInfo[id].basePrice, name: productsInfo[id].name }; saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
 window.updateQuantity = function(id, delta) { if (!cart[id] || globalSettings.storeOpen === false) return; if (delta === 1) { if (getAvailableStock(id) > 0) cart[id].quantity++; else showAlert("عذراً", "لا يوجد مخزون إضافي متاح."); } else if (delta === -1) { cart[id].quantity--; if (cart[id].quantity <= 0) delete cart[id]; } saveCart(); updateUI(); requestAnimationFrame(() => renderProducts()); };
 
-// --- التعديل الثاني: updateUI ---
+// --- دوال الانتقال بين خطوتي الدفع ---
+window.goToCheckoutStep2 = function() {
+    document.getElementById('checkout-step-1').classList.add('hidden');
+    document.getElementById('checkout-step-2').classList.remove('hidden');
+    document.getElementById('btn-back-step').classList.remove('hidden');
+    document.getElementById('lbl-checkout-title').innerText = "بيانات التوصيل";
+};
+
+window.backToCart = function() {
+    document.getElementById('checkout-step-2').classList.add('hidden');
+    document.getElementById('checkout-step-1').classList.remove('hidden');
+    document.getElementById('btn-back-step').classList.add('hidden');
+    document.getElementById('lbl-checkout-title').innerText = "سلة المشتريات";
+};
+
 window.updateUI = function() {
     let totalItems = 0, subTotalPrice = 0; const cartItemsContainer = document.getElementById('cart-items'); if(cartItemsContainer) cartItemsContainer.innerHTML = '';
     for (let id in cart) {
@@ -156,14 +169,27 @@ window.updateUI = function() {
     const totalAfterPromo = subTotalPrice - discountAmount; const deliverySelect = document.getElementById('delivery-zone'); const selectedZone = globalDeliveryZones.find(z => z.id === deliverySelect?.value); const deliveryFee = selectedZone ? selectedZone.price : 0; const finalDelivery = freeDelivery ? 0 : deliveryFee; const finalTotal = totalAfterPromo + finalDelivery;
 
     if(document.getElementById('cart-subtotal')) document.getElementById('cart-subtotal').innerText = subTotalPrice;
+    
+    if(document.getElementById('cart-step1-total')) document.getElementById('cart-step1-total').innerText = totalAfterPromo;
+
     if(document.getElementById('cart-delivery-fee')) { if (freeDelivery) document.getElementById('cart-delivery-fee').innerHTML = `<span class="text-green-600 font-black">مجاني 🎉</span>`; else document.getElementById('cart-delivery-fee').innerText = (selectedZone && selectedZone.price === 0) ? "يحدد لاحقاً" : `${finalDelivery} ج.م`; }
     if(document.getElementById('cart-total')) document.getElementById('cart-total').innerText = Math.round(finalTotal);
 
-    const checkoutBtn = document.getElementById('checkout-btn'); const checkoutHint = document.getElementById('checkout-hint'); const meetsMinOrder = subTotalPrice >= (globalSettings.minOrder || 0);
+    const proceedBtn = document.getElementById('btn-proceed-checkout');
+    const checkoutBtn = document.getElementById('checkout-btn'); 
+    const checkoutHintStep2 = document.getElementById('checkout-hint-step2'); 
+    const checkoutHintStep1 = document.getElementById('checkout-hint'); 
+    const meetsMinOrder = subTotalPrice >= (globalSettings.minOrder || 0);
 
-    if (checkoutBtn && checkoutHint) {
+    // تحديث زر الخطوة الأولى (متابعة للدفع)
+    if (proceedBtn) {
+        if (totalItems > 0 && meetsMinOrder) { proceedBtn.disabled = false; checkoutHintStep1?.classList.add('hidden'); }
+        else { proceedBtn.disabled = true; if(totalItems > 0 && !meetsMinOrder) { checkoutHintStep1.innerText = `الحد الأدنى للطلب ${globalSettings.minOrder} ج.م`; checkoutHintStep1?.classList.remove('hidden'); } }
+    }
+
+    // تحديث زر الخطوة الثانية (تأكيد الطلب)
+    if (checkoutBtn && checkoutHintStep2) {
         let validForm = false;
-        // التحقق من الخانات الموحدة
         const nameVal = document.getElementById('customer-name')?.value.trim();
         const phoneVal = document.getElementById('customer-phone')?.value.trim();
         
@@ -172,13 +198,21 @@ window.updateUI = function() {
         }
         checkoutBtn.disabled = !validForm;
         
-        if(!meetsMinOrder && totalItems > 0) { checkoutHint.innerText = `يجب أن تتخطى الطلبات ${globalSettings.minOrder} ج.م`; checkoutHint.classList.remove('hidden'); } 
-        else if(!validForm && totalItems > 0) { checkoutHint.innerHTML = `<i class="fa-solid fa-circle-info"></i> يرجى إكمال (المنطقة، الاسم، الموبايل)`; checkoutHint.classList.remove('hidden'); } 
-        else checkoutHint.classList.add('hidden');
+        if(!validForm && totalItems > 0) { checkoutHintStep2.classList.remove('hidden'); } 
+        else { checkoutHintStep2.classList.add('hidden'); }
     }
 };
 
-window.toggleCart = function() { const sidebar = document.getElementById('cart-sidebar'); const overlay = document.getElementById('cart-overlay'); if(!sidebar || !overlay) return; if (sidebar.classList.contains('translate-x-full')) { sidebar.classList.remove('translate-x-full'); overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.remove('opacity-0'), 10); document.body.style.overflow = 'hidden'; } else { sidebar.classList.add('translate-x-full'); overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 300); document.body.style.overflow = ''; } };
+window.toggleCart = function() { 
+    const sidebar = document.getElementById('cart-sidebar'); const overlay = document.getElementById('cart-overlay'); 
+    if(!sidebar || !overlay) return; 
+    if (sidebar.classList.contains('translate-x-full')) { 
+        sidebar.classList.remove('translate-x-full'); overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.remove('opacity-0'), 10); document.body.style.overflow = 'hidden'; 
+        // دايما يفتح على الخطوة الأولى لما يفتح السلة
+        backToCart(); 
+    } 
+    else { sidebar.classList.add('translate-x-full'); overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 300); document.body.style.overflow = ''; } 
+};
 
 window.initiateCheckout = function() {
     if (globalSettings.crossSellActive && globalSettings.crossSellProductId && productsInfo[globalSettings.crossSellProductId] && !cart[globalSettings.crossSellProductId] && getAvailableStock(globalSettings.crossSellProductId) > 0) {
@@ -190,7 +224,6 @@ window.initiateCheckout = function() {
 window.acceptCrossSell = function() { addToCart(globalSettings.crossSellProductId); const m = document.getElementById('cross-sell-modal'); m.classList.add('opacity-0'); setTimeout(() => { m.classList.add('hidden'); finalCheckoutStep(); }, 300); };
 window.declineCrossSell = function() { const m = document.getElementById('cross-sell-modal'); m.classList.add('opacity-0'); setTimeout(() => { m.classList.add('hidden'); finalCheckoutStep(); }, 300); };
 
-// --- التعديل الثالث: finalCheckoutStep ---
 window.finalCheckoutStep = async function() {
     const checkoutBtn = document.getElementById('checkout-btn'); const originalBtnHtml = checkoutBtn.innerHTML;
     checkoutBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-2xl"></i> جاري تسجيل الطلب...'; checkoutBtn.disabled = true;
@@ -199,12 +232,10 @@ window.finalCheckoutStep = async function() {
     const selectedZone = globalDeliveryZones.find(z => z.id === deliverySelect.value);
     const zoneName = selectedZone ? selectedZone.name : 'غير محدد'; const deliveryFee = selectedZone ? selectedZone.price : 0;
     
-    // سحب البيانات من الخانات الموحدة الجديدة
     let customerName = document.getElementById('customer-name').value.trim(); 
     let customerPhone = document.getElementById('customer-phone').value.trim(); 
     let customerAddress = document.getElementById('customer-address').value.trim();
-    
-    const wantsWhatsApp = true; // هنخليه إجباري يفتح الواتس اب عشان يأكد الطلب مع أخوك أو معاك
+    const wantsWhatsApp = true; 
 
     if (customerName.length < 3 || !/^[\u0600-\u06FF\sA-Za-z]+$/.test(customerName)) { showAlert("تنبيه", "يرجى كتابة اسم صحيح وخالي من الأرقام والرموز."); checkoutBtn.innerHTML = originalBtnHtml; checkoutBtn.disabled = false; return; }
 
