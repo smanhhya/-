@@ -572,6 +572,19 @@
       el.innerHTML = '❌ admin.js لم يتم تحميله أو به خطأ';
     }
   });
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <script>
+  window.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.openAdminLogin === 'function') {
+      console.log('✅ Admin login button is working');
+    } else {
+      console.error('❌ admin.js not loaded properly');
+      alert('❌ admin.js لم يتم تحميله، راجع مسار الملف أو أخطاء الـ Console');
+    }
+  });
+</script>
+        
 </script>
 </body>
 </html>
