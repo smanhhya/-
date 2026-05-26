@@ -546,7 +546,10 @@ window.updateOrderStatus = async (id, s) => {
             await db.collection("orders").doc(id).update({status: s}); 
             if(typeof loadOrders === 'function') loadOrders(); 
         } catch (e) {
-            if(btn) { btn.innerHTML = origText; btn.disabled = false; }
+            if(btn) { 
+                btn.innerHTML = origText; 
+                btn.disabled = false; 
+            }
             if(typeof showAlert === 'function') showAlert("خطأ", "حدث خطأ أثناء تحديث حالة الطلب");
         }
     } 
