@@ -14,33 +14,71 @@ function getAvailableStock(id) {
 function applyUITexts() {
     const t = globalSettings.uiTexts || {}; const getT = (id) => t[id] || textsConfig.find(x => x.id === id).default;
     const setTxt = (elId, val) => { const el = document.getElementById(elId); if(el) el.innerText = val; };
-    setTxt('lbl-cart-total', getT('cartTotalLabel')); setTxt('lbl-view-cart', getT('viewCartBtn')); setTxt('lbl-checkout-title', getT('checkoutTitle')); setTxt('lbl-tab-new', getT('tabNewCust')); setTxt('lbl-tab-old', getT('tabOldCust')); setTxt('lbl-zone-label', getT('zoneLabel')); setTxt('lbl-name-label', getT('nameLabel')); setTxt('lbl-phone-label', getT('phoneLabel')); setTxt('lbl-address-label', getT('addressLabel')); setTxt('lbl-old-msg', getT('oldCustMsg')); setTxt('lbl-old-phone-label', getT('oldPhoneLabel')); setTxt('lbl-wa-check', getT('whatsappCheck')); setTxt('lbl-promo-btn', getT('promoBtn')); setTxt('lbl-subtotal', getT('subtotalLabel')); setTxt('lbl-delivery', getT('deliveryLabel')); setTxt('lbl-final-total', getT('finalTotalLabel')); setTxt('lbl-menu-title', getT('menuTitle')); setTxt('lbl-extras-title', getT('extrasTitle'));
+    setTxt('lbl-cart-total', getT('cartTotalLabel')); 
+    setTxt('lbl-view-cart', getT('viewCartBtn')); 
+    setTxt('lbl-checkout-title', getT('checkoutTitle')); 
+    // تم حذف lbl-tab-new و lbl-tab-old و lbl-old-msg و lbl-old-phone-label
+    setTxt('lbl-zone-label', getT('zoneLabel')); 
+    setTxt('lbl-name-label', getT('nameLabel')); 
+    setTxt('lbl-phone-label', getT('phoneLabel')); 
+    setTxt('lbl-address-label', getT('addressLabel')); 
+    setTxt('lbl-wa-check', getT('whatsappCheck')); 
+    setTxt('lbl-promo-btn', getT('promoBtn')); 
+    setTxt('lbl-subtotal', getT('subtotalLabel')); 
+    setTxt('lbl-delivery', getT('deliveryLabel')); 
+    setTxt('lbl-final-total', getT('finalTotalLabel')); 
+    setTxt('lbl-menu-title', getT('menuTitle')); 
+    setTxt('lbl-extras-title', getT('extrasTitle'));
 }
 
 function applySettingsToUI() {
     const banner = document.getElementById('top-banner');
-    if (globalSettings.bannerActive && globalSettings.bannerText && globalSettings.bannerText.trim() !== '') { document.getElementById('top-banner-text').innerText = globalSettings.bannerText; banner.classList.remove('hidden'); } else { banner.classList.add('hidden'); }
-    document.getElementById('header-store-name').innerText = globalSettings.storeName || ''; document.getElementById('header-store-desc').innerText = globalSettings.storeDesc || ''; document.getElementById('footer-store-name').innerText = globalSettings.storeName || '';
-    const phoneStr = globalSettings.storePhone || "01208027294"; document.getElementById('footer-phone').innerText = phoneStr; document.getElementById('footer-phone-link').href = `tel:${phoneStr}`;
-    const wrapper = document.getElementById('store-wrapper'); const msg = document.getElementById('store-closed-msg'); const mainCartBtn = document.getElementById('main-cart-btn');
+    if (globalSettings.bannerActive && globalSettings.bannerText && globalSettings.bannerText.trim() !== '') { 
+        document.getElementById('top-banner-text').innerText = globalSettings.bannerText; 
+        banner.classList.remove('hidden'); 
+    } else { 
+        banner.classList.add('hidden'); 
+    }
+    document.getElementById('header-store-name').innerText = globalSettings.storeName || ''; 
+    document.getElementById('header-store-desc').innerText = globalSettings.storeDesc || ''; 
+    document.getElementById('footer-store-name').innerText = globalSettings.storeName || '';
+    const phoneStr = globalSettings.storePhone || "01208027294"; 
+    document.getElementById('footer-phone').innerText = phoneStr; 
+    document.getElementById('footer-phone-link').href = `tel:${phoneStr}`;
+    const wrapper = document.getElementById('store-wrapper'); 
+    const msg = document.getElementById('store-closed-msg'); 
+    const mainCartBtn = document.getElementById('main-cart-btn');
     const isOpen = globalSettings.storeOpen !== false; 
     if(!isOpen) { 
         wrapper.classList.add('store-closed-overlay'); 
         if(msg) { 
             msg.classList.remove('hidden'); 
-            // قراءة الرسالة الدايناميكية للإغلاق
             const msgDiv = msg.querySelector('div');
             if(msgDiv) msgDiv.innerText = globalSettings.closedMessage || 'المتجر مغلق حالياً، نعود قريباً!';
         } 
         if(mainCartBtn) mainCartBtn.disabled = true; 
-    } else { wrapper.classList.remove('store-closed-overlay'); if(msg) msg.classList.add('hidden'); if(mainCartBtn) mainCartBtn.disabled = false; }
+    } else { 
+        wrapper.classList.remove('store-closed-overlay'); 
+        if(msg) msg.classList.add('hidden'); 
+        if(mainCartBtn) mainCartBtn.disabled = false; 
+    }
     const minWarn = document.getElementById('min-order-warning');
-    if (globalSettings.minOrder > 0) { document.getElementById('min-order-value').innerText = globalSettings.minOrder; minWarn.classList.remove('hidden'); } else { minWarn.classList.add('hidden'); }
+    if (globalSettings.minOrder > 0) { 
+        document.getElementById('min-order-value').innerText = globalSettings.minOrder; 
+        minWarn.classList.remove('hidden'); 
+    } else { 
+        minWarn.classList.add('hidden'); 
+    }
     const promoContainer = document.getElementById('promo-input-container');
-    if(promoContainer) { if(globalSettings.showPromoField !== false) promoContainer.classList.remove('hidden'); else { promoContainer.classList.add('hidden'); if(appliedPromo && !appliedPromo.isLoyalty) appliedPromo = null; } }
+    if(promoContainer) { 
+        if(globalSettings.showPromoField !== false) promoContainer.classList.remove('hidden'); 
+        else { 
+            promoContainer.classList.add('hidden'); 
+            if(appliedPromo && !appliedPromo.isLoyalty) appliedPromo = null; 
+        } 
+    }
     applyUITexts();
 }
-
 
 function renderDeliveryZones() {
     const select = document.getElementById('delivery-zone'); if (!select) return;
@@ -91,6 +129,7 @@ window.applyPromoCode = function() {
     const promo = (globalSettings.promoCodes || []).find(p => p.code.toUpperCase() === input);
     
     if (!promo) { msg.innerText = "كود غير صحيح."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
+    // usesLeft === null تعني غير محدود
     if (promo.usesLeft !== null && promo.usesLeft !== undefined && promo.usesLeft <= 0) { msg.innerText = "عفواً، انتهى الحد الأقصى لاستخدام هذا الكود."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.expiryDate && new Date(promo.expiryDate) < new Date(new Date().toDateString())) { msg.innerText = "عفواً، هذا الكود منتهي الصلاحية."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.minOrder && subTotal < promo.minOrder) { msg.innerText = `عشان تفعل الكود ده، لازم طلباتك تتخطى ${promo.minOrder} ج.م`; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
@@ -237,12 +276,10 @@ window.toggleCart = function() {
 window.initiateCheckout = function() {
     if (globalSettings.crossSellActive && globalSettings.crossSellProductId && productsInfo[globalSettings.crossSellProductId] && !cart[globalSettings.crossSellProductId] && getAvailableStock(globalSettings.crossSellProductId) > 0) {
         const item = productsInfo[globalSettings.crossSellProductId]; 
-        
-        // قراءة العناوين الدايناميكية للاقتراح
         document.getElementById('cross-sell-title').innerText = globalSettings.crossSellTitle || `جرب ${item.name}؟`; 
         document.getElementById('cross-sell-desc').innerText = globalSettings.crossSellDesc || 'مغذي جداً للأطفال وطعمه حكاية!'; 
-        
-        document.getElementById('cross-sell-price').innerText = globalPrices[globalSettings.crossSellProductId] || item.basePrice; document.getElementById('cross-sell-img').src = (item.images && item.images.length>0) ? item.images[0] : '';
+        document.getElementById('cross-sell-price').innerText = globalPrices[globalSettings.crossSellProductId] || item.basePrice; 
+        document.getElementById('cross-sell-img').src = (item.images && item.images.length>0) ? item.images[0] : '';
         const modal = document.getElementById('cross-sell-modal'); const box = document.getElementById('cross-sell-box'); modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); }, 10);
     } else finalCheckoutStep();
 };
@@ -319,14 +356,21 @@ window.finalCheckoutStep = async function() {
     }
 
     let earnedLoyalty = false; let newPromoCode = ""; let canGenerateReward = false;
-    if (globalSettings.rewardActive && !appliedPromo) { if (globalSettings.rewardMaxGenerations === 0) { canGenerateReward = true; } else if (globalSettings.rewardMaxGenerations > 0) { canGenerateReward = true; } }
+    // rewardMaxGenerations === 0 تعني غير محدود، أي قيمة >= 0 تسمح بالتوليد
+    if (globalSettings.rewardActive && !appliedPromo) {
+        if (globalSettings.rewardMaxGenerations >= 0) { canGenerateReward = true; }
+    }
     
     if (canGenerateReward) {
         const prefix = globalSettings.autoPromoPrefix || 'VIP-';
         newPromoCode = prefix + Math.floor(1000 + Math.random() * 9000); earnedLoyalty = true;
-        const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: 1, customerPhone: customerPhone, minOrder: 0, maxDiscount: 0, expiryDate: '' };
+        const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: null, customerPhone: customerPhone, minOrder: 0, maxDiscount: 0, expiryDate: '' };
         if(!globalSettings.promoCodes) globalSettings.promoCodes = []; globalSettings.promoCodes.push(newPromoObj);
-        if (globalSettings.rewardMaxGenerations > 0) { globalSettings.rewardMaxGenerations -= 1; if (globalSettings.rewardMaxGenerations === 0) { globalSettings.rewardActive = false; } }
+        // إذا كان الرقم أكبر من 0 ننقصه، وإذا كان 0 يبقى غير محدود ولا ننقصه ولا نوقف المكافأة
+        if (globalSettings.rewardMaxGenerations > 0) { 
+            globalSettings.rewardMaxGenerations -= 1; 
+            // لا نوقف المكافأة تلقائياً، نترك المستخدم يتحكم
+        }
         promoUpdated = true;
     }
 
