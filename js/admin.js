@@ -61,42 +61,46 @@ window.openAdminDashboard = () => {
     document.getElementById('admin-reward-active').checked = globalSettings.rewardActive; document.getElementById('admin-reward-type').value = globalSettings.rewardType || 'fixed'; document.getElementById('admin-reward-value').value = globalSettings.rewardValue || 0; document.getElementById('admin-reward-max-generations').value = globalSettings.rewardMaxGenerations || 0; document.getElementById('admin-banner-active').checked = globalSettings.bannerActive; document.getElementById('admin-banner-text').value = globalSettings.bannerText || ''; document.getElementById('admin-crosssell-active').checked = globalSettings.crossSellActive; const csSelect = document.getElementById('admin-crosssell-product'); csSelect.innerHTML=''; Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); tempPromoCodes = JSON.parse(JSON.stringify(globalSettings.promoCodes||[])); renderAdminPromos();
     document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
     document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; 
-    
     document.getElementById('admin-old-customer-label').value = globalSettings.oldCustomerLabel || 'عميل سابق';
     document.getElementById('admin-whatsapp-template').value = globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)';
-    
     document.getElementById('admin-batch-hashtag').value = globalSettings.batchHashtag || '';
     document.getElementById('admin-vip-whatsapp-template').value = globalSettings.vipWhatsappTemplate || 'السلام عليكم،\nأريد الانضمام لقائمة الـ VIP وحجز ({اسم_المنتج}) من الدفعة القادمة قبل نزولها المتجر. 👑';
     document.getElementById('admin-ticktick-template').value = globalSettings.ticktickTemplate || '🧾 **تفاصيل الأوردر كاملة:**\n👤 الاسم: {اسم_العميل}\n📱 الموبايل: {الموبايل}\n📍 المنطقة: {المنطقة}\n{العنوان}\n🕒 الوقت: {الوقت}\n--------------------------------\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n--------------------------------\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n{الخصم}🚚 رسوم التوصيل: {التوصيل}\n💰 الإجمالي النهائي: {الاجمالي} ج.م\n{ملاحظات}\n{الهاشتاجات}';
 
-    // حقن حقول إعدادات الأكواد في تبويب التسويق
-    if(!document.getElementById('admin-auto-prefix')) {
-        const marketingDiv = document.querySelector('#admin-panel-marketing > div.border-l-green-500');
-        if(marketingDiv) {
-            marketingDiv.insertAdjacentHTML('beforeend', `
-            <div class="mt-4 pt-3 border-t border-green-100">
-                <label class="text-[10px] font-bold text-gray-500 block mb-1">اسم/بادئة الكود (مثال: VIP أو GIFT)</label>
-                <input type="text" id="admin-auto-prefix" class="w-full border rounded p-2 mb-2 font-bold text-brand-navy" dir="ltr" style="text-align: right;">
-                <label class="text-[10px] font-bold text-gray-500 block mb-1">رسالة التهنئة للكود (تظهر للعميل كرسالة منبثقة)</label>
-                <textarea id="admin-auto-msg" rows="2" class="w-full border rounded p-2 font-bold text-brand-navy text-xs"></textarea>
+    // حقن حقول الرسائل الدايناميكية تلقائياً لو مش موجودة
+    if(!document.getElementById('admin-closed-msg')) {
+        const storeDiv = document.querySelector('#admin-panel-store .bg-white.border.rounded-xl');
+        if(storeDiv) {
+            storeDiv.insertAdjacentHTML('beforeend', `
+            <div class="mt-3 pt-3 border-t"><label class="text-xs font-bold text-gray-500">رسالة إغلاق المتجر</label><input type="text" id="admin-closed-msg" class="w-full border rounded-lg p-2 font-bold text-brand-navy"></div>
+            `);
+        }
+    }
+    document.getElementById('admin-closed-msg').value = globalSettings.closedMessage || 'المتجر مغلق حالياً، نعود قريباً!';
+
+    if(!document.getElementById('admin-crosssell-title')) {
+        const csDiv = document.getElementById('admin-crosssell-active')?.parentElement?.parentElement;
+        if(csDiv) {
+            csDiv.insertAdjacentHTML('beforeend', `
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <div><label class="text-[10px] font-bold text-gray-500 block mb-1">عنوان الاقتراح</label><input type="text" id="admin-crosssell-title" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-xs"></div>
+                <div><label class="text-[10px] font-bold text-gray-500 block mb-1">وصف الاقتراح</label><input type="text" id="admin-crosssell-desc" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-xs"></div>
             </div>`);
         }
     }
-    document.getElementById('admin-auto-prefix').value = globalSettings.autoPromoPrefix || 'VIP-';
-    document.getElementById('admin-auto-msg').value = globalSettings.autoPromoModalMsg || 'تم إصدار كود خصم خاص بك لطلبك القادم 🎁';
+    if(document.getElementById('admin-crosssell-title')) document.getElementById('admin-crosssell-title').value = globalSettings.crossSellTitle || 'جربت بيض السمان؟';
+    if(document.getElementById('admin-crosssell-desc')) document.getElementById('admin-crosssell-desc').value = globalSettings.crossSellDesc || 'مغذي جداً للأطفال وطعمه حكاية!';
+
+    if(!document.getElementById('admin-auto-prefix')) {
+        const marketingDiv = document.querySelector('#admin-panel-marketing > div.border-l-green-500');
+        if(marketingDiv) marketingDiv.insertAdjacentHTML('beforeend', `<div class="mt-4 pt-3 border-t border-green-100"><label class="text-[10px] font-bold text-gray-500 block mb-1">اسم/بادئة الكود (مثال: VIP أو GIFT)</label><input type="text" id="admin-auto-prefix" class="w-full border rounded p-2 mb-2 font-bold text-brand-navy" dir="ltr" style="text-align: right;"><label class="text-[10px] font-bold text-gray-500 block mb-1">رسالة التهنئة للكود (تظهر للعميل)</label><textarea id="admin-auto-msg" rows="2" class="w-full border rounded p-2 font-bold text-brand-navy text-xs"></textarea></div>`);
+    }
+    if(document.getElementById('admin-auto-prefix')) { document.getElementById('admin-auto-prefix').value = globalSettings.autoPromoPrefix || 'VIP-'; document.getElementById('admin-auto-msg').value = globalSettings.autoPromoModalMsg || 'تم إصدار كود خصم خاص بك لطلبك القادم 🎁'; }
 
     const textsCont = document.getElementById('admin-texts-container');
-    if(textsCont) {
-        textsCont.innerHTML = '';
-        textsConfig.forEach(t => {
-            const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default;
-            textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`;
-        });
-    }
+    if(textsCont) { textsCont.innerHTML = ''; textsConfig.forEach(t => { const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default; textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`; }); }
 
-    tempProducts = JSON.parse(JSON.stringify(productsInfo));
-    renderAdminProducts(); 
-    document.getElementById('admin-dashboard-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.remove('opacity-0'),10); switchAdminTab('stats');
+    tempProducts = JSON.parse(JSON.stringify(productsInfo)); renderAdminProducts(); document.getElementById('admin-dashboard-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.remove('opacity-0'),10); switchAdminTab('stats');
 };
 
 window.closeAdminDashboard = () => { document.getElementById('admin-dashboard-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.add('hidden'),300); };
@@ -116,13 +120,15 @@ window.moveProduct = (id, direction) => {
 // --- [تحسين الأداء] ريندر المنتجات من الذاكرة دفعة واحدة ---
 window.renderAdminProducts = () => {
     const container = document.getElementById('admin-inputs-container'); 
-    let html = ''; // تخزين في الذاكرة لتسريع الريندر
+    let html = ''; 
     Object.keys(tempProducts).forEach(id => {
         const p = tempProducts[id]; const stock = globalStock[id] || 0; const price = globalPrices[id] || p.basePrice; const oldPrice = globalOldPrices[id] || price; const isDisc = globalDiscounts[id] || false; const isBest = globalSettings.bestSellers?.includes(id) || false;
+        const isVisible = p.isVisible !== false; // ظاهرة افتراضياً
+        const tag = p.tag || '';
         const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
-        html += `<div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm mb-3">
+        html += `<div class="bg-white border ${isVisible ? 'border-gray-200' : 'border-red-300 opacity-70'} rounded-xl p-3 shadow-sm mb-3">
             <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('edit-p-${id}').classList.toggle('hidden')">
-                <div class="font-black text-brand-navy flex items-center gap-2"><div class="flex flex-col gap-1 ml-1 mr-[-5px]"><button onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button><button onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button></div><img src="${imgSrc}" class="w-8 h-8 rounded object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"> ${p.name}</div>
+                <div class="font-black text-brand-navy flex items-center gap-2"><div class="flex flex-col gap-1 ml-1 mr-[-5px]"><button onclick="event.stopPropagation(); moveProduct('${id}', 'up')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-up"></i></button><button onclick="event.stopPropagation(); moveProduct('${id}', 'down')" class="text-gray-400 hover:text-brand-cyanDark text-[12px] bg-gray-100 rounded w-5 h-5 flex justify-center items-center"><i class="fa-solid fa-chevron-down"></i></button></div><img src="${imgSrc}" class="w-8 h-8 rounded object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"> ${p.name} ${!isVisible ? '<span class="text-[10px] text-red-500 bg-red-50 px-1 rounded">مخفي</span>' : ''}</div>
                 <div class="text-xs bg-gray-50 border px-2 py-1 rounded font-bold text-gray-600">تعديل <i class="fa-solid fa-chevron-down"></i></div>
             </div>
             <div id="edit-p-${id}" class="hidden mt-4 space-y-3 border-t pt-3">
@@ -131,19 +137,25 @@ window.renderAdminProducts = () => {
                     <div><label class="text-[10px] font-bold text-gray-500">الوزن / الوصف</label><input type="text" id="p-weight-${id}" value="${p.weight}" class="w-full border p-2 rounded text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>
                     <div><label class="text-[10px] font-bold text-gray-500">السعر (ج)</label><input type="number" id="p-price-${id}" value="${price}" class="w-full border p-2 rounded text-xs font-bold text-brand-cyanDark outline-none focus:border-brand-cyan"></div>
                     <div><label class="text-[10px] font-bold text-gray-500">المخزون المتوفر</label><input type="number" id="p-stock-${id}" value="${stock}" class="w-full border p-2 rounded text-xs font-black outline-none focus:border-brand-cyan ${stock<5?'border-red-500 bg-red-50 text-red-600':'text-brand-navy'}"></div>
-                    <div class="col-span-2"><label class="text-[10px] font-bold text-gray-500">رابط الصورة</label><input type="text" id="p-img-${id}" value="${imgSrc}" class="w-full border p-2 rounded text-[10px] font-bold text-gray-500 outline-none focus:border-brand-cyan" dir="ltr" style="text-align: left;"></div>
+                    <div class="col-span-2"><label class="text-[10px] font-bold text-gray-500">رابط الصورة</label><input type="text" id="p-img-${id}" value="${imgSrc}" class="w-full border p-2 rounded text-[10px] font-bold text-gray-500 outline-none focus:border-brand-cyan" dir="ltr"></div>
                 </div>
-                <div class="flex flex-wrap gap-3 bg-gray-50 p-2 rounded border mb-2">
-                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-extra-${id}" ${p.isExtra?'checked':''} class="accent-brand-cyanDark"> إضافي (بالأسفل)</label>
-                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-best-${id}" ${isBest?'checked':''} class="accent-brand-yellow"> الأكثر طلباً 🔥</label>
-                    <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم:</label>
-                    <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}">
+                <div class="flex flex-wrap gap-2 bg-gray-50 p-2 rounded border mb-2 items-center">
+                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none bg-white border p-1 rounded"><input type="checkbox" id="p-visible-${id}" ${isVisible?'checked':''} class="accent-brand-navy"> معروض للزبون 👁️</label>
+                    <select id="p-tag-${id}" class="border rounded p-1 text-[10px] font-bold text-gray-600 outline-none">
+                        <option value="" ${tag===''?'selected':''}>بدون تاج</option>
+                        <option value="new" ${tag==='new'?'selected':''}>🆕 جديد</option>
+                        <option value="hot" ${tag==='hot'?'selected':''}>🔥 قرب يخلص</option>
+                        <option value="offer" ${tag==='offer'?'selected':''}>⏱️ عرض محدود</option>
+                    </select>
+                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none ml-auto"><input type="checkbox" id="p-extra-${id}" ${p.isExtra?'checked':''} class="accent-brand-cyanDark"> إضافي</label>
+                    <label class="flex items-center gap-1 text-[10px] font-bold cursor-pointer select-none"><input type="checkbox" id="p-best-${id}" ${isBest?'checked':''} class="accent-brand-yellow"> 🔥 طلباً</label>
+                    <label class="flex items-center gap-1 text-[10px] font-bold text-red-600 cursor-pointer select-none w-full mt-1 pt-1 border-t"><input type="checkbox" id="p-disc-${id}" ${isDisc?'checked':''} class="accent-red-500" onchange="document.getElementById('p-old-${id}').classList.toggle('hidden', !this.checked)"> خصم لسعر قديم: <input type="number" id="p-old-${id}" value="${oldPrice}" class="w-12 border rounded p-1 text-[10px] text-center bg-white text-red-500 font-bold line-through outline-none ${isDisc?'':'hidden'}"></label>
                 </div>
                 <button onclick="deleteAdminProduct('${id}')" class="w-full mt-2 bg-red-50 border border-red-200 text-red-600 font-bold text-xs py-2 rounded hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash"></i> حذف هذا المنتج نهائياً</button>
             </div>
         </div>`;
     });
-    container.innerHTML = html; // رسم مرة واحدة
+    container.innerHTML = html; 
 };
 
 window.addNewAdminProduct = () => { const newId = 'p_' + Date.now(); tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false }; globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; renderAdminProducts(); setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); };
@@ -153,6 +165,8 @@ window.syncAdminProductsFromDOM = () => {
     Object.keys(tempProducts).forEach(id => {
         if(!document.getElementById(`p-name-${id}`)) return; 
         tempProducts[id].name = document.getElementById(`p-name-${id}`).value; tempProducts[id].weight = document.getElementById(`p-weight-${id}`).value; tempProducts[id].images = [document.getElementById(`p-img-${id}`).value]; tempProducts[id].isExtra = document.getElementById(`p-extra-${id}`).checked;
+        tempProducts[id].isVisible = document.getElementById(`p-visible-${id}`).checked;
+        tempProducts[id].tag = document.getElementById(`p-tag-${id}`).value;
         globalPrices[id] = parseInt(document.getElementById(`p-price-${id}`).value) || 0; globalStock[id] = parseInt(document.getElementById(`p-stock-${id}`).value) || 0; globalOldPrices[id] = parseInt(document.getElementById(`p-old-${id}`).value) || 0; globalDiscounts[id] = document.getElementById(`p-disc-${id}`).checked; if(document.getElementById(`p-best-${id}`).checked) newBest.push(id);
     });
     globalSettings.bestSellers = newBest;
@@ -352,7 +366,8 @@ window.saveAdminData = async () => {
         showPromoField: document.getElementById('admin-show-promo-field').checked, successTitle: document.getElementById('admin-success-title').value.trim(), successMessage: document.getElementById('admin-success-message').value.trim(), productsData: tempProducts,
         oldCustomerLabel: document.getElementById('admin-old-customer-label').value.trim() || 'عميل سابق', whatsappTemplate: document.getElementById('admin-whatsapp-template').value.trim() || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)',
         ticktickTemplate: document.getElementById('admin-ticktick-template').value.trim(), vipWhatsappTemplate: document.getElementById('admin-vip-whatsapp-template').value.trim(), batchHashtag: document.getElementById('admin-batch-hashtag').value.trim(), uiTexts: newUiTexts,
-        autoPromoPrefix: document.getElementById('admin-auto-prefix')?.value.trim() || 'VIP-', autoPromoModalMsg: document.getElementById('admin-auto-msg')?.value.trim() || 'تم إصدار كود خصم خاص بك لطلبك القادم 🎁'
+        autoPromoPrefix: document.getElementById('admin-auto-prefix')?.value.trim() || 'VIP-', autoPromoModalMsg: document.getElementById('admin-auto-msg')?.value.trim() || 'تم إصدار كود خصم خاص بك لطلبك القادم 🎁',
+        closedMessage: document.getElementById('admin-closed-msg')?.value.trim() || 'المتجر مغلق حالياً، نعود قريباً!', crossSellTitle: document.getElementById('admin-crosssell-title')?.value.trim() || 'جربت بيض السمان؟', crossSellDesc: document.getElementById('admin-crosssell-desc')?.value.trim() || 'مغذي جداً للأطفال وطعمه حكاية!'
     };
 
     const btn = document.querySelector('#admin-dashboard-modal button[onclick="saveAdminData()"]'); const originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
