@@ -31,19 +31,38 @@ if (storeOpenToggle) {
     });
 }
 
-// ==================== نظام تسجيل الدخول والخروج المستمر ====================
+// ==// ==================== نظام تسجيل الدخول والخروج المستمر ====================
 window.openAdminLogin = () => { 
-    // التحقق لو الإدمن مسجل دخول بالفعل
-    if(window.firebase && firebase.auth().currentUser) {
-        openAdminDashboard();
+    console.log("1. تم الضغط على الزر والدالة تعمل بنجاح");
+    
+    // التحقق لو الإدمن مسجل دخول بالفعل (مع تأمين قراءة الفايربيز)
+    if(window.firebase && window.firebase.auth && window.firebase.auth().currentUser) {
+        console.log("2. الإدمن مسجل دخول بالفعل. جاري فتح اللوحة...");
+        
+        // استخدام window. لضمان الوصول للدالة
+        if (typeof window.openAdminDashboard === "function") {
+            window.openAdminDashboard();
+        } else {
+            console.error("خطأ: دالة window.openAdminDashboard غير موجودة أو لم يتم تحميلها!");
+            alert("خطأ برمجي: دالة فتح اللوحة غير موجودة.");
+        }
     } else {
+        console.log("2. الإدمن غير مسجل دخول. جاري إظهار نافذة كلمة المرور...");
         const modal = document.getElementById('admin-login-modal');
+        
         if(modal) {
             modal.classList.remove('hidden'); 
             setTimeout(() => modal.classList.remove('opacity-0'), 10); 
             const passInput = document.getElementById('admin-password-input');
             if(passInput) passInput.value = ''; 
+            console.log("3. تم إظهار نافذة تسجيل الدخول بنجاح.");
+        } else {
+            console.error("خطأ: لم يتم العثور على عنصر HTML يحمل الـ id: admin-login-modal");
+            alert("تأكد من وجود نافذة تسجيل الدخول في ملف الـ HTML بـ id='admin-login-modal'");
         }
+    }
+};
+
     }
 };
 
