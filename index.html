@@ -548,5 +548,30 @@
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
     <script src="js/admin.js"></script>
+    <div id="error-log" style="position:fixed;bottom:0;left:0;width:100%;background:#b91c1c;color:white;padding:12px;z-index:9999;display:none;font-family:sans-serif;font-size:14px;text-align:center;"></div>
+
+<script>
+  // تجميع الأخطاء وعرضها في شريط أحمر
+  window.onerror = function(msg, url, line, col, error) {
+    var el = document.getElementById('error-log');
+    el.style.display = 'block';
+    el.innerHTML += '⚠️ ' + msg + ' (سطر ' + line + ')<br>';
+    return false;
+  };
+
+  // كمان نعرف هل admin.js اتحمل ولا لأ
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof openAdminLogin === 'function') {
+      var el = document.getElementById('error-log');
+      el.style.display = 'block';
+      el.style.background = '#166534';
+      el.innerHTML = '✅ admin.js اتحمل والزر شغال';
+    } else {
+      var el = document.getElementById('error-log');
+      el.style.display = 'block';
+      el.innerHTML = '❌ admin.js لم يتم تحميله أو به خطأ';
+    }
+  });
+</script>
 </body>
 </html>
