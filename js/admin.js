@@ -15,8 +15,23 @@ document.getElementById('admin-store-open')?.addEventListener('change', function
     label.className = this.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
 });
 
-window.openAdminLogin = () => { document.getElementById('admin-login-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-login-modal').classList.remove('opacity-0'),10); document.getElementById('admin-password-input').value=''; };
-window.closeAdminLogin = () => { document.getElementById('admin-login-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-login-modal').classList.add('hidden'),300); };
+// --- نظام الدخول الذكي والمستمر ---
+window.openAdminLogin = () => { 
+    const user = firebase.auth().currentUser;
+    // لو الإدارة مسجلة دخول مسبقاً (عن طريق الإيميل مش مجهول)، افتح اللوحة علطول
+    if (user && user.email) {
+        openAdminDashboard();
+    } else {
+        document.getElementById('admin-login-modal').classList.remove('hidden'); 
+        setTimeout(()=>document.getElementById('admin-login-modal').classList.remove('opacity-0'),10); 
+        document.getElementById('admin-password-input').value=''; 
+    }
+};
+
+window.closeAdminLogin = () => { 
+    document.getElementById('admin-login-modal').classList.add('opacity-0'); 
+    setTimeout(()=>document.getElementById('admin-login-modal').classList.add('hidden'),300); 
+};
 
 window.verifyAdminPin = () => { 
     const email = document.getElementById('admin-email-input').value.trim();
@@ -24,9 +39,13 @@ window.verifyAdminPin = () => {
     const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]');
     const origHtml = btn.innerHTML;
     if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
+    
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
     btn.disabled = true;
-    firebase.auth().signInWithEmailAndPassword(email, pass)
+    
+    // تفعيل الاحتفاظ بتسجيل الدخول في المتصفح
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => firebase.auth().signInWithEmailAndPassword(email, pass))
         .then((userCredential) => {
             closeAdminLogin(); 
             openAdminDashboard();
@@ -41,12 +60,22 @@ window.verifyAdminPin = () => {
         });
 };
 
+window.adminLogout = () => {
+    if(!confirm("هل تريد تسجيل الخروج من لوحة الإدارة؟")) return;
+    firebase.auth().signOut().then(() => {
+        closeAdminDashboard();
+        firebase.auth().signInAnonymously(); // العودة كعميل عادي
+        showAlert("تم الخروج", "تم تسجيل الخروج من حساب الإدارة بنجاح.");
+    });
+};
+
 let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all';
 window.dispatchOrdersList = [];
 
 window.switchAdminTab = (tab) => {
     currentAdminTab = tab;
-    ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts'].forEach(t => {
+    // تم إضافة 'theme' لضمان التوافق مع ملف index.html
+    ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts','theme'].forEach(t => {
         document.getElementById('admin-panel-'+t)?.classList.add('hidden');
         const btn = document.getElementById('admin-tab-'+t);
         if(btn) btn.className = t===tab ? "px-4 py-2 rounded-lg font-bold text-sm bg-brand-cyanDark text-white whitespace-nowrap" : "px-4 py-2 rounded-lg font-bold text-sm text-gray-600 hover:bg-gray-100 whitespace-nowrap";
@@ -58,6 +87,12 @@ window.switchAdminTab = (tab) => {
 };
 
 window.openAdminDashboard = () => {
+    // إضافة زر تسجيل الخروج في الهيدر لو مش موجود
+    const headerDiv = document.querySelector('#admin-dashboard-modal .flex.items-center.gap-3');
+    if(headerDiv && !document.getElementById('admin-logout-btn')) {
+        headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
+    }
+
     const storeToggle = document.getElementById('admin-store-open');
     storeToggle.checked = globalSettings.storeOpen !== false;
     const storeOpenLabel = document.getElementById('store-open-label');
@@ -113,9 +148,6 @@ window.openAdminDashboard = () => {
 };
 
 window.closeAdminDashboard = () => { document.getElementById('admin-dashboard-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.add('hidden'),300); };
-
-// باقي الدوال (renderTopProductsStats, moveProduct, renderAdminProducts, ...) كما هي بدون تغيير
-// ... نكتفي بإدراجها كاملة للحفاظ على سلامة الملف
 
 window.renderTopProductsStats = () => {
     const c = document.getElementById('top-products-list'); if(!c) return;
@@ -243,7 +275,7 @@ window.renderAdminPromos = () => {
             </div>
             <div class="grid grid-cols-2 gap-2 mt-1">
                 <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">تاريخ الانتهاء</label><input type="date" value="${p.expiryDate}" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].expiryDate=this.value"></div>
-                <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label><input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)"></div>
+                <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label><input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="سيبه فاضي لعدد لا نهائي ∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan placeholder-gray-300" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)"></div>
             </div>
             <div class="flex items-center bg-white border rounded p-1.5 border-gray-300 mt-1">
                 <i class="fa-solid fa-mobile-screen text-gray-400 text-[10px] w-4 text-center"></i>
@@ -259,9 +291,33 @@ window.addNewPromoCode = () => {
     renderAdminPromos(); 
 };
 
-// ========== نظام الطلبات الذكي (بحث شامل + إرسال رسالة + تقييم) ==========
+// --- تصدير الطلبات كملف Excel (CSV) ---
+window.exportOrdersToCSV = () => {
+    if(ordersList.length === 0) return showAlert("تنبيه", "لا توجد طلبات لتصديرها.");
+    
+    // إضافة BOM لدعم اللغة العربية في الإكسيل
+    let csv = '\uFEFF'; 
+    csv += "التاريخ والوقت,الاسم,الموبايل,المنطقة,العنوان,الطلبات,الإجمالي (ج.م),الخصم,الحالة\n";
+    
+    ordersList.forEach(o => {
+        let items = o.items.map(i => `${i.quantity} ${i.name}`).join(' + ');
+        let status = o.status === 'new' ? 'جديد' : (o.status === 'processing' ? 'قيد التجهيز' : 'مكتمل');
+        let date = (o.orderDate || '') + " " + (o.orderTime || '');
+        let discount = o.discount ? o.discount : 0;
+        let address = o.customerAddress ? o.customerAddress.replace(/,/g, '-') : '';
+        
+        let row = `"${date}","${o.customerName}","${o.customerPhone}","${o.zone}","${address}","${items}","${o.total}","${discount}","${status}"`;
+        csv += row + "\n";
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Saman_Orders_${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.csv`;
+    link.click();
+};
+
 window.sendMessageToCustomer = (phone, order) => {
-    // رسالة مخصصة للعميل
     let itemsText = order.items.map(i => `${i.quantity}x ${i.name}`).join('\n');
     let msg = `مرحباً ${order.customerName}،\nتفاصيل طلبك:\n${itemsText}\nالإجمالي: ${order.total} ج.م\nشكراً لتعاملك معنا!`;
     let waNumber = phone.startsWith('0') ? '2' + phone : phone;
@@ -277,6 +333,12 @@ window.sendRatingRequest = (phone, order) => {
 window.renderOrdersList = () => {
     const container = document.getElementById('orders-list-container');
     if(!container) return;
+    
+    // حقن زر التصدير لو مش موجود
+    if (!document.getElementById('export-csv-btn')) {
+        const btnHtml = `<button id="export-csv-btn" onclick="exportOrdersToCSV()" class="w-full mb-3 bg-brand-navy hover:bg-gray-800 transition-colors text-white text-xs font-bold py-3 rounded-xl shadow-sm flex justify-center items-center gap-2"><i class="fa-solid fa-file-excel text-green-400"></i> تصدير جميع الطلبات لـ Excel</button>`;
+        container.insertAdjacentHTML('beforebegin', btnHtml);
+    }
     
     const searchQuery = document.getElementById('order-search')?.value.trim().toLowerCase() || '';
     
@@ -305,7 +367,7 @@ window.renderOrdersList = () => {
         let itemsHtml = order.items.map(i => `<div class="flex justify-between text-xs text-gray-700 font-bold border-b border-gray-100 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0"><span><span class="text-brand-cyanDark">${i.quantity}x</span> ${i.name}</span><span>${i.quantity*i.price} ج</span></div>`).join('');
 
         return `
-        <div class="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden">
+        <div class="bg-white border rounded-xl p-4 shadow-sm relative overflow-hidden mb-3">
             <div class="absolute top-0 right-0 w-1 h-full ${order.status === 'new' ? 'bg-red-500' : (order.status === 'processing' ? 'bg-yellow-500' : 'bg-green-500')}"></div>
             <div class="flex justify-between items-start mb-3">
                 <div>
@@ -313,11 +375,11 @@ window.renderOrdersList = () => {
                     <a href="tel:${order.customerPhone}" class="text-sm font-bold text-blue-600 hover:underline" dir="ltr">${order.customerPhone}</a>
                 </div>
                 <div class="flex gap-2 items-center">
-                    <button onclick="sendMessageToCustomer('${order.customerPhone}', ordersList.find(o=>o.id==='${order.id}'))" class="text-[10px] bg-blue-500 text-white px-2 py-1 rounded font-bold"><i class="fa-brands fa-whatsapp"></i> رسالة</button>
+                    <button onclick="sendMessageToCustomer('${order.customerPhone}', ordersList.find(o=>o.id==='${order.id}'))" class="text-[10px] bg-blue-500 text-white px-2 py-1 rounded font-bold hover:bg-blue-600 transition-colors"><i class="fa-brands fa-whatsapp"></i> رسالة</button>
                     <span class="px-2 py-1 rounded text-[10px] font-black border ${statusColor}">${statusText}</span>
                 </div>
             </div>
-            <div class="text-[11px] text-gray-500 mb-3 font-bold bg-gray-50 p-2 rounded">
+            <div class="text-[11px] text-gray-500 mb-3 font-bold bg-gray-50 p-2 rounded border border-gray-100">
                 <i class="fa-solid fa-location-dot text-brand-cyanDark mr-1"></i> ${order.zone} ${order.customerAddress && order.customerAddress !== 'غير محدد' ? ' - ' + order.customerAddress : ''}
             </div>
             <div class="bg-gray-50 border border-gray-100 p-2 rounded-lg mb-3 space-y-1">${itemsHtml}</div>
@@ -341,7 +403,6 @@ window.renderOrdersList = () => {
     }).join('');
 };
 
-// ربط البحث مع debounce
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('order-search');
     if (searchInput) {
@@ -357,7 +418,6 @@ async function loadOrders() {
         ordersList=[]; 
         snap.forEach(d=>ordersList.push({id:d.id, ...d.data()})); 
         renderOrdersList();
-        // تحديث التوزيع تلقائياً: فقط الطلبات اللي حالتها processing
         dispatchOrdersList = ordersList.filter(o => o.status === 'processing');
         if(currentAdminTab === 'dispatch') renderDispatchOrders();
     } catch(e){ console.log("Error loading orders", e); } 
@@ -368,12 +428,9 @@ window.updateOrderStatus = async (id, s) => {
     if(db){ 
         const btn = event.target; const origText = btn.innerText; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; btn.disabled = true;
         await db.collection("orders").doc(id).update({status:s}); 
-        loadOrders(); // إعادة تحميل تلقائي
+        loadOrders();
     } 
 };
-
-// ... (باقي دوال deleteAllOrders, resetStatsOnly, dispatch, إلخ)
-// نضيفها كاملة
 
 window.deleteAllOrders = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من مسح جميع الطلبات من السجل؟ لا يمكن التراجع عن هذا الإجراء!")) return;
@@ -420,7 +477,7 @@ window.renderDispatchOrders = () => {
             zones.map(z => `<option value="${z}" ${zoneFilter === z ? 'selected' : ''}>${z}</option>`).join('');
     }
 
-    let filtered = dispatchOrdersList; // فقط processing
+    let filtered = dispatchOrdersList; 
     if (zoneFilter !== 'all') {
         filtered = filtered.filter(o => o.zone === zoneFilter);
     }
@@ -440,7 +497,7 @@ window.renderDispatchOrders = () => {
                 <div class="font-black text-brand-navy">${order.customerName}</div>
                 <div class="text-xs text-gray-500 mt-1">📱 ${order.customerPhone}</div>
                 <div class="text-xs text-gray-500">📍 ${order.zone} ${address ? '- ' + address : ''}</div>
-                <div class="text-xs mt-1 bg-gray-50 p-1 rounded">🛒 ${itemsText}</div>
+                <div class="text-xs mt-1 bg-gray-50 p-1 rounded border">🛒 ${itemsText}</div>
                 <div class="text-xs font-bold text-brand-cyanDark mt-1">💰 الإجمالي: ${order.total} ج.م (توصيل: ${order.deliveryFee} ج.م)</div>
             </div>
         </div>`;
@@ -544,7 +601,7 @@ window.generateBulkWhatsAppLinks = () => {
         linksContainer.innerHTML += `
             <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg shadow-sm">
                 <span class="text-xs font-bold text-gray-600" dir="ltr">${num}</span>
-                <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] px-4 py-1.5 rounded font-black transition-colors flex items-center gap-1">
+                <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] px-4 py-1.5 rounded font-black transition-colors flex items-center gap-1 shadow-sm">
                     إرسال <i class="fa-brands fa-whatsapp text-sm"></i>
                 </a>
             </div>
@@ -560,10 +617,12 @@ window.saveAdminData = async () => {
     syncAdminProductsFromDOM(); 
     
     let newUiTexts = {};
-    textsConfig.forEach(t => {
-        const el = document.getElementById(`ui-txt-${t.id}`);
-        if(el) newUiTexts[t.id] = el.value.trim();
-    });
+    if(typeof textsConfig !== 'undefined') {
+        textsConfig.forEach(t => {
+            const el = document.getElementById(`ui-txt-${t.id}`);
+            if(el) newUiTexts[t.id] = el.value.trim();
+        });
+    }
 
     const newSettings = {
         storeOpen: document.getElementById('admin-store-open').checked, 
