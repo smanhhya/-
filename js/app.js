@@ -1,29 +1,5 @@
 // js/app.js
 
-// --- تهيئة المتغيرات الأساسية ---
-let cart = {};
-let productsInfo = {};
-let globalPrices = {};
-let globalStock = {};
-let globalOldPrices = {};
-let globalDiscounts = {};
-let globalSettings = {
-    storeName: "سمان ههيا",
-    storePhone: "01208027294",
-    storeOpen: true,
-    minOrder: 0,
-    freeDeliveryActive: false,
-    freeDeliveryThreshold: 0,
-    promoCodes: [],
-    uiTexts: {}
-};
-let globalDeliveryZones = [];
-let appliedPromo = null;
-let isStoreDataLoaded = false;
-let db = null;
-let hasCloud = false;
-let dailyStats = { sales: 0, orders: 0 };
-const WEB3FORMS_ACCESS_KEY = "64619920-5c68-45b1-873b-e018659d8738"; // مفتاحك الحالي
 
 // --- دوال الحفظ والتحميل ---
 function saveCart() { try { localStorage.setItem('sman_cart', JSON.stringify(cart)); } catch(e) {} }
