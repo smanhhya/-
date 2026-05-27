@@ -11,52 +11,70 @@ function debounce(func, delay) {
 
 document.getElementById('admin-store-open')?.addEventListener('change', function() {
     const label = document.getElementById('store-open-label');
-    label.innerText = this.checked ? 'مفتوح' : 'مغلق';
-    label.className = this.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
+    if(label) {
+        label.innerText = this.checked ? 'مفتوح' : 'مغلق';
+        label.className = this.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
+    }
 });
 
-// --- نظام الدخول والخروج ---
+// --- نظام الدخول والخروج (بدون Persistence) ---
 window.openAdminLogin = () => { 
     const user = firebase.auth().currentUser;
-    // لو إنت مسجل دخول فعلاً كإدارة (عندك إيميل)، هيفتح اللوحة علطول
     if (user && user.email) {
         openAdminDashboard();
     } else {
-        document.getElementById('admin-login-modal').classList.remove('hidden'); 
-        setTimeout(()=>document.getElementById('admin-login-modal').classList.remove('opacity-0'),10); 
-        document.getElementById('admin-password-input').value=''; 
+        const modal = document.getElementById('admin-login-modal');
+        if(modal) {
+            modal.classList.remove('hidden'); 
+            setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
+        }
+        if(document.getElementById('admin-password-input')) document.getElementById('admin-password-input').value = ''; 
     }
 };
 
 window.closeAdminLogin = () => { 
-    document.getElementById('admin-login-modal').classList.add('opacity-0'); 
-    setTimeout(()=>document.getElementById('admin-login-modal').classList.add('hidden'),300); 
+    const modal = document.getElementById('admin-login-modal');
+    if(modal) {
+        modal.classList.add('opacity-0'); 
+        setTimeout(()=> modal.classList.add('hidden'), 300); 
+    }
 };
 
 window.verifyAdminPin = () => { 
-    const email = document.getElementById('admin-email-input').value.trim();
-    const pass = document.getElementById('admin-password-input').value.trim();
-    const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]');
-    const origHtml = btn.innerHTML;
+    const emailInput = document.getElementById('admin-email-input');
+    const passInput = document.getElementById('admin-password-input');
+    if(!emailInput || !passInput) return;
+
+    const email = emailInput.value.trim();
+    const pass = passInput.value.trim();
+    const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]') || document.querySelector('#login-screen button');
     
     if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
     
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
-    btn.disabled = true;
+    let origHtml = btn ? btn.innerHTML : 'دخول';
+    if(btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
+        btn.disabled = true;
+    }
     
-    // الدخول العادي والآمن بدون تعقيد
+    // الدخول المباشر بدون تعقيد
     firebase.auth().signInWithEmailAndPassword(email, pass)
         .then((userCredential) => {
             closeAdminLogin(); 
             openAdminDashboard();
-            btn.innerHTML = origHtml;
-            btn.disabled = false;
-            document.getElementById('admin-password-input').value = '';
+            if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
+            passInput.value = '';
+            
+            // لو الصفحة منفصلة (admin.html) بنخفي شاشة الدخول ونظهر اللوحة
+            const loginScreen = document.getElementById('login-screen');
+            const dashScreen = document.getElementById('dashboard-screen');
+            if(loginScreen && dashScreen) {
+                loginScreen.classList.add('hidden');
+                dashScreen.classList.remove('hidden');
+            }
         })
         .catch((error) => {
-            btn.innerHTML = origHtml;
-            btn.disabled = false;
-            console.error("Login Error: ", error);
+            if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             showAlert("خطأ", "بيانات الدخول غير صحيحة، أو ليس لديك صلاحية!");
         });
 };
@@ -65,94 +83,120 @@ window.adminLogout = () => {
     if(!confirm("هل تريد تسجيل الخروج من لوحة الإدارة؟")) return;
     firebase.auth().signOut().then(() => {
         closeAdminDashboard();
-        // العودة كعميل عادي عشان السيستم مايوقفش وتقدر تعمل أوردرات
-        firebase.auth().signInAnonymously(); 
-        showAlert("تم الخروج", "تم تسجيل الخروج من حساب الإدارة بنجاح.");
+        firebase.auth().signInAnonymously(); // العودة كعميل عادي
+        showAlert("تم الخروج", "تم تسجيل الخروج بنجاح.");
+        
+        // لو الصفحة منفصلة
+        const loginScreen = document.getElementById('login-screen');
+        const dashScreen = document.getElementById('dashboard-screen');
+        if(loginScreen && dashScreen) {
+            dashScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+        }
     });
 };
 
 let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all';
 window.dispatchOrdersList = [];
 
-// --- التبديل بين التبويبات (متضمن المظهر theme) ---
 window.switchAdminTab = (tab) => {
     currentAdminTab = tab;
-    // ضفنا theme في المصفوفة عشان المظهر يشتغل
     ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts','theme'].forEach(t => {
-        document.getElementById('admin-panel-'+t)?.classList.add('hidden');
+        const panel = document.getElementById('admin-panel-'+t);
         const btn = document.getElementById('admin-tab-'+t);
-        if(btn) btn.className = t===tab ? "px-4 py-2 rounded-lg font-bold text-sm bg-brand-cyanDark text-white whitespace-nowrap" : "px-4 py-2 rounded-lg font-bold text-sm text-gray-600 hover:bg-gray-100 whitespace-nowrap";
+        if(panel) panel.classList.add('hidden');
+        if(btn) {
+            // تنظيف الكلاسات ثم إضافة المناسب
+            btn.className = btn.className.replace(/bg-brand-cyanDark text-white/g, '').replace(/text-gray-600 hover:bg-gray-100/g, '');
+            if(t === tab) {
+                btn.className += " bg-brand-cyanDark text-white";
+                if(panel) panel.classList.remove('hidden');
+            } else {
+                btn.className += " text-gray-600 hover:bg-gray-100";
+            }
+        }
     });
-    document.getElementById('admin-panel-'+tab)?.classList.remove('hidden');
+    
     if(tab==='orders' || tab==='dispatch') loadOrders();
     if(tab==='products') renderAdminProducts();
     if(tab==='stats') renderTopProductsStats();
 };
 
+// دوال مساعدة لملء البيانات بأمان
+const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val; };
+
 window.openAdminDashboard = () => {
-    // إضافة زر تسجيل الخروج في الهيدر بتاع اللوحة لو مش موجود
-    const headerDiv = document.querySelector('#admin-dashboard-modal .flex.items-center.gap-3');
-    if(headerDiv && !document.getElementById('admin-logout-btn')) {
-        headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
+    setCheck('admin-store-open', globalSettings.storeOpen !== false);
+    const storeOpenLabel = document.getElementById('store-open-label');
+    if(storeOpenLabel) {
+        storeOpenLabel.innerText = (globalSettings.storeOpen !== false) ? 'مفتوح' : 'مغلق';
+        storeOpenLabel.className = (globalSettings.storeOpen !== false) ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
     }
 
-    const storeToggle = document.getElementById('admin-store-open');
-    storeToggle.checked = globalSettings.storeOpen !== false;
-    const storeOpenLabel = document.getElementById('store-open-label');
-    storeOpenLabel.innerText = storeToggle.checked ? 'مفتوح' : 'مغلق';
-    storeOpenLabel.className = storeToggle.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
-
-    document.getElementById('admin-store-name').value = globalSettings.storeName || ''; 
-    document.getElementById('admin-store-desc').value = globalSettings.storeDesc || ''; 
-    document.getElementById('admin-store-phone').value = globalSettings.storePhone || ''; 
-    document.getElementById('admin-min-order').value = globalSettings.minOrder || 0;
-    document.getElementById('admin-free-delivery-active').checked = globalSettings.freeDeliveryActive; 
-    document.getElementById('admin-free-delivery-threshold').value = globalSettings.freeDeliveryThreshold || 0; 
+    setVal('admin-store-name', globalSettings.storeName || ''); 
+    setVal('admin-store-desc', globalSettings.storeDesc || ''); 
+    setVal('admin-store-phone', globalSettings.storePhone || ''); 
+    setVal('admin-min-order', globalSettings.minOrder || 0);
+    setCheck('admin-free-delivery-active', globalSettings.freeDeliveryActive); 
+    setVal('admin-free-delivery-threshold', globalSettings.freeDeliveryThreshold || 0); 
+    
     tempAdminZones = JSON.parse(JSON.stringify(globalDeliveryZones||[])); 
     renderAdminZones();
-    document.getElementById('admin-reward-active').checked = globalSettings.rewardActive; 
-    document.getElementById('admin-reward-type').value = globalSettings.rewardType || 'fixed'; 
-    document.getElementById('admin-reward-value').value = globalSettings.rewardValue || 0; 
-    document.getElementById('admin-reward-max-generations').value = globalSettings.rewardMaxGenerations || 0; 
-    document.getElementById('admin-banner-active').checked = globalSettings.bannerActive; 
-    document.getElementById('admin-banner-text').value = globalSettings.bannerText || ''; 
-    document.getElementById('admin-crosssell-active').checked = globalSettings.crossSellActive; 
+    
+    setCheck('admin-reward-active', globalSettings.rewardActive); 
+    setVal('admin-reward-type', globalSettings.rewardType || 'fixed'); 
+    setVal('admin-reward-value', globalSettings.rewardValue || 0); 
+    setVal('admin-reward-max-generations', globalSettings.rewardMaxGenerations || 0); 
+    setCheck('admin-banner-active', globalSettings.bannerActive); 
+    setVal('admin-banner-text', globalSettings.bannerText || ''); 
+    setCheck('admin-crosssell-active', globalSettings.crossSellActive); 
+    
     const csSelect = document.getElementById('admin-crosssell-product'); 
-    csSelect.innerHTML=''; 
-    Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); 
+    if(csSelect) {
+        csSelect.innerHTML=''; 
+        Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); 
+    }
+    
     tempPromoCodes = JSON.parse(JSON.stringify(globalSettings.promoCodes||[])); 
     renderAdminPromos();
-    document.getElementById('admin-show-promo-field').checked = globalSettings.showPromoField !== false;
-    document.getElementById('admin-success-title').value = globalSettings.successTitle || ''; 
-    document.getElementById('admin-success-message').value = globalSettings.successMessage || ''; 
     
-    document.getElementById('admin-whatsapp-template').value = globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)';
-    
-    document.getElementById('admin-batch-hashtag').value = globalSettings.batchHashtag || '';
-    document.getElementById('admin-vip-whatsapp-template').value = globalSettings.vipWhatsappTemplate || 'السلام عليكم،\nأريد الانضمام لقائمة الـ VIP وحجز ({اسم_المنتج}) من الدفعة القادمة قبل نزولها المتجر. 👑';
-    document.getElementById('admin-ticktick-template').value = globalSettings.ticktickTemplate || '🧾 **تفاصيل الأوردر كاملة:**\n👤 الاسم: {اسم_العميل}\n📱 الموبايل: {الموبايل}\n📍 المنطقة: {المنطقة}\n{العنوان}\n🕒 الوقت: {الوقت}\n--------------------------------\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n--------------------------------\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n{الخصم}🚚 رسوم التوصيل: {التوصيل}\n💰 الإجمالي النهائي: {الاجمالي} ج.م\n{ملاحظات}\n{الهاشتاجات}';
-    document.getElementById('admin-dispatch-template').value = globalSettings.dispatchTemplate || '📦 طلب جديد من {اسم_العميل}\n📱 {رقم_العميل}\n📍 {المنطقة} - {العنوان}\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n💰 إجمالي الطلب: {إجمالي_الطلب} ج.م\n🚚 التوصيل: {التوصيل}\n⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م';
+    setCheck('admin-show-promo-field', globalSettings.showPromoField !== false);
+    setVal('admin-success-title', globalSettings.successTitle || ''); 
+    setVal('admin-success-message', globalSettings.successMessage || ''); 
+    setVal('admin-whatsapp-template', globalSettings.whatsappTemplate || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)');
+    setVal('admin-batch-hashtag', globalSettings.batchHashtag || '');
+    setVal('admin-vip-whatsapp-template', globalSettings.vipWhatsappTemplate || 'السلام عليكم،\nأريد الانضمام لقائمة الـ VIP وحجز ({اسم_المنتج}) من الدفعة القادمة قبل نزولها المتجر. 👑');
+    setVal('admin-ticktick-template', globalSettings.ticktickTemplate || '🧾 **تفاصيل الأوردر كاملة:**\n👤 الاسم: {اسم_العميل}\n📱 الموبايل: {الموبايل}\n📍 المنطقة: {المنطقة}\n{العنوان}\n🕒 الوقت: {الوقت}\n--------------------------------\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n--------------------------------\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n{الخصم}🚚 رسوم التوصيل: {التوصيل}\n💰 الإجمالي النهائي: {الاجمالي} ج.م\n{ملاحظات}\n{الهاشتاجات}');
+    setVal('admin-dispatch-template', globalSettings.dispatchTemplate || '📦 طلب جديد من {اسم_العميل}\n📱 {رقم_العميل}\n📍 {المنطقة} - {العنوان}\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n💰 إجمالي الطلب: {إجمالي_الطلب} ج.م\n🚚 التوصيل: {التوصيل}\n⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م');
 
     const textsCont = document.getElementById('admin-texts-container');
-    if(textsCont) {
+    if(textsCont && typeof textsConfig !== 'undefined') {
         textsCont.innerHTML = '';
-        if (typeof textsConfig !== 'undefined') {
-            textsConfig.forEach(t => {
-                const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default;
-                textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`;
-            });
-        }
+        textsConfig.forEach(t => {
+            const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default;
+            textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`;
+        });
     }
 
     tempProducts = JSON.parse(JSON.stringify(productsInfo));
     renderAdminProducts(); 
     
-    document.getElementById('admin-dashboard-modal').classList.remove('hidden'); 
-    setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.remove('opacity-0'),10); 
+    const modal = document.getElementById('admin-dashboard-modal');
+    if(modal) {
+        modal.classList.remove('hidden'); 
+        setTimeout(()=> modal.classList.remove('opacity-0'),10); 
+    }
     switchAdminTab('stats');
 };
 
-window.closeAdminDashboard = () => { document.getElementById('admin-dashboard-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-dashboard-modal').classList.add('hidden'),300); };
+window.closeAdminDashboard = () => { 
+    const modal = document.getElementById('admin-dashboard-modal');
+    if(modal) {
+        modal.classList.add('opacity-0'); 
+        setTimeout(()=> modal.classList.add('hidden'),300); 
+    }
+};
 
 window.renderTopProductsStats = () => {
     const c = document.getElementById('top-products-list'); if(!c) return;
@@ -162,7 +206,7 @@ window.renderTopProductsStats = () => {
             return p ? `<div class="flex justify-between items-center bg-gray-50 p-2 rounded border"><span class="font-bold text-brand-navy">${p.name}</span><span class="text-[10px] bg-brand-yellow text-brand-navy px-2 py-0.5 rounded-full font-black">🔥 الأكثر مبيعاً</span></div>` : ''; 
         }).join(''); 
     } else { 
-        c.innerHTML = '<div class="text-xs text-gray-400">لم تقم بتحديد منتجات كأكثر مبيعاً من قائمة المنتجات.</div>'; 
+        c.innerHTML = '<div class="text-xs text-gray-400">لم تقم بتحديد منتجات كأكثر مبيعاً.</div>'; 
     }
 }
 
@@ -182,7 +226,9 @@ window.moveProduct = (id, direction) => {
 };
 
 window.renderAdminProducts = () => {
-    const container = document.getElementById('admin-inputs-container'); container.innerHTML = '';
+    const container = document.getElementById('admin-inputs-container'); 
+    if(!container) return;
+    container.innerHTML = '';
     Object.keys(tempProducts).forEach(id => {
         const p = tempProducts[id]; const stock = globalStock[id] || 0; const price = globalPrices[id] || p.basePrice; const oldPrice = globalOldPrices[id] || price; const isDisc = globalDiscounts[id] || false; const isBest = globalSettings.bestSellers?.includes(id) || false;
         const imgSrc = (p.images && p.images.length > 0) ? p.images[0] : '';
@@ -222,7 +268,10 @@ window.addNewAdminProduct = () => {
     tempProducts[newId] = { name: "منتج جديد", basePrice: 0, weight: "1 طبق", images: [""], isExtra: false }; 
     globalStock[newId] = 0; globalPrices[newId] = 0; globalOldPrices[newId] = 0; globalDiscounts[newId] = false; 
     renderAdminProducts(); 
-    setTimeout(()=>document.getElementById(`edit-p-${newId}`)?.classList.remove('hidden'), 100); 
+    setTimeout(()=> {
+        const el = document.getElementById(`edit-p-${newId}`);
+        if(el) el.classList.remove('hidden');
+    }, 100); 
 };
 
 window.deleteAdminProduct = (id) => { 
@@ -249,11 +298,18 @@ window.syncAdminProductsFromDOM = () => {
     globalSettings.bestSellers = newBest;
 };
 
-window.renderAdminZones = () => { const c=document.getElementById('admin-zones-container'); c.innerHTML=''; tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); };
+window.renderAdminZones = () => { 
+    const c = document.getElementById('admin-zones-container'); 
+    if(!c) return;
+    c.innerHTML=''; 
+    tempAdminZones.forEach((z,i) => c.innerHTML += `<div class="flex gap-2 items-center"><input type="text" value="${z.name}" class="flex-1 border rounded p-2 text-sm font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].name=this.value"><input type="number" value="${z.price}" class="w-16 border rounded p-2 text-sm text-center font-bold text-brand-cyanDark outline-none focus:border-brand-cyan" onchange="tempAdminZones[${i}].price=parseInt(this.value)"><button onclick="tempAdminZones.splice(${i},1);renderAdminZones()" class="text-red-500 hover:bg-red-50 rounded w-8 h-8 transition-colors"><i class="fa-solid fa-trash"></i></button></div>`); 
+};
 window.addNewAdminZone = () => { tempAdminZones.push({id:'z_'+Date.now(), name:'', price:0}); renderAdminZones(); };
 
 window.renderAdminPromos = () => { 
-    const c = document.getElementById('admin-promos-container'); c.innerHTML=''; 
+    const c = document.getElementById('admin-promos-container'); 
+    if(!c) return;
+    c.innerHTML=''; 
     tempPromoCodes.forEach((p,i) => {
         const autoBadge = p.isAuto ? `<span class="bg-yellow-100 text-yellow-700 text-[8px] font-black px-1 rounded ml-1">تلقائي</span>` : '';
         if(p.usesLeft === undefined) p.usesLeft = p.isAuto ? 1 : 100;
@@ -280,10 +336,7 @@ window.renderAdminPromos = () => {
             </div>
             <div class="grid grid-cols-2 gap-2 mt-1">
                 <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">تاريخ الانتهاء</label><input type="date" value="${p.expiryDate}" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].expiryDate=this.value"></div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label>
-                    <input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="سيبه فاضي لعدد لا نهائي ∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan placeholder-gray-400" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)">
-                </div>
+                <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label><input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="سيبه فاضي لعدد لا نهائي ∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan placeholder-gray-400" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)"></div>
             </div>
             <div class="flex items-center bg-white border rounded p-1.5 border-gray-300 mt-1">
                 <i class="fa-solid fa-mobile-screen text-gray-400 text-[10px] w-4 text-center"></i>
@@ -299,25 +352,18 @@ window.addNewPromoCode = () => {
     renderAdminPromos(); 
 };
 
-// --- تصدير الطلبات كملف Excel (CSV) ---
 window.exportOrdersToCSV = () => {
     if(ordersList.length === 0) return showAlert("تنبيه", "لا توجد طلبات لتصديرها.");
-    
-    // إضافة BOM لدعم اللغة العربية في الإكسيل
     let csv = '\uFEFF'; 
     csv += "التاريخ والوقت,الاسم,الموبايل,المنطقة,العنوان,الطلبات,الإجمالي (ج.م),الخصم,الحالة\n";
-    
     ordersList.forEach(o => {
         let items = o.items.map(i => `${i.quantity} ${i.name}`).join(' + ');
         let status = o.status === 'new' ? 'جديد' : (o.status === 'processing' ? 'قيد التجهيز' : 'مكتمل');
         let date = (o.orderDate || '') + " " + (o.orderTime || '');
         let discount = o.discount ? o.discount : 0;
         let address = o.customerAddress ? o.customerAddress.replace(/,/g, '-') : '';
-        
-        let row = `"${date}","${o.customerName}","${o.customerPhone}","${o.zone}","${address}","${items}","${o.total}","${discount}","${status}"`;
-        csv += row + "\n";
+        csv += `"${date}","${o.customerName}","${o.customerPhone}","${o.zone}","${address}","${items}","${o.total}","${discount}","${status}"\n`;
     });
-    
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -342,13 +388,13 @@ window.renderOrdersList = () => {
     const container = document.getElementById('orders-list-container');
     if(!container) return;
     
-    // حقن زر التصدير لو مش موجود
     if (!document.getElementById('export-csv-btn')) {
         const btnHtml = `<button id="export-csv-btn" onclick="exportOrdersToCSV()" class="w-full mb-3 bg-brand-navy hover:bg-gray-800 transition-colors text-white text-xs font-bold py-3 rounded-xl shadow-sm flex justify-center items-center gap-2"><i class="fa-solid fa-file-excel text-green-400"></i> تصدير جميع الطلبات لـ Excel</button>`;
         container.insertAdjacentHTML('beforebegin', btnHtml);
     }
     
-    const searchQuery = document.getElementById('order-search')?.value.trim().toLowerCase() || '';
+    const searchEl = document.getElementById('order-search');
+    const searchQuery = searchEl ? searchEl.value.trim().toLowerCase() : '';
     
     let filtered = ordersList.filter(o => {
         if(orderFilter !== 'all' && o.status !== orderFilter) return false;
@@ -371,7 +417,6 @@ window.renderOrdersList = () => {
     container.innerHTML = filtered.map(order => {
         let statusColor = order.status === 'new' ? 'bg-red-100 text-red-700 border-red-200' : (order.status === 'processing' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : 'bg-green-100 text-green-700 border-green-200');
         let statusText = order.status === 'new' ? 'جديد' : (order.status === 'processing' ? 'قيد التجهيز' : 'مكتمل');
-        
         let itemsHtml = order.items.map(i => `<div class="flex justify-between text-xs text-gray-700 font-bold border-b border-gray-100 pb-1 mb-1 last:border-0 last:pb-0 last:mb-0"><span><span class="text-brand-cyanDark">${i.quantity}x</span> ${i.name}</span><span>${i.quantity*i.price} ج</span></div>`).join('');
 
         return `
@@ -420,8 +465,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadOrders() { 
     if(!hasCloud || !db) return; 
+    const container = document.getElementById('orders-list-container');
+    if(container) container.innerHTML = '<div class="text-center py-10 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p class="text-xs font-bold">جاري جلب الطلبات...</p></div>';
     try { 
-        document.getElementById('orders-list-container').innerHTML = '<div class="text-center py-10 text-gray-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p class="text-xs font-bold">جاري جلب الطلبات...</p></div>';
         const snap = await db.collection("orders").orderBy("createdAt","desc").get(); 
         ordersList=[]; 
         snap.forEach(d=>ordersList.push({id:d.id, ...d.data()})); 
@@ -442,8 +488,9 @@ window.updateOrderStatus = async (id, s) => {
 
 window.deleteAllOrders = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من مسح جميع الطلبات من السجل؟ لا يمكن التراجع عن هذا الإجراء!")) return;
-    const btn = document.querySelector('button[onclick="deleteAllOrders()"]'); const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المسح...';
+    const btn = document.querySelector('button[onclick="deleteAllOrders()"]'); 
+    let originalHtml = '';
+    if(btn) { originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري المسح...'; }
     if(hasCloud && db) {
         try {
             const snap = await db.collection("orders").get();
@@ -452,33 +499,50 @@ window.deleteAllOrders = async () => {
                 snap.docs.forEach(doc => batch.delete(doc.ref));
                 await batch.commit();
             }
-            btn.innerHTML = originalHtml; showAlert("تم المسح", "تم مسح جميع سجلات الطلبات بنجاح."); loadOrders();
-        } catch(e) { btn.innerHTML = originalHtml; showAlert("خطأ", "حدث خطأ أثناء المسح."); }
-    } else { ordersList = []; renderOrdersList(); btn.innerHTML = originalHtml; showAlert("تم بنجاح", "تم المسح محلياً."); }
+            if(btn) btn.innerHTML = originalHtml; 
+            showAlert("تم المسح", "تم مسح جميع سجلات الطلبات بنجاح."); 
+            loadOrders();
+        } catch(e) { 
+            if(btn) btn.innerHTML = originalHtml; 
+            showAlert("خطأ", "حدث خطأ أثناء المسح."); 
+        }
+    } else { 
+        ordersList = []; renderOrdersList(); 
+        if(btn) btn.innerHTML = originalHtml; 
+        showAlert("تم بنجاح", "تم المسح محلياً."); 
+    }
 };
 
 window.resetStatsOnly = async () => {
     if(!confirm("⚠️ تحذير: هل أنت متأكد من تصفير عدادات الإحصائيات (مبيعات اليوم والطلبات) لتبدأ من صفر؟")) return;
-    const btn = document.querySelector('button[onclick="resetStatsOnly()"]'); const originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التصفير...';
+    const btn = document.querySelector('button[onclick="resetStatsOnly()"]'); 
+    let originalHtml = '';
+    if(btn) { originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التصفير...'; }
     if(hasCloud && db) {
         try {
             await db.collection("inventory").doc("stats").set({ sales: 0, orders: 0 });
-            btn.innerHTML = originalHtml; showAlert("تم التصفير", "تم تصفير عدادات المبيعات بنجاح.");
-        } catch(e) { btn.innerHTML = originalHtml; showAlert("خطأ", "حدث خطأ أثناء الاتصال بقاعدة البيانات."); }
+            if(btn) btn.innerHTML = originalHtml; 
+            showAlert("تم التصفير", "تم تصفير عدادات المبيعات بنجاح.");
+        } catch(e) { 
+            if(btn) btn.innerHTML = originalHtml; 
+            showAlert("خطأ", "حدث خطأ أثناء الاتصال بقاعدة البيانات."); 
+        }
     } else {
-        dailyStats = { sales: 0, orders: 0 }; document.getElementById('stat-sales').innerText = 0; document.getElementById('stat-orders').innerText = 0;
-        btn.innerHTML = originalHtml; showAlert("تم بنجاح", "تم التصفير محلياً.");
+        dailyStats = { sales: 0, orders: 0 }; 
+        const sSales = document.getElementById('stat-sales'); if(sSales) sSales.innerText = 0; 
+        const sOrders = document.getElementById('stat-orders'); if(sOrders) sOrders.innerText = 0;
+        if(btn) btn.innerHTML = originalHtml; 
+        showAlert("تم بنجاح", "تم التصفير محلياً.");
     }
 };
 
-// ========== نظام التوزيع (Dispatch) ==========
 window.renderDispatchOrders = () => {
     const container = document.getElementById('dispatch-orders-container');
-    const zoneFilter = document.getElementById('dispatch-zone-filter')?.value || 'all';
     if (!container) return;
-
+    
     const zoneSelect = document.getElementById('dispatch-zone-filter');
+    const zoneFilter = zoneSelect ? zoneSelect.value : 'all';
+
     if (zoneSelect && dispatchOrdersList.length > 0) {
         const zones = [...new Set(dispatchOrdersList.map(o => o.zone))].sort();
         zoneSelect.innerHTML = '<option value="all">كل المناطق</option>' +
@@ -528,11 +592,10 @@ window.toggleSelectAllDispatch = () => {
 };
 
 window.sendDispatchToDriver = () => {
-    const phone = document.getElementById('dispatch-driver-phone').value.trim();
-    if (!phone || phone.length < 10) {
-        showAlert('تنبيه', 'يرجى إدخال رقم موبايل المندوب بشكل صحيح');
-        return;
-    }
+    const phoneEl = document.getElementById('dispatch-driver-phone');
+    if(!phoneEl) return;
+    const phone = phoneEl.value.trim();
+    if (!phone || phone.length < 10) { showAlert('تنبيه', 'يرجى إدخال رقم موبايل المندوب بشكل صحيح'); return; }
 
     const checkedOrders = [];
     document.querySelectorAll('.dispatch-checkbox:checked').forEach(cb => {
@@ -541,75 +604,54 @@ window.sendDispatchToDriver = () => {
         if (order) checkedOrders.push(order);
     });
 
-    if (checkedOrders.length === 0) {
-        showAlert('تنبيه', 'لم تختر أي طلب للإرسال');
-        return;
-    }
+    if (checkedOrders.length === 0) { showAlert('تنبيه', 'لم تختر أي طلب للإرسال'); return; }
 
-    const template = (globalSettings.dispatchTemplate || 
-        '📦 طلب جديد من {اسم_العميل}\n📱 {رقم_العميل}\n📍 {المنطقة} - {العنوان}\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n💰 إجمالي الطلب: {إجمالي_الطلب} ج.م\n🚚 التوصيل: {التوصيل}\n⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م');
+    const template = (globalSettings.dispatchTemplate || '📦 طلب جديد من {اسم_العميل}\n📱 {رقم_العميل}\n📍 {المنطقة} - {العنوان}\n🛒 الطلبات:\n{تفاصيل_الطلبات}\n💰 إجمالي الطلب: {إجمالي_الطلب} ج.م\n🚚 التوصيل: {التوصيل}\n⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م');
 
     let fullMessage = '';
     checkedOrders.forEach(order => {
         let itemsText = order.items.map(i => `${i.quantity}x ${i.name}`).join('\n');
         let address = (order.customerAddress && order.customerAddress !== 'غير محدد') ? order.customerAddress : '';
-        let msg = template
-            .replace(/{اسم_العميل}/g, order.customerName)
-            .replace(/{رقم_العميل}/g, order.customerPhone)
-            .replace(/{المنطقة}/g, order.zone)
-            .replace(/{العنوان}/g, address)
-            .replace(/{تفاصيل_الطلبات}/g, itemsText)
-            .replace(/{إجمالي_الطلب}/g, order.subtotal)
-            .replace(/{التوصيل}/g, order.deliveryFee)
-            .replace(/{الإجمالي_النهائي}/g, order.total);
+        let msg = template.replace(/{اسم_العميل}/g, order.customerName).replace(/{رقم_العميل}/g, order.customerPhone).replace(/{المنطقة}/g, order.zone).replace(/{العنوان}/g, address).replace(/{تفاصيل_الطلبات}/g, itemsText).replace(/{إجمالي_الطلب}/g, order.subtotal).replace(/{التوصيل}/g, order.deliveryFee).replace(/{الإجمالي_النهائي}/g, order.total);
         fullMessage += msg + '\n\n' + '─'.repeat(10) + '\n\n';
     });
 
     let waNumber = phone.startsWith('0') ? '2' + phone : phone;
-    const url = `https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(fullMessage.trim())}`;
-    window.open(url, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(fullMessage.trim())}`, '_blank');
 };
 
 window.generateBulkWhatsAppLinks = () => {
-    const numbersRaw = document.getElementById('admin-bulk-numbers').value.trim();
-    const messageTemplate = document.getElementById('admin-bulk-message').value.trim() || "شكراً لثقتك! كود الخصم بتاعك: {الكود}";
-    const rewardType = document.getElementById('admin-bulk-reward-type').value;
-    const rewardValue = parseInt(document.getElementById('admin-bulk-reward-value').value) || 0;
+    const numbersEl = document.getElementById('admin-bulk-numbers');
+    const msgEl = document.getElementById('admin-bulk-message');
+    const typeEl = document.getElementById('admin-bulk-reward-type');
+    const valEl = document.getElementById('admin-bulk-reward-value');
+    
+    if(!numbersEl || !msgEl || !typeEl || !valEl) return;
+
+    const numbersRaw = numbersEl.value.trim();
+    const messageTemplate = msgEl.value.trim() || "شكراً لثقتك! كود الخصم بتاعك: {الكود}";
+    const rewardType = typeEl.value;
+    const rewardValue = parseInt(valEl.value) || 0;
 
     if(!numbersRaw) { showAlert("تنبيه", "يرجى إدخال أرقام الموبايلات أولاً"); return; }
-
     const numbers = numbersRaw.split('\n').map(n => n.trim()).filter(n => n.length >= 10);
-
     if(numbers.length === 0) { showAlert("تنبيه", "لم يتم العثور على أرقام صحيحة"); return; }
 
     const linksContainer = document.getElementById('bulk-whatsapp-links');
+    if(!linksContainer) return;
     linksContainer.innerHTML = '<p class="text-xs font-black text-brand-navy mb-2 border-b pb-2"><i class="fa-solid fa-check-double text-green-500"></i> اضغط "إرسال" قدام كل رقم:</p>';
 
     numbers.forEach(num => {
         const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
-        
-        tempPromoCodes.push({ 
-            code: randomCode, 
-            type: rewardType, 
-            discount: rewardValue, 
-            isAuto: true, 
-            usesLeft: null,
-            customerPhone: num,
-            minOrder: 0,
-            maxDiscount: 0,
-            expiryDate: '' 
-        });
-
+        tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: null, customerPhone: num, minOrder: 0, maxDiscount: 0, expiryDate: '' });
         const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
         let waNumber = num;
         if(waNumber.startsWith('0')) waNumber = '2' + waNumber; 
 
-        const waLink = `https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(finalMessage)}`;
-
         linksContainer.innerHTML += `
             <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg shadow-sm">
                 <span class="text-xs font-bold text-gray-600" dir="ltr">${num}</span>
-                <a href="${waLink}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] px-4 py-1.5 rounded font-black transition-colors flex items-center gap-1 shadow-sm">
+                <a href="https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(finalMessage)}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] px-4 py-1.5 rounded font-black transition-colors flex items-center gap-1 shadow-sm">
                     إرسال <i class="fa-brands fa-whatsapp text-sm"></i>
                 </a>
             </div>
@@ -621,6 +663,10 @@ window.generateBulkWhatsAppLinks = () => {
     showAlert("تم التجهيز بنجاح 🎉", `تم إنشاء أكواد لـ ${numbers.length} عميل. \n\n⚠️ مهم جداً: انزل تحت في لوحة التحكم ودوس "حفظ جميع التعديلات" عشان الأكواد تتفعل في السيستم وتقدر تبعت الرسايل.`);
 };
 
+// --- الدالة الذهبية لحفظ البيانات (آمنة تماماً ضد الـ HTML الناقص) ---
+const getSafeVal = (id, defaultVal) => document.getElementById(id) ? document.getElementById(id).value.trim() : defaultVal;
+const getSafeCheck = (id, defaultVal) => document.getElementById(id) ? document.getElementById(id).checked : defaultVal;
+
 window.saveAdminData = async () => {
     syncAdminProductsFromDOM(); 
     
@@ -629,43 +675,48 @@ window.saveAdminData = async () => {
         textsConfig.forEach(t => {
             const el = document.getElementById(`ui-txt-${t.id}`);
             if(el) newUiTexts[t.id] = el.value.trim();
+            else if(globalSettings.uiTexts && globalSettings.uiTexts[t.id]) newUiTexts[t.id] = globalSettings.uiTexts[t.id]; // يحافظ على القديم لو الخانة محذوفة
         });
     }
 
     const newSettings = {
-        storeOpen: document.getElementById('admin-store-open').checked, 
-        storeName: document.getElementById('admin-store-name').value.trim() || 'المتجر', 
-        storeDesc: document.getElementById('admin-store-desc').value.trim(), 
-        storePhone: document.getElementById('admin-store-phone').value.trim(), 
-        minOrder: parseInt(document.getElementById('admin-min-order').value) || 0,
-        freeDeliveryActive: document.getElementById('admin-free-delivery-active').checked, 
-        freeDeliveryThreshold: parseInt(document.getElementById('admin-free-delivery-threshold').value) || 0, 
-        deliveryZones: tempAdminZones.filter(z=>z.name.trim()),
-        rewardActive: document.getElementById('admin-reward-active').checked, 
-        rewardType: document.getElementById('admin-reward-type').value, 
-        rewardValue: parseInt(document.getElementById('admin-reward-value').value) || 0, 
-        rewardMaxGenerations: parseInt(document.getElementById('admin-reward-max-generations').value) || 0,
-        bannerActive: document.getElementById('admin-banner-active').checked, 
-        bannerText: document.getElementById('admin-banner-text').value.trim(), 
-        crossSellActive: document.getElementById('admin-crosssell-active').checked, 
-        crossSellProductId: document.getElementById('admin-crosssell-product').value, 
-        promoCodes: tempPromoCodes.filter(p=>p.code.trim()), 
+        storeOpen: getSafeCheck('admin-store-open', globalSettings.storeOpen), 
+        storeName: getSafeVal('admin-store-name', globalSettings.storeName || 'المتجر'), 
+        storeDesc: getSafeVal('admin-store-desc', globalSettings.storeDesc), 
+        storePhone: getSafeVal('admin-store-phone', globalSettings.storePhone), 
+        minOrder: parseInt(getSafeVal('admin-min-order', globalSettings.minOrder)) || 0,
+        freeDeliveryActive: getSafeCheck('admin-free-delivery-active', globalSettings.freeDeliveryActive), 
+        freeDeliveryThreshold: parseInt(getSafeVal('admin-free-delivery-threshold', globalSettings.freeDeliveryThreshold)) || 0, 
+        deliveryZones: tempAdminZones.filter(z => z.name.trim()),
+        rewardActive: getSafeCheck('admin-reward-active', globalSettings.rewardActive), 
+        rewardType: getSafeVal('admin-reward-type', globalSettings.rewardType), 
+        rewardValue: parseInt(getSafeVal('admin-reward-value', globalSettings.rewardValue)) || 0, 
+        rewardMaxGenerations: parseInt(getSafeVal('admin-reward-max-generations', globalSettings.rewardMaxGenerations)) || 0,
+        bannerActive: getSafeCheck('admin-banner-active', globalSettings.bannerActive), 
+        bannerText: getSafeVal('admin-banner-text', globalSettings.bannerText), 
+        crossSellActive: getSafeCheck('admin-crosssell-active', globalSettings.crossSellActive), 
+        crossSellProductId: getSafeVal('admin-crosssell-product', globalSettings.crossSellProductId), 
+        promoCodes: tempPromoCodes.filter(p => p.code.trim()), 
         bestSellers: globalSettings.bestSellers,
-        showPromoField: document.getElementById('admin-show-promo-field').checked,
-        successTitle: document.getElementById('admin-success-title').value.trim(), 
-        successMessage: document.getElementById('admin-success-message').value.trim(), 
+        showPromoField: getSafeCheck('admin-show-promo-field', globalSettings.showPromoField),
+        successTitle: getSafeVal('admin-success-title', globalSettings.successTitle), 
+        successMessage: getSafeVal('admin-success-message', globalSettings.successMessage), 
         productsData: tempProducts,
-        whatsappTemplate: document.getElementById('admin-whatsapp-template').value.trim() || 'السلام عليكم، أريد تأكيد حجزي:\n\n📋 *بيانات العميل:*\n{تفاصيل_العميل}\n\n🛒 *الطلبات:*\n{الطلبات}\n{الخصم}═════════════════\n📦 قيمة الطلبات: {قيمة_الطلبات} ج.م\n🚚 رسوم التوصيل: {التوصيل}\n💰 *الإجمالي النهائي: {الاجمالي} ج.م*\n\n(في انتظار تأكيد الحجز وموعد الاستلام)',
-        ticktickTemplate: document.getElementById('admin-ticktick-template').value.trim(),
-        vipWhatsappTemplate: document.getElementById('admin-vip-whatsapp-template').value.trim(),
-        batchHashtag: document.getElementById('admin-batch-hashtag').value.trim(),
-        dispatchTemplate: document.getElementById('admin-dispatch-template').value.trim(),
+        whatsappTemplate: getSafeVal('admin-whatsapp-template', globalSettings.whatsappTemplate),
+        ticktickTemplate: getSafeVal('admin-ticktick-template', globalSettings.ticktickTemplate),
+        vipWhatsappTemplate: getSafeVal('admin-vip-whatsapp-template', globalSettings.vipWhatsappTemplate),
+        batchHashtag: getSafeVal('admin-batch-hashtag', globalSettings.batchHashtag),
+        dispatchTemplate: getSafeVal('admin-dispatch-template', globalSettings.dispatchTemplate),
         uiTexts: newUiTexts
     };
 
-    const btn = document.querySelector('#admin-dashboard-modal button[onclick="saveAdminData()"]'); 
-    const originalHtml = btn.innerHTML; 
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
+    const btn = document.querySelector('button[onclick="saveAdminData()"]'); 
+    let originalHtml = '';
+    if(btn) {
+        originalHtml = btn.innerHTML; 
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xl"></i> جاري الحفظ...';
+    }
+
     if(hasCloud && db) {
         try {
             await Promise.all([ 
@@ -675,13 +726,17 @@ window.saveAdminData = async () => {
                 db.collection("inventory").doc("old_prices").set(globalOldPrices), 
                 db.collection("inventory").doc("discounts_status").set(globalDiscounts) 
             ]);
-            btn.innerHTML = originalHtml; 
+            if(btn) btn.innerHTML = originalHtml; 
             closeAdminDashboard(); 
-            document.getElementById('alert-icon-container').className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; 
-            document.getElementById('alert-icon').className = "fa-solid fa-check"; 
+            
+            const iconCont = document.getElementById('alert-icon-container');
+            if(iconCont) iconCont.className = "w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; 
+            const icon = document.getElementById('alert-icon');
+            if(icon) icon.className = "fa-solid fa-check"; 
+            
             showAlert("تم بنجاح", "تم حفظ جميع التعديلات بنجاح.");
         } catch(e) { 
-            btn.innerHTML = originalHtml; 
+            if(btn) btn.innerHTML = originalHtml; 
             showAlert("خطأ", "حدث خطأ أثناء الحفظ. تحقق من اتصالك بالإنترنت."); 
         }
     } else {
@@ -689,13 +744,15 @@ window.saveAdminData = async () => {
         productsInfo = tempProducts; 
         globalDeliveryZones = newSettings.deliveryZones; 
         closeAdminDashboard(); 
-        btn.innerHTML = originalHtml; 
-        applySettingsToUI(); 
-        renderDeliveryZones(); 
+        if(btn) btn.innerHTML = originalHtml; 
+        if(typeof applySettingsToUI === 'function') applySettingsToUI(); 
+        if(typeof renderDeliveryZones === 'function') renderDeliveryZones(); 
+        
         const container = document.getElementById('products-container'); 
         if(container) container.innerHTML = `<div class="text-center py-10 text-brand-cyanDark"><i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i><p class="font-bold text-sm">جاري التحديث...</p></div>`; 
-        setTimeout(() => renderProducts(), 500); 
-        updateUI(); 
+        setTimeout(() => { if(typeof renderProducts === 'function') renderProducts(); }, 500); 
+        
+        if(typeof updateUI === 'function') updateUI(); 
         showAlert("تم محلياً", "تم الحفظ مؤقتاً لأن المتصفح غير متصل بقاعدة البيانات.");
     }
 };
