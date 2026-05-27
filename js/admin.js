@@ -15,10 +15,10 @@ document.getElementById('admin-store-open')?.addEventListener('change', function
     label.className = this.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
 });
 
-// --- نظام الدخول الذكي والمستمر ---
+// --- نظام الدخول والخروج ---
 window.openAdminLogin = () => { 
     const user = firebase.auth().currentUser;
-    // لو الإدارة مسجلة دخول مسبقاً (عن طريق الإيميل مش مجهول)، افتح اللوحة علطول
+    // لو إنت مسجل دخول فعلاً كإدارة (عندك إيميل)، هيفتح اللوحة علطول
     if (user && user.email) {
         openAdminDashboard();
     } else {
@@ -38,12 +38,13 @@ window.verifyAdminPin = () => {
     const pass = document.getElementById('admin-password-input').value.trim();
     const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]');
     const origHtml = btn.innerHTML;
+    
     if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
     
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
     btn.disabled = true;
     
-    // تسجيل الدخول المباشر (فايربيس بيحفظ الجلسة تلقائياً فمش هنحتاج كود إضافي يعمل تعارض)
+    // الدخول العادي والآمن بدون تعقيد
     firebase.auth().signInWithEmailAndPassword(email, pass)
         .then((userCredential) => {
             closeAdminLogin(); 
@@ -55,7 +56,7 @@ window.verifyAdminPin = () => {
         .catch((error) => {
             btn.innerHTML = origHtml;
             btn.disabled = false;
-            console.error("Login Error: ", error); // عشان لو في خطأ يظهرلنا في الكونسول
+            console.error("Login Error: ", error);
             showAlert("خطأ", "بيانات الدخول غير صحيحة، أو ليس لديك صلاحية!");
         });
 };
@@ -64,7 +65,8 @@ window.adminLogout = () => {
     if(!confirm("هل تريد تسجيل الخروج من لوحة الإدارة؟")) return;
     firebase.auth().signOut().then(() => {
         closeAdminDashboard();
-        firebase.auth().signInAnonymously(); // العودة كعميل عادي عشان السيستم مايوقفش
+        // العودة كعميل عادي عشان السيستم مايوقفش وتقدر تعمل أوردرات
+        firebase.auth().signInAnonymously(); 
         showAlert("تم الخروج", "تم تسجيل الخروج من حساب الإدارة بنجاح.");
     });
 };
@@ -72,8 +74,10 @@ window.adminLogout = () => {
 let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all';
 window.dispatchOrdersList = [];
 
+// --- التبديل بين التبويبات (متضمن المظهر theme) ---
 window.switchAdminTab = (tab) => {
     currentAdminTab = tab;
+    // ضفنا theme في المصفوفة عشان المظهر يشتغل
     ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts','theme'].forEach(t => {
         document.getElementById('admin-panel-'+t)?.classList.add('hidden');
         const btn = document.getElementById('admin-tab-'+t);
@@ -86,10 +90,10 @@ window.switchAdminTab = (tab) => {
 };
 
 window.openAdminDashboard = () => {
-    // إضافة زر تسجيل الخروج في الهيدر لو مش موجود
+    // إضافة زر تسجيل الخروج في الهيدر بتاع اللوحة لو مش موجود
     const headerDiv = document.querySelector('#admin-dashboard-modal .flex.items-center.gap-3');
     if(headerDiv && !document.getElementById('admin-logout-btn')) {
-        headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
+        headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
     }
 
     const storeToggle = document.getElementById('admin-store-open');
@@ -132,10 +136,12 @@ window.openAdminDashboard = () => {
     const textsCont = document.getElementById('admin-texts-container');
     if(textsCont) {
         textsCont.innerHTML = '';
-        textsConfig.forEach(t => {
-            const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default;
-            textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`;
-        });
+        if (typeof textsConfig !== 'undefined') {
+            textsConfig.forEach(t => {
+                const val = (globalSettings.uiTexts && globalSettings.uiTexts[t.id]) ? globalSettings.uiTexts[t.id] : t.default;
+                textsCont.innerHTML += `<div><label class="text-[10px] font-bold text-gray-500 block mb-1">${t.label}</label><input type="text" id="ui-txt-${t.id}" value="${val}" class="w-full border rounded p-2 text-xs font-bold text-brand-navy outline-none focus:border-brand-cyan"></div>`;
+            });
+        }
     }
 
     tempProducts = JSON.parse(JSON.stringify(productsInfo));
@@ -274,7 +280,10 @@ window.renderAdminPromos = () => {
             </div>
             <div class="grid grid-cols-2 gap-2 mt-1">
                 <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">تاريخ الانتهاء</label><input type="date" value="${p.expiryDate}" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan" onchange="tempPromoCodes[${i}].expiryDate=this.value"></div>
-                <div><label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label><input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="سيبه فاضي لعدد لا نهائي ∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan placeholder-gray-300" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)"></div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 block mb-0.5">متاح لعدد أشخاص</label>
+                    <input type="number" value="${p.usesLeft !== null ? p.usesLeft : ''}" placeholder="سيبه فاضي لعدد لا نهائي ∞" class="w-full border rounded p-1.5 text-xs text-center font-bold text-brand-navy outline-none focus:border-brand-cyan placeholder-gray-400" onchange="tempPromoCodes[${i}].usesLeft=this.value === '' ? null : parseInt(this.value)">
+                </div>
             </div>
             <div class="flex items-center bg-white border rounded p-1.5 border-gray-300 mt-1">
                 <i class="fa-solid fa-mobile-screen text-gray-400 text-[10px] w-4 text-center"></i>
@@ -496,7 +505,7 @@ window.renderDispatchOrders = () => {
                 <div class="font-black text-brand-navy">${order.customerName}</div>
                 <div class="text-xs text-gray-500 mt-1">📱 ${order.customerPhone}</div>
                 <div class="text-xs text-gray-500">📍 ${order.zone} ${address ? '- ' + address : ''}</div>
-                <div class="text-xs mt-1 bg-gray-50 p-1 rounded border">🛒 ${itemsText}</div>
+                <div class="text-xs mt-1 bg-gray-50 p-1 rounded border border-gray-100">🛒 ${itemsText}</div>
                 <div class="text-xs font-bold text-brand-cyanDark mt-1">💰 الإجمالي: ${order.total} ج.م (توصيل: ${order.deliveryFee} ج.م)</div>
             </div>
         </div>`;
