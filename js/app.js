@@ -420,3 +420,52 @@ window.finalCheckoutStep = async function() {
 
 window.showAlert = function(t, m) { document.getElementById('alert-title').innerText=t; document.getElementById('alert-message').innerText=m; const md=document.getElementById('alert-modal'); md.classList.remove('hidden'); setTimeout(()=>md.classList.remove('opacity-0'),10); };
 window.closeAlert = function() { document.getElementById('alert-modal').classList.add('opacity-0'); setTimeout(() => { document.getElementById('alert-modal').classList.add('hidden'); document.getElementById('alert-icon-container').className="w-16 h-16 bg-brand-light text-brand-cyanDark rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; document.getElementById('alert-icon-container').classList.remove('hidden'); document.getElementById('alert-title').classList.remove('hidden'); document.getElementById('alert-icon').className="fa-solid fa-bell"; document.getElementById('alert-message').innerHTML = "الرسالة"; const btn = document.querySelector('#alert-box button'); btn.className = "bg-brand-navy hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl w-full transition-colors"; btn.innerHTML = 'حسناً'; btn.onclick = closeAlert; }, 300); };
+// ==========================================
+// 🎨 الجزء الخاص بتطبيق المظهر الديناميكي للعميل
+// ==========================================
+
+async function applySiteSettings() {
+    try {
+        // بنقرأ من المسار الفعلي لقاعدة بياناتك
+        if (typeof db !== "undefined") {
+            const doc = await db.collection('inventory').doc('settings').get();
+            if (doc.exists) {
+                const data = doc.data();
+
+                // 1. تشغيل البانر العلوي (شريط الإعلانات)
+                const bannerEl = document.getElementById('top-banner');
+                const bannerTextEl = document.getElementById('top-banner-text');
+
+                // لو عناصر البانر موجودة في HTML
+                if (bannerEl && bannerTextEl) {
+                    if (data.bannerActive && data.bannerText && data.bannerText.trim() !== "") {
+                        bannerTextEl.innerText = data.bannerText;
+                        bannerEl.classList.remove('hidden'); // إظهار الشريط
+                    } else {
+                        bannerEl.classList.add('hidden'); // إخفاء الشريط
+                    }
+                }
+
+                // 2. تشغيل القاموس (تغيير الكلمات)
+                // بناءً على كودك، الكلمات بتتحفظ جوه حاجة اسمها uiTexts
+                if (data.uiTexts) {
+                    for (const [key, val] of Object.entries(data.uiTexts)) {
+                        // بندور على العنصر في الموقع اللي يحمل نفس الـ ID
+                        const element = document.getElementById(key); 
+                        if (element && val.trim() !== "") {
+                            element.innerText = val; // استبدال النص
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error("خطأ في تحميل إعدادات الموقع:", error);
+    }
+}
+
+// تشغيل الدالة أول ما صفحة الموقع تفتح للعميل
+document.addEventListener('DOMContentLoaded', () => {
+    applySiteSettings();
+});
+
