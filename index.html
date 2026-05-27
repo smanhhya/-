@@ -13,34 +13,62 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <style>
+        :root {
+            --brand-navy: #1b4332;
+            --brand-cyanDark: #b91c1c;
+            --brand-yellow: #f59e0b;
+        }
+    </style>
     <script>
+        const savedNavy = localStorage.getItem('theme_navy');
+        const savedCyanDark = localStorage.getItem('theme_cyanDark');
+        const savedYellow = localStorage.getItem('theme_yellow');
+        
+        if(savedNavy) document.documentElement.style.setProperty('--brand-navy', savedNavy);
+        if(savedCyanDark) document.documentElement.style.setProperty('--brand-cyanDark', savedCyanDark);
+        if(savedYellow) document.documentElement.style.setProperty('--brand-yellow', savedYellow);
+
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { cairo: ['Cairo', 'sans-serif'] },
                     colors: {
-                        brand: { navy: '#1b4332', cyanDark: '#b91c1c', yellow: '#f59e0b', cyan: '#86efac', light: '#f0fdf4' }
+                        brand: { 
+                            navy: 'var(--brand-navy)', 
+                            cyanDark: 'var(--brand-cyanDark)', 
+                            yellow: 'var(--brand-yellow)', 
+                            cyan: '#86efac', 
+                            light: '#f0fdf4' 
+                        }
                     }
                 }
             }
         }
     </script>
 </head>
-<body>
-    <!-- شريط الإعلانات الديناميكي هنا في أول الصفحة -->
-    <div id="top-banner" class="hidden bg-brand-orange text-white text-center text-sm font-bold p-2">
-        <span id="top-banner-text"></span>
+<body class="text-gray-800 antialiased selection:bg-brand-navy selection:text-white">
+
+    <nav class="bg-brand-navy shadow-md sticky top-0 z-30 border-b border-[#143024]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-center h-14 items-center">
+                <a href="#" class="flex items-center gap-2">
+                    <i class="fa-solid fa-kiwi-bird text-white text-xl"></i>
+                    <span class="font-black text-xl text-white" id="nav-store-name">سمان <span class="text-brand-yellow">ههيا</span></span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div id="top-banner" class="bg-[#fef3c7] text-[#92400e] text-center py-2.5 font-bold text-sm md:text-base z-40 relative shadow-sm border-b border-[#fde68a] transition-all hidden">
+        <i class="fa-solid fa-fire text-orange-500 ml-1"></i> 
+        <span id="top-banner-text">متاح الآن حجز أوردرات - الكمية محدودة!</span>
     </div>
 
-    <!-- ده الهيدر بتاع موقعك (الشريط اللي فيه اللوجو) -->
-    <header class="...">
-       ...
-    </header>
-    
-    <header class="bg-[#1b4332] text-white pt-8 pb-16 relative text-center shadow-md pattern-bg">
+    <header class="bg-brand-navy text-white pt-8 pb-16 relative text-center shadow-md pattern-bg">
         <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center gap-3">
             <h1 class="text-4xl md:text-5xl font-black mb-1" id="header-store-name">سمان ههيا</h1>
-            <p class="text-[#fde68a] font-bold text-sm md:text-base bg-[#143024] px-4 py-1 rounded-full border border-[#2d614b]">
+            <p class="text-brand-yellow font-bold text-sm md:text-base bg-black/20 px-4 py-1 rounded-full border border-white/10">
                 <i class="fa-solid fa-leaf mr-1"></i> صحي وطازة
             </p>
             <p class="text-white/80 font-semibold text-xs md:text-sm max-w-xl mx-auto mt-2 hidden" id="header-store-desc">
@@ -49,7 +77,7 @@
         </div>
         
         <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 w-full flex justify-center z-20">
-            <a href="#products" class="bg-white text-[#1b4332] px-10 py-3 rounded-2xl font-black shadow-[0_10px_25px_rgba(0,0,0,0.15)] text-lg flex items-center gap-2 hover:bg-gray-50 transition-all transform hover:-translate-y-1 border border-gray-100">
+            <a href="#products" class="bg-white text-brand-navy px-10 py-3 rounded-2xl font-black shadow-[0_10px_25px_rgba(0,0,0,0.15)] text-lg flex items-center gap-2 hover:bg-gray-50 transition-all transform hover:-translate-y-1 border border-gray-100">
                 اطلب دلوقتي <i class="fa-solid fa-arrow-down text-sm"></i>
             </a>
         </div>
@@ -57,25 +85,25 @@
 
     <section class="max-w-3xl mx-auto px-4 mt-14 mb-8">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="bg-[#f0fdf4] rounded-2xl p-3 text-center border border-[#dcfce7] shadow-sm transition-transform hover:scale-105">
-                <i class="fa-regular fa-circle-check text-[#166534] text-2xl mb-2"></i>
-                <h3 class="font-black text-[#166534] text-[12px] mb-1">أوزان دقيقة</h3>
-                <p class="text-[10px] text-[#166534]/70 font-bold">زي ما طلبت بالظبط</p>
+            <div class="bg-brand-light rounded-2xl p-3 text-center border border-brand-cyan/30 shadow-sm transition-transform hover:scale-105">
+                <i class="fa-regular fa-circle-check text-brand-navy text-2xl mb-2"></i>
+                <h3 class="font-black text-brand-navy text-[12px] mb-1">أوزان دقيقة</h3>
+                <p class="text-[10px] text-brand-navy/70 font-bold">زي ما طلبت بالظبط</p>
             </div>
-            <div class="bg-[#f0fdf4] rounded-2xl p-3 text-center border border-[#dcfce7] shadow-sm transition-transform hover:scale-105">
-                <i class="fa-regular fa-star text-[#166534] text-2xl mb-2"></i>
-                <h3 class="font-black text-[#166534] text-[12px] mb-1">طلبك باسمك</h3>
-                <p class="text-[10px] text-[#166534]/70 font-bold">استيكر مخصص ليك</p>
+            <div class="bg-brand-light rounded-2xl p-3 text-center border border-brand-cyan/30 shadow-sm transition-transform hover:scale-105">
+                <i class="fa-regular fa-star text-brand-navy text-2xl mb-2"></i>
+                <h3 class="font-black text-brand-navy text-[12px] mb-1">طلبك باسمك</h3>
+                <p class="text-[10px] text-brand-navy/70 font-bold">استيكر مخصص ليك</p>
             </div>
-            <div class="bg-[#f0fdf4] rounded-2xl p-3 text-center border border-[#dcfce7] shadow-sm transition-transform hover:scale-105">
-                <i class="fa-regular fa-clock text-[#166534] text-2xl mb-2"></i>
-                <h3 class="font-black text-[#166534] text-[12px] mb-1">تجهيز يومي</h3>
-                <p class="text-[10px] text-[#166534]/70 font-bold">طازج مية بالمية</p>
+            <div class="bg-brand-light rounded-2xl p-3 text-center border border-brand-cyan/30 shadow-sm transition-transform hover:scale-105">
+                <i class="fa-regular fa-clock text-brand-navy text-2xl mb-2"></i>
+                <h3 class="font-black text-brand-navy text-[12px] mb-1">تجهيز يومي</h3>
+                <p class="text-[10px] text-brand-navy/70 font-bold">طازج مية بالمية</p>
             </div>
-            <div class="bg-[#f0fdf4] rounded-2xl p-3 text-center border border-[#dcfce7] shadow-sm transition-transform hover:scale-105">
-                <i class="fa-solid fa-shield-halved text-[#166534] text-2xl mb-2"></i>
-                <h3 class="font-black text-[#166534] text-[12px] mb-1">تغليف آمن</h3>
-                <p class="text-[10px] text-[#166534]/70 font-bold">أطباق صحية</p>
+            <div class="bg-brand-light rounded-2xl p-3 text-center border border-brand-cyan/30 shadow-sm transition-transform hover:scale-105">
+                <i class="fa-solid fa-shield-halved text-brand-navy text-2xl mb-2"></i>
+                <h3 class="font-black text-brand-navy text-[12px] mb-1">تغليف آمن</h3>
+                <p class="text-[10px] text-brand-navy/70 font-bold">أطباق صحية</p>
             </div>
         </div>
     </section>
@@ -85,7 +113,7 @@
             <span class="text-xs text-gray-500 font-bold" id="lbl-cart-total">الإجمالي (بدون التوصيل)</span>
             <div class="font-black text-brand-cyanDark text-2xl"><span id="bottom-cart-total">0</span> <span class="text-sm">ج.م</span></div>
         </div>
-        <button id="main-cart-btn" onclick="toggleCart()" class="bg-brand-navy text-white px-6 py-3 rounded-xl font-black flex items-center gap-3 shadow-lg hover:bg-gray-800 transition-colors">
+        <button id="main-cart-btn" onclick="toggleCart()" class="bg-brand-navy text-white px-6 py-3 rounded-xl font-black flex items-center gap-3 shadow-lg hover:opacity-90 transition-opacity">
             <div class="relative">
                 <i class="fa-solid fa-basket-shopping text-xl text-brand-yellow"></i>
                 <span class="absolute -top-2 -right-2 bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full text-xs shadow-sm" id="bottom-cart-count">0</span>
@@ -139,7 +167,7 @@
                 <div id="promo-input-container" class="mb-5 hidden">
                     <div class="flex gap-2">
                         <input type="text" id="promo-code-input" placeholder="اكتب الكود هنا" class="flex-1 border border-gray-200 rounded-lg p-2.5 focus:border-brand-navy outline-none font-bold text-brand-navy text-sm uppercase text-center bg-gray-50 focus:bg-white transition-all shadow-inner" dir="ltr">
-                        <button type="button" onclick="applyPromoCode()" class="bg-brand-navy text-white px-4 rounded-lg font-bold text-sm hover:bg-gray-800 transition-colors shadow-sm" id="lbl-promo-btn">تفعيل</button>
+                        <button type="button" onclick="applyPromoCode()" class="bg-brand-navy text-white px-4 rounded-lg font-bold text-sm hover:opacity-90 transition-opacity shadow-sm" id="lbl-promo-btn">تفعيل</button>
                     </div>
                     <p id="promo-message" class="text-[10px] font-bold mt-1 hidden"></p>
                 </div>
@@ -150,7 +178,7 @@
                     <div class="flex justify-between items-center border-t border-gray-200 pt-3 mt-1"><span class="font-black text-brand-navy text-sm">الإجمالي المبدئي:</span><span class="font-black text-xl text-brand-navy"><span id="cart-step1-total">0</span> <span class="text-xs text-gray-500">ج.م</span></span></div>
                 </div>
 
-                <button type="button" onclick="goToCheckoutStep2()" id="btn-proceed-checkout" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5" disabled style="background-color: #1b4332 !important; color: #ffffff !important;">
+                <button type="button" onclick="goToCheckoutStep2()" id="btn-proceed-checkout" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 bg-brand-navy text-white" disabled>
                     متابعة للدفع <i class="fa-solid fa-arrow-left text-lg"></i>
                 </button>
                 <p id="checkout-hint" class="text-center text-[10px] text-red-500 mt-3 font-bold hidden"><i class="fa-solid fa-circle-info"></i> الحد الأدنى للطلب لم يكتمل</p>
@@ -184,13 +212,14 @@
                     <div class="flex justify-between items-center pt-2 border-t border-brand-cyan/20"><span class="font-black text-brand-navy text-sm" id="lbl-final-total">الإجمالي النهائي:</span><span class="font-black text-xl text-brand-navy"><span id="cart-total">0</span> <span class="text-xs text-gray-500">ج.م</span></span></div>
                 </div>
                 
-                <button type="button" onclick="initiateCheckout()" id="checkout-btn" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5" disabled style="background-color: #1b4332 !important; color: #ffffff !important;">
+                <button type="button" onclick="initiateCheckout()" id="checkout-btn" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 bg-brand-navy text-white" disabled>
                     <i class="fa-brands fa-whatsapp text-xl" id="btn-icon"></i> <span id="btn-text">تأكيد وإرسال الطلب</span>
                 </button>
                 <p id="checkout-hint-step2" class="text-center text-[10px] text-red-500 mt-3 font-bold hidden"><i class="fa-solid fa-circle-info"></i> يرجى إكمال (المنطقة، الاسم، الموبايل)</p>
             </div>
         </div>
     </div>
+
     <div id="cross-sell-modal" class="fixed inset-0 bg-brand-navy/80 z-[55] hidden opacity-0 transition-opacity duration-300 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm text-center shadow-2xl transform scale-95 transition-transform duration-300" id="cross-sell-box">
             <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-brand-yellow text-brand-navy font-black text-xs px-4 py-1 rounded-full shadow-md border-2 border-white">اقتراح لحضرتك 💡</div>
@@ -199,7 +228,7 @@
             <p class="text-gray-500 text-sm font-bold mb-4" id="cross-sell-desc">مغذي جداً للأطفال وطعمه حكاية!</p>
             <div class="font-black text-brand-cyanDark text-xl mb-5"><span id="cross-sell-price"></span> ج.م</div>
             <div class="flex flex-col gap-2">
-                <button onclick="acceptCrossSell()" class="bg-brand-cyanDark hover:bg-brand-navy text-white font-black py-3 px-6 rounded-xl w-full transition-colors flex justify-center items-center gap-2 shadow-md"><i class="fa-solid fa-plus"></i> ضيفه للسلة وكمل الأوردر</button>
+                <button onclick="acceptCrossSell()" class="bg-brand-cyanDark hover:opacity-90 text-white font-black py-3 px-6 rounded-xl w-full transition-opacity flex justify-center items-center gap-2 shadow-md"><i class="fa-solid fa-plus"></i> ضيفه للسلة وكمل الأوردر</button>
                 <button onclick="declineCrossSell()" class="text-gray-400 hover:text-gray-600 font-bold py-2 text-sm transition-colors underline">لا شكراً، كمل الأوردر بتاعي</button>
             </div>
         </div>
@@ -210,7 +239,7 @@
             <div class="w-16 h-16 bg-brand-light text-brand-cyanDark rounded-full flex items-center justify-center mx-auto mb-4 text-3xl" id="alert-icon-container"><i class="fa-solid fa-bell" id="alert-icon"></i></div>
             <h3 class="text-xl font-black text-brand-navy mb-2" id="alert-title">تنبيه</h3>
             <div class="text-gray-600 mb-6 font-semibold text-sm leading-relaxed whitespace-pre-wrap" id="alert-message">الرسالة</div>
-            <button onclick="closeAlert()" class="bg-brand-navy hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl w-full transition-colors">حسناً</button>
+            <button onclick="closeAlert()" class="bg-brand-navy hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl w-full transition-opacity">حسناً</button>
         </div>
     </div>
 
@@ -248,16 +277,43 @@
             <button onclick="switchAdminTab('store')" id="admin-tab-store" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-store"></i> المتجر</button>
             <button onclick="switchAdminTab('products')" id="admin-tab-products" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-box-open"></i> المنتجات</button>
             <button onclick="switchAdminTab('orders')" id="admin-tab-orders" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap relative"><i class="fa-solid fa-clipboard-list"></i> الطلبات</button>
-            <!-- إضافة تبويب التوزيع -->
             <button onclick="switchAdminTab('dispatch')" id="admin-tab-dispatch" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-truck-fast"></i> التوزيع</button>
             <button onclick="switchAdminTab('delivery')" id="admin-tab-delivery" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-motorcycle"></i> التوصيل</button>
             <button onclick="switchAdminTab('marketing')" id="admin-tab-marketing" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-bullhorn"></i> التسويق</button>
             <button onclick="switchAdminTab('advanced')" id="admin-tab-advanced" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-gear"></i> متقدم</button>
             <button onclick="switchAdminTab('texts')" id="admin-tab-texts" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-language"></i> القاموس</button>
+            <button onclick="switchAdminTab('theme')" id="admin-tab-theme" class="px-4 py-2 rounded-lg font-bold text-sm transition-colors text-gray-600 hover:bg-gray-100 whitespace-nowrap"><i class="fa-solid fa-palette"></i> المظهر</button>
         </div>
 
         <div class="p-4 flex-1 overflow-y-auto cart-scroll">
             <div class="max-w-2xl mx-auto">
+                
+                <div id="admin-panel-theme" class="hidden space-y-4">
+                    <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-brand-cyanDark">
+                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-palette text-brand-cyanDark"></i> ألوان الموقع (تغيير فوري)</h3>
+                        <p class="text-[10px] text-gray-500 font-bold mb-4">بمجرد ما تختار لون من هنا، الموقع كله هيتغير للون ده ويتحفظ للعملاء.</p>
+                        
+                        <div class="grid grid-cols-1 gap-4 mb-4">
+                            <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                                <label class="text-xs text-gray-700 font-bold">اللون الأساسي (أخضر سمان ههيا حالياً)</label>
+                                <input type="color" id="color-navy" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-navy', this.value, 'theme_navy')">
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                                <label class="text-xs text-gray-700 font-bold">لون التميز والخصومات (الأحمر)</label>
+                                <input type="color" id="color-cyanDark" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-cyanDark', this.value, 'theme_cyanDark')">
+                            </div>
+                            <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                                <label class="text-xs text-gray-700 font-bold">لون التنبيهات والأيقونات (الأصفر)</label>
+                                <input type="color" id="color-yellow" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-yellow', this.value, 'theme_yellow')">
+                            </div>
+                        </div>
+                        
+                        <button onclick="resetThemeColors()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i> استعادة ألوان ههيا الأصلية
+                        </button>
+                    </div>
+                </div>
+
                 <div id="admin-panel-stats" class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-brand-light/50 border border-brand-cyan/30 rounded-xl p-4 flex flex-col items-center">
@@ -290,7 +346,7 @@
                 <div id="admin-panel-products" class="hidden space-y-4">
                     <div class="flex justify-between items-center bg-brand-light/30 p-3 rounded-lg border border-brand-cyan/20">
                         <p class="text-xs text-gray-600 font-bold"><i class="fa-solid fa-circle-info text-brand-cyanDark"></i> إدارة المنتجات بالكامل</p>
-                        <button onclick="addNewAdminProduct()" class="bg-brand-cyanDark hover:bg-brand-navy text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-sm"><i class="fa-solid fa-plus"></i> منتج جديد</button>
+                        <button onclick="addNewAdminProduct()" class="bg-brand-cyanDark hover:opacity-90 text-white text-xs font-bold px-3 py-1.5 rounded transition-opacity shadow-sm"><i class="fa-solid fa-plus"></i> منتج جديد</button>
                     </div>
                     <div id="admin-inputs-container" class="space-y-4"></div>
                 </div>
@@ -306,37 +362,30 @@
                     <div id="orders-list-container" class="space-y-3"></div>
                 </div>
 
-                <!-- لوحة التوزيع (جديدة) -->
                 <div id="admin-panel-dispatch" class="hidden space-y-4">
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-fast text-brand-cyanDark"></i> إرسال الطلبات للمندوبين</h3>
                         <p class="text-[10px] text-gray-500 font-bold mb-3">اختار منطقة معينة ثم اختر الطلبات اللي عايز تبعتهم، واكتب رقم المندوب وهيتم فتح واتساب برسالة جاهزة بكل التفاصيل.</p>
-
                         <div class="mb-3">
                             <label class="text-[10px] font-bold text-gray-500 block mb-1">تصفية حسب المنطقة (اختياري)</label>
                             <select id="dispatch-zone-filter" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-white" onchange="renderDispatchOrders()">
                                 <option value="all">كل المناطق</option>
                             </select>
                         </div>
-
                         <div id="dispatch-orders-container" class="space-y-2 mb-4 max-h-96 overflow-y-auto cart-scroll border rounded-lg p-2 bg-gray-50">
                             <p class="text-xs text-gray-400 text-center py-4">اختار منطقة أو حمّل الطلبات</p>
                         </div>
-
                         <div class="flex items-center gap-2 mb-3">
                             <button onclick="toggleSelectAllDispatch()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-xs py-2 px-4 rounded-lg transition-colors">تحديد الكل / إلغاء</button>
                             <span class="text-[10px] text-gray-500">عدد المحدد: <span id="dispatch-selected-count" class="font-black text-brand-cyanDark">0</span></span>
                         </div>
-
                         <div class="mb-3">
                             <label class="text-[10px] font-bold text-gray-500 block mb-1">رقم موبايل المندوب (بالواتساب)</label>
                             <input type="text" id="dispatch-driver-phone" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr" placeholder="20100000000">
                         </div>
-
                         <button onclick="sendDispatchToDriver()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex items-center justify-center gap-2">
                             <i class="fa-brands fa-whatsapp text-xl"></i> إرسال الطلبات المحددة للمندوب
                         </button>
-                        <p class="text-[10px] text-gray-400 mt-2">الرسالة هتتفتح في واتساب المندوب، وساعتها تقدر تبعت أو تعدل قبل الإرسال.</p>
                     </div>
                 </div>
 
@@ -355,147 +404,53 @@
 
                 <div id="admin-panel-marketing" class="hidden space-y-4">
                     <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-green-500">
-                        <h3 class="font-black text-brand-navy mb-3">
-                            <i class="fa-solid fa-gift text-green-500"></i> نظام الولاء (إنشاء كود خصم تلقائي للعميل)
-                        </h3>
-                        <p class="text-[10px] text-gray-500 font-bold mb-3">النظام ده بيعمل كود خصم حقيقي (مثال: VIP-1234) للعميل بعد ما يطلب ويظهره له عشان يستخدمه المرة الجاية، والكود ده بيتسجل عندك في أكواد الخصم عشان تعرفه.</p>
-                        <label class="flex items-center gap-2 mb-3">
-                            <input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> 
-                            <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span>
-                        </label>
+                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-gift text-green-500"></i> نظام الولاء</h3>
+                        <label class="flex items-center gap-2 mb-3"><input type="checkbox" id="admin-reward-active" class="accent-green-500 w-4 h-4"> <span class="text-sm font-bold text-green-700">تفعيل إنشاء كود خصم للمرة القادمة</span></label>
                         <div class="grid grid-cols-2 gap-2 bg-green-50 p-3 rounded-lg border border-green-100">
-                            <div>
-                                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label>
-                                <select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
-                                    <option value="fixed">خصم مبلغ (ج.م)</option>
-                                    <option value="percent">خصم نسبة (%)</option>
-                                    <option value="free_delivery">توصيل مجاني</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
-                                <input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center">
-                            </div>
-                            <div class="col-span-2 mt-2">
-                                <label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار</label>
-                                <input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="مثال: 10 (اتركه 0 لغير محدود)">
-                            </div>
+                            <div><label class="text-[10px] text-gray-500 font-bold block mb-1">نوع المكافأة</label><select id="admin-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy"><option value="fixed">خصم مبلغ</option><option value="percent">خصم نسبة</option><option value="free_delivery">توصيل مجاني</option></select></div>
+                            <div><label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label><input type="number" id="admin-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center"></div>
+                            <div class="col-span-2 mt-2"><label class="text-[10px] text-gray-500 font-bold block mb-1">الحد الأقصى للإصدار</label><input type="number" id="admin-reward-max-generations" class="w-full border rounded p-2 font-bold text-brand-navy text-center" placeholder="0 لغير محدود"></div>
                         </div>
                     </div>
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-purple-500">
-                        <h3 class="font-black text-brand-navy mb-3">
-                            <i class="fa-solid fa-users text-purple-500"></i> إرسال أكواد شكر لعملاء سابقين
-                        </h3>
-                        <p class="text-[10px] text-gray-500 font-bold mb-3">حط أرقام العملاء هنا وهنعمل لكل واحد كود خصم عشوائي (يستخدم مرة واحدة) ونجهزلك رسايل الواتساب.</p>
-
-                        <label class="text-[10px] text-gray-500 font-bold block mb-1">أرقام الموبايلات (رقم في كل سطر)</label>
-                        <textarea id="admin-bulk-numbers" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left bg-gray-50 focus:bg-white transition-colors" dir="ltr" placeholder="01234567890&#10;01098765432"></textarea>
-
-                        <label class="text-[10px] text-gray-500 font-bold block mb-1 mt-3">رسالة الواتساب (اكتب {الكود} عشان يظهر الكود للعميل)</label>
-                        <textarea id="admin-bulk-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-gray-50 focus:bg-white transition-colors">شكراً لثقتك في سمان ههيا! الدفعة خلصت على خير، وعشان إنت عميل مميز، عملنالك كود خصم تستخدمه الأوردر الجاي: {الكود}</textarea>
-
-                        <div class="grid grid-cols-2 gap-2 mt-3 bg-purple-50 p-2 rounded-lg border border-purple-100">
-                            <div>
-                                <label class="text-[10px] text-gray-500 font-bold block mb-1">نوع الخصم</label>
-                                <select id="admin-bulk-reward-type" class="w-full border rounded p-2 font-bold text-brand-navy">
-                                    <option value="fixed">خصم مبلغ (ج.م)</option>
-                                    <option value="percent">خصم نسبة (%)</option>
-                                    <option value="free_delivery">توصيل مجاني</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-gray-500 font-bold block mb-1">قيمة الخصم</label>
-                                <input type="number" id="admin-bulk-reward-value" class="w-full border rounded p-2 font-bold text-brand-navy text-center" value="20">
-                            </div>
-                        </div>
-
-                        <button type="button" onclick="generateBulkWhatsAppLinks()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i> توليد الأكواد وتجهيز الرسايل
-                        </button>
-
-                        <div id="bulk-whatsapp-links" class="mt-4 space-y-2 hidden max-h-48 overflow-y-auto cart-scroll bg-gray-50 p-3 rounded-xl border border-gray-200"></div>
+                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-users text-purple-500"></i> إرسال أكواد شكر لعملاء سابقين</h3>
+                        <textarea id="admin-bulk-numbers" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-gray-50" dir="ltr" placeholder="01234567890"></textarea>
+                        <textarea id="admin-bulk-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy mt-2">شكراً لثقتك! كود الخصم للأوردر الجاي: {الكود}</textarea>
+                        <button type="button" onclick="generateBulkWhatsAppLinks()" class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex justify-center items-center gap-2">توليد الأكواد</button>
+                        <div id="bulk-whatsapp-links" class="mt-4 space-y-2 hidden max-h-48 overflow-y-auto bg-gray-50 p-3 rounded-xl border border-gray-200"></div>
                     </div>
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-bullhorn text-red-500"></i> شريط الإعلانات العلوي</h3>
                         <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-banner-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل الشريط</span></label>
-                        <input type="text" id="admin-banner-text" placeholder="اكتب إعلانك هنا..." class="w-full border rounded-lg p-2 font-bold text-brand-navy">
+                        <input type="text" id="admin-banner-text" class="w-full border rounded-lg p-2 font-bold text-brand-navy">
                     </div>
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <div class="flex justify-between items-center mb-3">
                             <h3 class="font-black text-brand-navy"><i class="fa-solid fa-ticket text-brand-cyanDark"></i> أكواد الخصم الثابتة</h3>
-                            <button onclick="addNewPromoCode()" class="bg-gray-800 hover:bg-black text-white text-xs px-3 py-1.5 rounded transition-colors">+ كود جديد</button>
+                            <button onclick="addNewPromoCode()" class="bg-gray-800 hover:bg-black text-white text-xs px-3 py-1.5 rounded">+ كود جديد</button>
                         </div>
-                        <label class="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded border"><input type="checkbox" id="admin-show-promo-field" class="accent-brand-cyanDark w-4 h-4"> <span class="text-xs font-bold">إظهار خانة "كود الخصم" للعملاء</span></label>
                         <div id="admin-promos-container" class="space-y-3"></div>
-                    </div>
-
-                    <div class="bg-white border rounded-xl p-4 shadow-sm">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-lightbulb text-brand-yellow"></i> الاقتراح الذكي قبل الدفع (Cross-sell)</h3>
-                        <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-crosssell-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل نافذة الاقتراح</span></label>
-                        <label class="text-[10px] text-gray-500 font-bold block mb-1">المنتج المقترح:</label>
-                        <select id="admin-crosssell-product" class="w-full border rounded-lg p-2 font-bold text-brand-navy"></select>
                     </div>
                 </div>
 
                 <div id="admin-panel-advanced" class="hidden space-y-4">
-                    <!-- تم حذف قسم تسمية العميل القديم بالكامل، وإبقاء قالب الواتساب فقط -->
-                    <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-language text-brand-cyanDark"></i> نصوص وتسميات النظام</h3>
-                        <label class="text-xs font-bold text-gray-500 block mb-1">قالب رسالة الواتساب للعميل</label>
-                        <p class="text-[10px] text-gray-400 mb-2">استخدم المتغيرات: {تفاصيل_العميل} , {الطلبات} , {الخصم} , {قيمة_الطلبات} , {التوصيل} , {الاجمالي}</p>
-                        <textarea id="admin-whatsapp-template" rows="6" class="w-full border rounded-lg p-2 font-bold text-brand-navy whitespace-pre-wrap" dir="rtl"></textarea>
-                    </div>
-
-                    <div class="bg-white border rounded-xl p-4 shadow-sm mb-4 border-l-4 border-l-brand-cyanDark">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-hashtag text-brand-cyanDark"></i> هاشتاج الدفعة الحالية (TickTick)</h3>
-                        <p class="text-[10px] text-gray-500 font-bold mb-2">الهاشتاج ده هيتضاف تلقائياً لأي أوردر عشان يسهل عليك فلترة كل دفعة لوحدها.</p>
-                        <input type="text" id="admin-batch-hashtag" placeholder="مثال: #دفعة_شهر_6" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr">
-                    </div>
-
-                    <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-crown text-brand-yellow"></i> رسالة حجز الـ VIP (واتساب)</h3>
-                        <p class="text-[10px] text-gray-400 mb-2">استخدم المتغير: {اسم_المنتج}</p>
-                        <textarea id="admin-vip-whatsapp-template" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy whitespace-pre-wrap" dir="rtl"></textarea>
-                    </div>
-
-                    <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-list-check text-brand-cyanDark"></i> قالب رسالة TickTick (المهام)</h3>
-                        <p class="text-[10px] text-gray-400 mb-2">استخدم المتغيرات: {اسم_العميل} , {الموبايل} , {المنطقة} , {العنوان} , {الوقت} , {تفاصيل_الطلبات} , {قيمة_الطلبات} , {الخصم} , {التوصيل} , {الاجمالي} , {ملاحظات} , {الهاشتاجات}</p>
-                        <textarea id="admin-ticktick-template" rows="8" class="w-full border rounded-lg p-2 font-bold text-brand-navy whitespace-pre-wrap" dir="rtl"></textarea>
-                    </div>
-
-                    <!-- قالب رسالة المندوب (جديد) -->
                     <div class="bg-white border rounded-xl p-4 shadow-sm mb-4 border-l-4 border-l-blue-500">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-fast text-blue-500"></i> قالب رسالة المندوب (للإرسال الجماعي)</h3>
-                        <p class="text-[10px] text-gray-400 mb-2">استخدم المتغيرات: {اسم_العميل} , {رقم_العميل} , {المنطقة} , {العنوان} , {تفاصيل_الطلبات} , {إجمالي_الطلب} , {التوصيل} , {الإجمالي_النهائي}</p>
+                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-fast text-blue-500"></i> قالب رسالة المندوب</h3>
                         <textarea id="admin-dispatch-template" rows="5" class="w-full border rounded-lg p-2 font-bold text-brand-navy whitespace-pre-wrap" dir="rtl">📦 طلب جديد من {اسم_العميل}
 📱 {رقم_العميل}
 📍 {المنطقة} - {العنوان}
 🛒 الطلبات:
 {تفاصيل_الطلبات}
-💰 إجمالي الطلب: {إجمالي_الطلب} ج.م
-🚚 التوصيل: {التوصيل}
 ⭐ الإجمالي النهائي: {الإجمالي_النهائي} ج.م</textarea>
                     </div>
 
-                    <div class="bg-white border rounded-xl p-4 shadow-sm">
-                        <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-message text-green-500"></i> رسالة نجاح الطلب (العادية)</h3>
-                        <input type="text" id="admin-success-title" placeholder="عنوان الرسالة" class="w-full border rounded-lg p-2 mb-2 font-bold text-brand-navy">
-                        <textarea id="admin-success-message" rows="3" class="w-full border rounded-lg p-2 font-bold text-brand-navy"></textarea>
-                    </div>
-
                     <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mt-4">
-                        <h3 class="font-black text-red-600 mb-3"><i class="fa-solid fa-trash-can"></i> منطقة الخطر (إعادة ضبط)</h3>
+                        <h3 class="font-black text-red-600 mb-3"><i class="fa-solid fa-trash-can"></i> منطقة الخطر</h3>
                         <div class="space-y-3">
-                            <button onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-chart-pie"></i> تصفير الإحصائيات فقط (مبيعات وطلبات)
-                            </button>
-                            <button onclick="deleteAllOrders()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors text-sm shadow-md flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-trash"></i> مسح جميع سجلات الأوردرات نهائياً
-                            </button>
+                            <button onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-md">تصفير الإحصائيات</button>
                         </div>
                     </div>
                 </div>
@@ -503,7 +458,6 @@
                 <div id="admin-panel-texts" class="hidden space-y-4">
                     <div class="bg-white border rounded-xl p-4 shadow-sm">
                         <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-book-open text-brand-cyanDark"></i> قاموس نصوص الواجهة (CMS)</h3>
-                        <p class="text-[10px] text-gray-500 font-bold mb-4">هنا تقدر تغير أي كلمة بتظهر للعميل في الموقع عشان توافق طريقتك التسويقية في أي وقت.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="admin-texts-container"></div>
                     </div>
                 </div>
@@ -548,14 +502,64 @@
             </div>
         </div>
     </footer>
-    <div id="top-banner" class="hidden bg-brand-orange text-white text-center text-sm font-bold p-2">
-    <span id="top-banner-text"></span>
-</div>
-
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        function updateThemeColor(cssVar, colorHex, storageKey) {
+            document.documentElement.style.setProperty(cssVar, colorHex);
+            localStorage.setItem(storageKey, colorHex);
+        }
+
+        function resetThemeColors() {
+            const defaults = {
+                '--brand-navy': '#1b4332',
+                '--brand-cyanDark': '#b91c1c',
+                '--brand-yellow': '#f59e0b'
+            };
+            
+            document.getElementById('color-navy').value = defaults['--brand-navy'];
+            document.getElementById('color-cyanDark').value = defaults['--brand-cyanDark'];
+            document.getElementById('color-yellow').value = defaults['--brand-yellow'];
+
+            for (const [cssVar, color] of Object.entries(defaults)) {
+                document.documentElement.style.setProperty(cssVar, color);
+                localStorage.removeItem(cssVar.replace('--brand-', 'theme_'));
+            }
+            alert('تم استعادة ألوان سمان ههيا الافتراضية بنجاح!');
+        }
+        
+        // عشان نحمل الألوان في لوحة الإدارة لما تفتح
+        window.addEventListener('DOMContentLoaded', () => {
+            if(localStorage.getItem('theme_navy')) document.getElementById('color-navy').value = localStorage.getItem('theme_navy');
+            if(localStorage.getItem('theme_cyanDark')) document.getElementById('color-cyanDark').value = localStorage.getItem('theme_cyanDark');
+            if(localStorage.getItem('theme_yellow')) document.getElementById('color-yellow').value = localStorage.getItem('theme_yellow');
+        });
+        
+        // عشان زرار المظهر الجديد يشتغل مع باقي زرايرك في admin.js
+        const originalSwitchAdminTab = window.switchAdminTab;
+        if(typeof window.switchAdminTab !== 'function') {
+            window.switchAdminTab = function(tabName) {
+                // إخفاء كل اللوحات
+                document.querySelectorAll('[id^="admin-panel-"]').forEach(el => el.classList.add('hidden'));
+                // إعادة الألوان العادية للزراير
+                document.querySelectorAll('[id^="admin-tab-"]').forEach(el => {
+                    el.classList.remove('bg-brand-cyanDark', 'text-white');
+                    el.classList.add('text-gray-600', 'hover:bg-gray-100');
+                });
+                // إظهار اللوحة والزرار المطلوب
+                const activePanel = document.getElementById('admin-panel-' + tabName);
+                const activeTab = document.getElementById('admin-tab-' + tabName);
+                if(activePanel) activePanel.classList.remove('hidden');
+                if(activeTab) {
+                    activeTab.classList.remove('text-gray-600', 'hover:bg-gray-100');
+                    activeTab.classList.add('bg-brand-cyanDark', 'text-white');
+                }
+            }
+        }
+    </script>
 
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
