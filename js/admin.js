@@ -1,16 +1,4 @@
-window.openAdminLogin = function() {
-    alert("اشتغل");
-}
 // ==================== admin.js - لوحة التحكم الشاملة ====================
-
-// دالة تأخير للبحث السريع
-function debounce(func, delay) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
-    };
-}
 
 let tempProducts = {};
 let tempAdminZones = [];
@@ -21,8 +9,17 @@ let ordersList = [];
 let orderFilter = 'all';
 window.dispatchOrdersList = [];
 
+// دالة تأخير للبحث السريع
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
 // تبديل حالة المتجر
-const adminStoreOpen = document.getElementById('admin-store-open');  if (adminStoreOpen) {     adminStoreOpen.addEventListener('change', function () {         const label = document.getElementById('store-open-label');          if (label) {             label.innerText = this.checked ? 'مفتوح' : 'مغلق';              label.className = this.checked                 ? 'mr-3 text-sm font-black text-green-600 w-12'                 : 'mr-3 text-sm font-black text-red-600 w-12';         }     }); }('change', function() {
+document.getElementById('admin-store-open')?.addEventListener('change', function() {
     const label = document.getElementById('store-open-label');
     if(label) {
         label.innerText = this.checked ? 'مفتوح' : 'مغلق';
@@ -92,8 +89,7 @@ window.logoutAdmin = () => {
 // ==================== فتح وإغلاق وتوجيه لوحة التحكم ====================
 window.switchAdminTab = (tab) => {
     currentAdminTab = tab;
-    // ضفنا theme في المصفوفة
-    ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts','theme'].forEach(t => {
+    ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts'].forEach(t => {
         const panel = document.getElementById('admin-panel-'+t);
         if(panel) panel.classList.add('hidden');
         const btn = document.getElementById('admin-tab-'+t);
@@ -109,7 +105,7 @@ window.switchAdminTab = (tab) => {
 };
 
 window.openAdminDashboard = () => {
-    // دوال مساعدة لحماية الكود
+    // دوال مساعدة لتعيين القيم بأمان
     const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
     const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val; };
 
@@ -156,18 +152,6 @@ window.openAdminDashboard = () => {
     setVal('admin-whatsapp-template', globalSettings.whatsappTemplate || '');
     setVal('admin-batch-hashtag', globalSettings.batchHashtag || '');
     setVal('admin-dispatch-template', globalSettings.dispatchTemplate || '');
-
-    // إعدادات المظهر
-    const theme = globalSettings.theme || {};
-    setVal('admin-theme-color', theme.themeColor || '#1b4332');
-    setVal('admin-theme-header-bg', theme.headerBg || '');
-    setCheck('admin-theme-popup-active', theme.popupActive || false);
-    setVal('admin-theme-popup-title', theme.popupTitle || '');
-    setVal('admin-theme-popup-msg', theme.popupMsg || '');
-    setVal('admin-theme-popup-img', theme.popupImg || '');
-    setCheck('admin-theme-show-badges', theme.showBadges !== false);
-    setCheck('admin-theme-show-size', theme.showSizeGuide !== false);
-    setCheck('admin-theme-show-extras', theme.showExtras !== false);
 
     const textsCont = document.getElementById('admin-texts-container');
     if(textsCont && typeof textsConfig !== 'undefined') {
@@ -692,98 +676,4 @@ window.saveTextsSettings = () => {
     }
     updateSettingsDB({uiTexts: newUiTexts}, 'button[onclick="saveTextsSettings()"]');
     if(typeof applySettingsToUI === 'function') applySettingsToUI();
-};
-
-// ==================== إعدادات المظهر وتطبيقها (WOW Factor) ====================
-window.saveThemeSettings = () => {
-    const el = id => document.getElementById(id);
-    const updates = { theme: {} };
-    
-    if(el('admin-theme-color')) updates.theme.themeColor = el('admin-theme-color').value.trim();
-    if(el('admin-theme-header-bg')) updates.theme.headerBg = el('admin-theme-header-bg').value.trim();
-    if(el('admin-theme-popup-active')) updates.theme.popupActive = el('admin-theme-popup-active').checked;
-    if(el('admin-theme-popup-title')) updates.theme.popupTitle = el('admin-theme-popup-title').value.trim();
-    if(el('admin-theme-popup-msg')) updates.theme.popupMsg = el('admin-theme-popup-msg').value.trim();
-    if(el('admin-theme-popup-img')) updates.theme.popupImg = el('admin-theme-popup-img').value.trim();
-    if(el('admin-theme-show-badges')) updates.theme.showBadges = el('admin-theme-show-badges').checked;
-    if(el('admin-theme-show-size')) updates.theme.showSizeGuide = el('admin-theme-show-size').checked;
-    if(el('admin-theme-show-extras')) updates.theme.showExtras = el('admin-theme-show-extras').checked;
-
-    updateSettingsDB(updates, 'button[onclick="saveThemeSettings()"]');
-    setTimeout(() => { if(typeof applyThemeSettings === 'function') applyThemeSettings(); }, 500); 
-};
-
-window.applyThemeSettings = () => {
-    if(!globalSettings || !globalSettings.theme) return;
-    const theme = globalSettings.theme;
-
-    // تطبيق اللون الأساسي
-    if(theme.themeColor) {
-        document.documentElement.style.setProperty('--theme-color', theme.themeColor);
-    }
-
-    // الهيدر
-    const header = document.querySelector('header');
-    if(theme.headerBg && header) {
-        header.style.backgroundImage = `url('${theme.headerBg}')`;
-        header.style.backgroundSize = 'cover';
-        header.style.backgroundPosition = 'center';
-        header.classList.add('bg-blend-overlay');
-        header.style.backgroundColor = 'rgba(0, 0, 0, 0.6)'; // تعتيم أسود ليليق بأي لون
-    } else if (header) {
-        header.style.backgroundImage = '';
-        header.classList.remove('bg-blend-overlay');
-        header.style.backgroundColor = '';
-    }
-
-    // إخفاء الأقسام
-    const badges = document.getElementById('trust-badges-container');
-    if(badges) badges.style.display = theme.showBadges !== false ? 'block' : 'none';
-
-    const sizeGuide = document.getElementById('size-guide-container');
-    if(sizeGuide) sizeGuide.style.display = theme.showSizeGuide !== false ? 'block' : 'none';
-
-    const extrasSec = document.getElementById('extras-container');
-    const extrasTitle = document.getElementById('lbl-extras-title');
-    if(extrasSec && extrasTitle) {
-        extrasSec.style.display = theme.showExtras !== false ? 'flex' : 'none';
-        extrasTitle.style.display = theme.showExtras !== false ? 'block' : 'none';
-    }
-
-    // نافذة الترحيب
-    if(theme.popupActive && !sessionStorage.getItem('greetingShown')) {
-        const titleEl = document.getElementById('greeting-popup-title');
-        const msgEl = document.getElementById('greeting-popup-msg');
-        const modal = document.getElementById('greeting-popup-modal');
-        
-        if (titleEl && msgEl && modal) {
-            titleEl.innerText = theme.popupTitle || '';
-            msgEl.innerText = theme.popupMsg || '';
-            
-            const imgCont = document.getElementById('greeting-popup-img-container');
-            const imgSrc = document.getElementById('greeting-popup-img-src');
-            
-            if(theme.popupImg && imgCont && imgSrc) {
-                imgSrc.src = theme.popupImg;
-                imgCont.classList.remove('hidden');
-            } else if (imgCont) {
-                imgCont.classList.add('hidden');
-            }
-            
-            setTimeout(() => {
-                modal.classList.remove('hidden');
-                setTimeout(() => modal.classList.remove('opacity-0', 'scale-95'), 10);
-            }, 1500); // تظهر بعد ثانية ونص
-            
-            sessionStorage.setItem('greetingShown', 'true');
-        }
-    }
-};
-
-window.closeGreetingPopup = () => {
-    const modal = document.getElementById('greeting-popup-modal');
-    if(modal) {
-        modal.classList.add('opacity-0', 'scale-95');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-    }
 };
