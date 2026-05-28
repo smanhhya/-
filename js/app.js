@@ -19,7 +19,7 @@ function getAvailableStock(id) {
     return Math.max(0, (globalStock[id] || 0) - inCart); 
 }
 
-// --- تطبيق نصوص الواجهة والمربعات האربعة (Trust Badges) ---
+// --- تطبيق نصوص الواجهة والمربعات الأربعة (Trust Badges) ---
 function applyUITexts() {
     const t = globalSettings.uiTexts || {};
     const defaultTexts = {
@@ -49,7 +49,7 @@ function applyUITexts() {
     setTxt('lbl-menu-title', getT('menuTitle')); 
     setTxt('lbl-extras-title', getT('extrasTitle'));
 
-    // تطبيق المربعات האربعة من config
+    // تطبيق المربعات الأربعة من الإعدادات
     if(globalSettings.trustBadges && globalSettings.trustBadges.length === 4) {
         for(let i=1; i<=4; i++) {
             const badge = globalSettings.trustBadges[i-1];
@@ -73,7 +73,7 @@ window.moveSlider = function(direction) {
 
 window.updateSliderView = function() {
     const track = document.getElementById('slider-track');
-    if(track) track.style.transform = `translateX(${window.currentSlide * 100}%)`;
+    if(track) track.style.transform = `translateX(-${window.currentSlide * 100}%)`;
     
     const dots = document.querySelectorAll('.slider-dot');
     dots.forEach((dot, index) => {
@@ -92,23 +92,22 @@ function renderSlider() {
     track.innerHTML = '';
     dotsContainer.innerHTML = '';
     
-    // لو مفيش صور خالص
     if(images.length === 0) {
-        track.innerHTML += `<div class="w-full shrink-0 h-64 bg-gray-100"><img src="${img}" class="w-full h-full object-cover object-center" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
-
+        track.innerHTML = `<div class="w-full shrink-0 h-64 bg-gray-100 flex items-center justify-center text-gray-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
+        return;
     }
 
-    // رسم الصور والنقط
     images.forEach((img, idx) => {
-        track.innerHTML += `<div class="w-full shrink-0 h-64 bg-gray-100"><img src="${img}" class="w-full h-full object-contain" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
+        // تم التعديل هنا لـ object-cover object-center عشان الصورة تملا الإطار وتبقى شيك
+        track.innerHTML += `<div class="w-full shrink-0 h-64 bg-gray-100 overflow-hidden relative">
+            <img src="${img}" class="w-full h-full object-cover object-center" style="width: 100%; height: 100%; object-fit: cover !important; object-position: center !important;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
+        </div>`;
         
-        // إخفاء النقط لو هي صورة واحدة بس
         if (images.length > 1) {
             dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="window.currentSlide=${idx}; window.updateSliderView();"></div>`;
         }
     });
     
-    // إخفاء زراير التقليب لو صورة واحدة
     const rightBtn = document.querySelector('button[onclick="moveSlider(-1)"]');
     const leftBtn = document.querySelector('button[onclick="moveSlider(1)"]');
     if (images.length <= 1) {
@@ -122,19 +121,17 @@ function renderSlider() {
     window.currentSlide = 0;
     window.updateSliderView();
     
-    // تفعيل السحب بالإصبع (Touch Swipe) للموبايل
     let touchStartX = 0; let touchEndX = 0;
     const sliderViewport = document.getElementById('slider-viewport');
     if(sliderViewport) {
         sliderViewport.ontouchstart = e => { touchStartX = e.changedTouches[0].screenX; };
         sliderViewport.ontouchend = e => { 
             touchEndX = e.changedTouches[0].screenX; 
-            if(touchEndX < touchStartX - 30) window.moveSlider(-1); 
-            if(touchEndX > touchStartX + 30) window.moveSlider(1);  
+            if(touchEndX < touchStartX - 30) window.moveSlider(1); 
+            if(touchEndX > touchStartX + 30) window.moveSlider(-1);  
         };
     }
 }
-
 
 function renderMarquee() {
     const banner = document.getElementById('top-banner');
@@ -196,7 +193,7 @@ function applySettingsToUI() {
     const descEl = document.getElementById('header-store-desc');
     if(descEl) {
         descEl.innerText = globalSettings.storeDesc || 'صحي وطازة'; 
-        descEl.classList.remove('hidden'); // إظهار الوصف
+        descEl.classList.remove('hidden'); 
     }
     document.getElementById('footer-store-name').innerText = globalSettings.storeName || 'سمان ههيا';
     
@@ -275,13 +272,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }); 
             renderProducts(); 
             applySettingsToUI(); 
-            startLiveNotifications();
+            startLiveNotifications(); 
         } 
     }, 3000);
 });
 
 window.setupEventListeners = function() {
-    const ids = ['customer-name', 'customer-phone'];
+    const ids = ['customer-name', 'customer-phone', 'customer-address'];
     ids.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', updateUI); });
     const dZone = document.getElementById('delivery-zone');
     if (dZone) dZone.addEventListener('change', updateUI);
