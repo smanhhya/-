@@ -8,15 +8,7 @@ function debounce(func, delay) {
     };
 }
 
-document.getElementById('admin-store-open')?.addEventListener('change', function() {
-    const label = document.getElementById('store-open-label');
-    if(label) {
-        label.innerText = this.checked ? 'مفتوح' : 'مغلق';
-        label.className = this.checked ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
-    }
-});
-
-// --- نظام الدخول المباشر ---
+// --- نظام الدخول والخروج ---
 window.openAdminLogin = () => { 
     const user = firebase.auth().currentUser;
     if (user && user.email) { openAdminDashboard(); } 
@@ -36,22 +28,19 @@ window.verifyAdminPin = () => {
     const email = document.getElementById('admin-email-input')?.value.trim();
     const pass = document.getElementById('admin-password-input')?.value.trim();
     const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]') || document.querySelector('#login-screen button');
-    
     if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
-    
     let origHtml = btn ? btn.innerHTML : 'دخول';
     if(btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...'; btn.disabled = true; }
     
     firebase.auth().signInWithEmailAndPassword(email, pass)
         .then(() => {
-            closeAdminLogin(); 
-            openAdminDashboard();
+            closeAdminLogin(); openAdminDashboard();
             if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             const loginScreen = document.getElementById('login-screen');
             const dashScreen = document.getElementById('dashboard-screen');
             if(loginScreen && dashScreen) { loginScreen.classList.add('hidden'); dashScreen.classList.remove('hidden'); }
         })
-        .catch((error) => {
+        .catch(() => {
             if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             showAlert("خطأ", "بيانات الدخول غير صحيحة!");
         });
@@ -60,8 +49,7 @@ window.verifyAdminPin = () => {
 window.adminLogout = () => {
     if(!confirm("هل تريد تسجيل الخروج؟")) return;
     firebase.auth().signOut().then(() => {
-        closeAdminDashboard();
-        firebase.auth().signInAnonymously(); 
+        closeAdminDashboard(); firebase.auth().signInAnonymously(); 
         showAlert("تم الخروج", "تم تسجيل الخروج بنجاح.");
         const loginScreen = document.getElementById('login-screen');
         const dashScreen = document.getElementById('dashboard-screen');
@@ -73,7 +61,7 @@ let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all'; win
 
 window.switchAdminTab = (tab) => {
     currentAdminTab = tab;
-    ['stats','store','gallery','products','orders','dispatch','delivery','marketing','advanced','texts','theme'].forEach(t => {
+    ['stats','store','products','orders','dispatch','delivery','marketing','advanced','texts','theme', 'gallery'].forEach(t => {
         const panel = document.getElementById('admin-panel-'+t);
         const btn = document.getElementById('admin-tab-'+t);
         if(panel) panel.classList.add('hidden');
@@ -86,8 +74,8 @@ window.switchAdminTab = (tab) => {
     if(tab==='orders' || tab==='dispatch') loadOrders();
     if(tab==='products') renderAdminProducts();
     if(tab==='stats') renderTopProductsStats();
-    if(tab==='gallery') renderGalleryTabUI();
     if(tab==='marketing') renderMarketingTabUI();
+    if(tab==='gallery') renderGalleryTabUI();
 };
 
 const getSafeVal = (id, def) => document.getElementById(id) ? document.getElementById(id).value.trim() : def;
@@ -95,12 +83,156 @@ const getSafeCheck = (id, def) => document.getElementById(id) ? document.getElem
 const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
 const setCheck = (id, val) => { const el = document.getElementById(id); if(el) el.checked = val; };
 
-// --- بناء واجهة معرض الصور (السلايدر) ---
+// --- محرك بناء الواجهات الذاتي (عشان مفيش حاجة تضيع) ---
+const buildAllStaticPanels = () => {
+    const pStats = document.getElementById('admin-panel-stats');
+    if (pStats && pStats.innerHTML.trim() === '') {
+        pStats.innerHTML = `
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-brand-light/50 border border-brand-cyan/30 rounded-xl p-4 flex flex-col items-center shadow-sm">
+                    <i class="fa-solid fa-sack-dollar text-brand-cyanDark text-2xl mb-1"></i>
+                    <span class="text-[10px] text-gray-500 font-bold">مبيعات اليوم</span>
+                    <span class="font-black text-brand-navy text-xl" id="stat-sales">0</span>
+                </div>
+                <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex flex-col items-center shadow-sm">
+                    <i class="fa-solid fa-boxes-stacked text-orange-500 text-2xl mb-1"></i>
+                    <span class="text-[10px] text-gray-500 font-bold">إجمالي الطلبات</span>
+                    <span class="font-black text-brand-navy text-xl" id="stat-orders">0</span>
+                </div>
+            </div>
+            <div class="bg-white border rounded-xl p-4 shadow-sm mt-4">
+                <h3 class="font-bold text-brand-navy mb-3">المنتجات الأكثر طلباً</h3>
+                <div id="top-products-list" class="space-y-2 text-sm font-semibold text-gray-500">جاري الحساب...</div>
+            </div>
+        `;
+    }
+
+    const pStore = document.getElementById('admin-panel-store');
+    if (pStore && pStore.innerHTML.trim() === '') {
+        pStore.innerHTML = `
+            <div class="bg-white border rounded-xl p-4 shadow-sm space-y-3">
+                <h3 class="font-black text-brand-navy"><i class="fa-solid fa-pen-to-square text-brand-cyanDark"></i> بيانات المتجر الأساسية</h3>
+                <div><label class="text-xs font-bold text-gray-500">اسم المتجر</label><input type="text" id="admin-store-name" class="w-full border rounded-lg p-2 font-bold text-brand-navy"></div>
+                <div><label class="text-xs font-bold text-gray-500">وصف المتجر (يظهر في الهيدر)</label><textarea id="admin-store-desc" rows="2" class="w-full border rounded-lg p-2 font-bold text-brand-navy"></textarea></div>
+                <div><label class="text-xs font-bold text-gray-500">رقم الموبايل / الواتساب</label><input type="text" id="admin-store-phone" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr"></div>
+                <div><label class="text-xs font-bold text-gray-500">الحد الأدنى للطلب (جنيه)</label><input type="number" id="admin-min-order" placeholder="0 = لا يوجد حد أدنى" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr"></div>
+            </div>
+        `;
+    }
+
+    const pProducts = document.getElementById('admin-panel-products');
+    if (pProducts && pProducts.innerHTML.trim() === '') {
+        pProducts.innerHTML = `
+            <div class="flex justify-between items-center bg-brand-light/30 p-3 rounded-lg border border-brand-cyan/20">
+                <p class="text-xs text-gray-600 font-bold"><i class="fa-solid fa-circle-info text-brand-cyanDark"></i> إدارة المنتجات بالكامل</p>
+                <button onclick="addNewAdminProduct()" class="bg-brand-cyanDark hover:opacity-90 text-white text-xs font-bold px-3 py-1.5 rounded transition-opacity shadow-sm"><i class="fa-solid fa-plus"></i> منتج جديد</button>
+            </div>
+            <div id="admin-inputs-container" class="space-y-4 mt-4"></div>
+        `;
+    }
+
+    const pOrders = document.getElementById('admin-panel-orders');
+    if (pOrders && pOrders.innerHTML.trim() === '') {
+        pOrders.innerHTML = `
+            <input type="text" id="order-search" placeholder="ابحث باسم العميل أو رقم الموبايل..." class="w-full border-2 border-gray-200 rounded-xl p-3 mb-4 font-bold text-brand-navy outline-none focus:border-brand-cyan" onkeyup="renderOrdersList()">
+            <div class="flex gap-2 mb-3">
+                <button onclick="filterOrders('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200">الكل</button>
+                <button onclick="filterOrders('new')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-100 text-red-700">جديد</button>
+                <button onclick="filterOrders('processing')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-yellow-100 text-yellow-700">قيد التجهيز</button>
+                <button onclick="filterOrders('completed')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-green-100 text-green-700">مكتمل</button>
+            </div>
+            <div id="orders-list-container" class="space-y-3"></div>
+        `;
+        const sInput = document.getElementById('order-search');
+        if (sInput) sInput.addEventListener('input', debounce(() => renderOrdersList(), 300));
+    }
+
+    const pDispatch = document.getElementById('admin-panel-dispatch');
+    if (pDispatch && pDispatch.innerHTML.trim() === '') {
+        pDispatch.innerHTML = `
+            <div class="bg-white border rounded-xl p-4 shadow-sm">
+                <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-fast text-brand-cyanDark"></i> إرسال الطلبات للمندوبين</h3>
+                <p class="text-[10px] text-gray-500 font-bold mb-3">اختار منطقة معينة ثم اختر الطلبات اللي عايز تبعتهم، واكتب رقم المندوب وهيتم فتح واتساب برسالة جاهزة بكل التفاصيل.</p>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-gray-500 block mb-1">تصفية حسب المنطقة (اختياري)</label>
+                    <select id="dispatch-zone-filter" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-white" onchange="renderDispatchOrders()"><option value="all">كل المناطق</option></select>
+                </div>
+                <div id="dispatch-orders-container" class="space-y-2 mb-4 max-h-96 overflow-y-auto cart-scroll border rounded-lg p-2 bg-gray-50">
+                    <p class="text-xs text-gray-400 text-center py-4">اختار منطقة أو حمّل الطلبات</p>
+                </div>
+                <div class="flex items-center gap-2 mb-3">
+                    <button onclick="toggleSelectAllDispatch()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold text-xs py-2 px-4 rounded-lg transition-colors">تحديد الكل / إلغاء</button>
+                    <span class="text-[10px] text-gray-500">عدد المحدد: <span id="dispatch-selected-count" class="font-black text-brand-cyanDark">0</span></span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-gray-500 block mb-1">رقم موبايل المندوب (بالواتساب)</label>
+                    <input type="text" id="dispatch-driver-phone" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr" placeholder="20100000000">
+                </div>
+                <button onclick="sendDispatchToDriver()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors text-sm shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-brands fa-whatsapp text-xl"></i> إرسال الطلبات المحددة للمندوب
+                </button>
+            </div>
+        `;
+    }
+
+    const pDelivery = document.getElementById('admin-panel-delivery');
+    if (pDelivery && pDelivery.innerHTML.trim() === '') {
+        pDelivery.innerHTML = `
+            <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
+                <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-gift text-green-500"></i> التوصيل المجاني</h3>
+                <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-free-delivery-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل ميزة التوصيل المجاني</span></label>
+                <input type="number" id="admin-free-delivery-threshold" placeholder="الحد الأدنى للمجانية" class="w-full border rounded-lg p-2 font-bold text-brand-navy">
+            </div>
+            <div class="bg-white border rounded-xl p-4 shadow-sm">
+                <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-map-location-dot text-brand-cyanDark"></i> مناطق التوصيل والأسعار</h3>
+                <div id="admin-zones-container" class="space-y-2 mb-3"></div>
+                <button onclick="addNewAdminZone()" class="w-full bg-gray-50 text-brand-navy text-sm font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus"></i> إضافة منطقة جديدة</button>
+            </div>
+        `;
+    }
+
+    const pTexts = document.getElementById('admin-panel-texts');
+    if (pTexts && pTexts.innerHTML.trim() === '') {
+        pTexts.innerHTML = `
+            <div class="bg-white border rounded-xl p-4 shadow-sm">
+                <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-book-open text-brand-cyanDark"></i> قاموس نصوص الواجهة (CMS)</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="admin-texts-container"></div>
+            </div>
+        `;
+    }
+
+    const pTheme = document.getElementById('admin-panel-theme');
+    if (pTheme && pTheme.innerHTML.trim() === '') {
+        pTheme.innerHTML = `
+            <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-brand-cyanDark">
+                <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-palette text-brand-cyanDark"></i> ألوان الموقع (تغيير فوري)</h3>
+                <p class="text-[10px] text-gray-500 font-bold mb-4">بمجرد ما تختار لون من هنا، الموقع كله هيتغير للون ده ويتحفظ للعملاء.</p>
+                <div class="grid grid-cols-1 gap-4 mb-4">
+                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                        <label class="text-xs text-gray-700 font-bold">اللون الأساسي (أخضر سمان ههيا حالياً)</label>
+                        <input type="color" id="color-navy" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-navy', this.value, 'theme_navy')">
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                        <label class="text-xs text-gray-700 font-bold">لون التميز والخصومات (الأحمر)</label>
+                        <input type="color" id="color-cyanDark" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-cyanDark', this.value, 'theme_cyanDark')">
+                    </div>
+                    <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
+                        <label class="text-xs text-gray-700 font-bold">لون التنبيهات والأيقونات (الأصفر)</label>
+                        <input type="color" id="color-yellow" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-yellow', this.value, 'theme_yellow')">
+                    </div>
+                </div>
+                <button onclick="resetThemeColors()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> استعادة ألوان ههيا الأصلية
+                </button>
+            </div>
+        `;
+    }
+};
+
 window.renderGalleryTabUI = () => {
     const container = document.getElementById('admin-panel-gallery');
     if(!container) return;
     if(!globalSettings.galleryImages) globalSettings.galleryImages = ["all-sizes.jpg"];
-    
     let imagesHtml = globalSettings.galleryImages.map((img, idx) => `
         <div class="flex gap-2 mb-2 items-center bg-gray-50 p-2 rounded border border-gray-200">
             <span class="font-black text-gray-400 text-xs">${idx+1}</span>
@@ -108,7 +240,6 @@ window.renderGalleryTabUI = () => {
             <button onclick="globalSettings.galleryImages.splice(${idx},1); renderGalleryTabUI()" class="text-red-500 hover:bg-red-100 p-2 rounded transition-colors shadow-sm"><i class="fa-solid fa-trash text-sm"></i></button>
         </div>
     `).join('');
-    
     container.innerHTML = `
         <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-brand-yellow">
             <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-images text-brand-yellow"></i> معرض الكتالوج (السلايدر)</h3>
@@ -119,11 +250,9 @@ window.renderGalleryTabUI = () => {
     `;
 };
 
-// --- بناء واجهة التسويق بذكاء ---
 const renderMarketingTabUI = () => {
     const container = document.getElementById('admin-panel-marketing');
     if(!container) return;
-
     const marqueeStr = (globalSettings.marqueeMessages || []).join('\n');
     const notiNamesStr = (globalSettings.liveNotiNames || []).join('، ');
     const notiPlacesStr = (globalSettings.liveNotiPlaces || []).join('، ');
@@ -196,7 +325,6 @@ const renderMarketingTabUI = () => {
     if(csSelect) {
         Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`); 
     }
-    renderAdminPromos();
 };
 
 const renderAdvancedTabUI = () => {
@@ -243,6 +371,9 @@ const renderAdvancedTabUI = () => {
 };
 
 window.openAdminDashboard = () => {
+    // 1. نبني الخانات الأول عشان متكونش فاضية
+    buildAllStaticPanels();
+
     const headerDiv = document.querySelector('#admin-dashboard-modal .flex.items-center.gap-3');
     if(headerDiv && !document.getElementById('admin-logout-btn')) {
         headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
@@ -718,6 +849,49 @@ window.sendDispatchToDriver = () => {
 
     let waNumber = phone.startsWith('0') ? '2' + phone : phone;
     window.open(`https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(fullMessage.trim())}`, '_blank');
+};
+
+window.generateBulkWhatsAppLinks = () => {
+    const numbersEl = document.getElementById('admin-bulk-numbers');
+    const msgEl = document.getElementById('admin-bulk-message');
+    const typeEl = document.getElementById('admin-bulk-reward-type');
+    const valEl = document.getElementById('admin-bulk-reward-value');
+    
+    if(!numbersEl || !msgEl || !typeEl || !valEl) return;
+
+    const numbersRaw = numbersEl.value.trim();
+    const messageTemplate = msgEl.value.trim() || "شكراً لثقتك! كود الخصم بتاعك: {الكود}";
+    const rewardType = typeEl.value;
+    const rewardValue = parseInt(valEl.value) || 0;
+
+    if(!numbersRaw) { showAlert("تنبيه", "يرجى إدخال أرقام الموبايلات أولاً"); return; }
+    const numbers = numbersRaw.split('\n').map(n => n.trim()).filter(n => n.length >= 10);
+    if(numbers.length === 0) { showAlert("تنبيه", "لم يتم العثور على أرقام صحيحة"); return; }
+
+    const linksContainer = document.getElementById('bulk-whatsapp-links');
+    if(!linksContainer) return;
+    linksContainer.innerHTML = '<p class="text-xs font-black text-brand-navy mb-2 border-b pb-2"><i class="fa-solid fa-check-double text-green-500"></i> اضغط "إرسال" قدام كل رقم:</p>';
+
+    numbers.forEach(num => {
+        const randomCode = "THX-" + Math.floor(1000 + Math.random() * 9000);
+        tempPromoCodes.push({ code: randomCode, type: rewardType, discount: rewardValue, isAuto: true, usesLeft: 1, customerPhone: num, minOrder: 0, maxDiscount: 0, expiryDate: '' });
+        const finalMessage = messageTemplate.replace(/{الكود}/g, randomCode);
+        let waNumber = num;
+        if(waNumber.startsWith('0')) waNumber = '2' + waNumber; 
+
+        linksContainer.innerHTML += `
+            <div class="flex justify-between items-center bg-white p-2 border border-gray-200 rounded-lg shadow-sm">
+                <span class="text-xs font-bold text-gray-600" dir="ltr">${num}</span>
+                <a href="https://api.whatsapp.com/send?phone=${waNumber}&text=${encodeURIComponent(finalMessage)}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white text-[10px] px-4 py-1.5 rounded font-black transition-colors flex items-center gap-1 shadow-sm">
+                    إرسال <i class="fa-brands fa-whatsapp text-sm"></i>
+                </a>
+            </div>
+        `;
+    });
+
+    renderAdminPromos();
+    linksContainer.classList.remove('hidden');
+    showAlert("تم التجهيز بنجاح 🎉", `تم إنشاء أكواد لـ ${numbers.length} عميل. \n\n⚠️ مهم جداً: انزل تحت في لوحة التحكم ودوس "حفظ جميع التعديلات" عشان الأكواد تتفعل في السيستم وتقدر تبعت الرسايل.`);
 };
 
 // حفظ البيانات بأمان وقوة
