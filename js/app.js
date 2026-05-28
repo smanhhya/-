@@ -117,7 +117,6 @@ function startLiveNotifications() {
         }, 5000); // تختفي بعد 5 ثواني
     }
 
-    // تظهر أول مرة بعد 10 ثواني، وبعدين كل 25 ثانية عشوائي
     setTimeout(() => {
         showRandomNoti();
         setInterval(showRandomNoti, 25000);
@@ -211,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }); 
             renderProducts(); 
             applySettingsToUI(); 
-            startLiveNotifications(); // تشغيل الإشعارات
+            startLiveNotifications();
         } 
     }, 3000);
 });
@@ -299,7 +298,7 @@ window.applyPromoCode = function() {
     const promo = (globalSettings.promoCodes || []).find(p => p.code.toUpperCase() === input);
     
     if (!promo) { msg.innerText = "كود غير صحيح."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
-    if (promo.usesLeft !== null && promo.usesLeft !== undefined && promo.usesLeft <= 0) { msg.innerText = "عفواً، انتهى الحد الأقصى لاستخدام هذا الكود."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
+    if (promo.usesLeft !== null && promo.usesLeft !== undefined && promo.usesLeft <= 0) { msg.innerText = "عفواً، تم استخدام هذا الكود من قبل."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.expiryDate && new Date(promo.expiryDate) < new Date(new Date().toDateString())) { msg.innerText = "عفواً، هذا الكود منتهي الصلاحية."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.minOrder && subTotal < promo.minOrder) { msg.innerText = `عشان تفعل الكود ده، لازم طلباتك تتخطى ${promo.minOrder} ج.م`; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     
