@@ -640,7 +640,8 @@ window.finalCheckoutStep = async function() {
     if (canGenerateReward) {
         const prefix = globalSettings.autoPromoPrefix || 'VIP-';
         newPromoCode = prefix + Math.floor(1000 + Math.random() * 9000); earnedLoyalty = true;
-        const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: 1, customerPhone: customerPhone, minOrder: 0, maxDiscount: globalSettings.rewardMaxDiscount || 0, expiryDate: '' };
+        const maxDisc = globalSettings.rewardMaxDiscount || 0;
+        const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: 1, customerPhone: customerPhone, minOrder: 0, maxDiscount: maxDisc, expiryDate: '' };
         if(!globalSettings.promoCodes) globalSettings.promoCodes = []; globalSettings.promoCodes.push(newPromoObj);
         if (globalSettings.rewardMaxGenerations > 0) { globalSettings.rewardMaxGenerations -= 1; }
         promoUpdated = true;
