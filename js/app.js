@@ -50,18 +50,87 @@ function applyUITexts() {
     setTxt('lbl-extras-title', getT('extrasTitle'));
 }
 
+// --- تشغيل الميزات المرئية الذكية (سلايدر، شريط أخبار، إشعارات) ---
+function renderSlider() {
+    const track = document.getElementById('slider-track');
+    const dotsContainer = document.getElementById('slider-dots');
+    if(!track || !dotsContainer) return;
+    
+    const images = globalSettings.galleryImages || ["all-sizes.jpg"];
+    window.sliderImages = images; 
+    
+    track.innerHTML = '';
+    dotsContainer.innerHTML = '';
+    
+    if(images.length === 0) {
+        track.innerHTML = `<div class="w-full shrink-0 h-64 bg-gray-100 flex items-center justify-center text-gray-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
+        return;
+    }
+
+    images.forEach((img, idx) => {
+        track.innerHTML += `<div class="w-full shrink-0 h-64"><img src="${img}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
+        dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'}" onclick="currentSlide=${idx}; updateSliderView();"></div>`;
+    });
+    window.currentSlide = 0;
+    if(typeof window.updateSliderView === 'function') window.updateSliderView();
+}
+
+function renderMarquee() {
+    const banner = document.getElementById('top-banner');
+    const textContainer = document.getElementById('top-banner-text');
+    if(!banner || !textContainer) return;
+
+    if (globalSettings.bannerActive && globalSettings.marqueeMessages && globalSettings.marqueeMessages.length > 0) {
+        const fullMsg = globalSettings.marqueeMessages.join(' &nbsp; &nbsp; <i class="fa-solid fa-star text-[8px] text-orange-400 mx-2"></i> &nbsp; &nbsp; ');
+        textContainer.innerHTML = fullMsg;
+        banner.classList.remove('hidden');
+    } else if (globalSettings.bannerActive && globalSettings.bannerText) {
+        textContainer.innerHTML = globalSettings.bannerText;
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
+function startLiveNotifications() {
+    const noti = document.getElementById('live-notification');
+    if (!noti || !globalSettings.liveNotiActive || !globalSettings.liveNotiNames || globalSettings.liveNotiNames.length === 0) return;
+
+    const names = globalSettings.liveNotiNames;
+    const places = globalSettings.liveNotiPlaces || [];
+    const products = ["طبق سوبر", "طبق جامبو", "كتاكيت سمان", "طبق سبشيال", "بيض سمان"];
+    
+    function showRandomNoti() {
+        const name = names[Math.floor(Math.random() * names.length)];
+        const place = places.length > 0 ? places[Math.floor(Math.random() * places.length)] : "";
+        const product = products[Math.floor(Math.random() * products.length)];
+        const time = Math.floor(Math.random() * 5) + 1; // من 1 لـ 5 دقايق
+
+        const placeText = place ? ` من ${place}` : "";
+        document.getElementById('live-noti-text').innerHTML = `<span class="font-black text-brand-navy">${name}${placeText}</span> حجز ${product}`;
+        document.getElementById('live-noti-time').innerText = `منذ ${time} دقيقة`;
+
+        noti.classList.remove('translate-y-20', 'opacity-0');
+        
+        setTimeout(() => {
+            noti.classList.add('translate-y-20', 'opacity-0');
+        }, 5000); // تختفي بعد 5 ثواني
+    }
+
+    // تظهر أول مرة بعد 10 ثواني، وبعدين كل 25 ثانية عشوائي
+    setTimeout(() => {
+        showRandomNoti();
+        setInterval(showRandomNoti, 25000);
+    }, 10000);
+}
+
 // --- تطبيق الإعدادات العامة على الواجهة ---
 function applySettingsToUI() {
     const savedNavy = localStorage.getItem('theme_navy');
     if(savedNavy) document.documentElement.style.setProperty('--brand-navy', savedNavy);
 
-    const banner = document.getElementById('top-banner');
-    if (globalSettings.bannerActive && globalSettings.bannerText && globalSettings.bannerText.trim() !== '') { 
-        document.getElementById('top-banner-text').innerText = globalSettings.bannerText; 
-        banner.classList.remove('hidden'); 
-    } else { 
-        banner.classList.add('hidden'); 
-    }
+    renderMarquee();
+    renderSlider();
 
     document.getElementById('header-store-name').innerText = globalSettings.storeName || 'سمان ههيا'; 
     document.getElementById('header-store-desc').innerText = globalSettings.storeDesc || 'صحي وطازة'; 
@@ -142,6 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }); 
             renderProducts(); 
             applySettingsToUI(); 
+            startLiveNotifications(); // تشغيل الإشعارات
         } 
     }, 3000);
 });
@@ -358,12 +428,20 @@ window.updateQuantity = function(id, delta) {
     renderProducts(); 
 };
 
-// --- التنقل بين خطوات السلة ---
+// --- التنقل بين خطوات السلة وتغيير الشاشات ---
 window.goToCheckoutStep2 = function() {
     document.getElementById('checkout-step-1').classList.add('hidden');
     document.getElementById('checkout-step-2').classList.remove('hidden');
     document.getElementById('btn-back-step').classList.remove('hidden');
-    document.getElementById('lbl-checkout-title').innerText = "بيانات التوصيل";
+    document.getElementById('lbl-checkout-title').innerText = "إتمام الطلب";
+    
+    // تفعيل أيقونة الخطوة التانية
+    document.getElementById('step-1-indicator').classList.remove('step-active');
+    document.getElementById('step-1-indicator').classList.add('step-completed');
+    document.getElementById('step-line-1').classList.add('active');
+    document.getElementById('step-2-indicator').classList.remove('opacity-50');
+    document.getElementById('step-2-indicator').classList.add('step-active');
+
     updateUI();
 };
 
@@ -372,6 +450,14 @@ window.backToCart = function() {
     document.getElementById('checkout-step-1').classList.remove('hidden');
     document.getElementById('btn-back-step').classList.add('hidden');
     document.getElementById('lbl-checkout-title').innerText = "سلة المشتريات";
+    
+    // رجوع أيقونة الخطوات
+    document.getElementById('step-2-indicator').classList.remove('step-active');
+    document.getElementById('step-2-indicator').classList.add('opacity-50');
+    document.getElementById('step-line-1').classList.remove('active');
+    document.getElementById('step-1-indicator').classList.remove('step-completed');
+    document.getElementById('step-1-indicator').classList.add('step-active');
+
     updateUI();
 };
 
@@ -530,7 +616,7 @@ window.closeAlert = function() {
         const icon = document.getElementById('alert-icon');
         if(icon) icon.className="fa-solid fa-bell"; 
         const btn = document.querySelector('#alert-box button'); 
-        if(btn) { btn.className = "bg-brand-navy hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-xl w-full transition-colors"; btn.innerHTML = 'حسناً'; btn.onclick = closeAlert; }
+        if(btn) { btn.className = "bg-brand-navy hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl w-full transition-opacity"; btn.innerHTML = 'حسناً'; btn.onclick = closeAlert; }
     }, 300); 
 };
 
@@ -541,7 +627,7 @@ window.openVipPreOrder = function(id) {
     document.getElementById('alert-title').classList.add('hidden'); 
     document.getElementById('alert-message').innerHTML = msgHTML;
     const alertBtn = document.querySelector('#alert-box button'); 
-    if(alertBtn) { alertBtn.className = "text-gray-400 hover:text-gray-600 font-bold py-2 text-sm transition-colors underline w-full bg-transparent border-0"; alertBtn.innerHTML = 'لا شكراً، هشوف حاجة تانية'; }
+    if(alertBtn) { alertBtn.className = "text-gray-400 hover:text-gray-600 font-bold py-2 text-sm transition-colors underline w-full bg-transparent border-0 shadow-none"; alertBtn.innerHTML = 'لا شكراً، هشوف حاجة تانية'; }
     const md = document.getElementById('alert-modal'); md.classList.remove('hidden'); setTimeout(()=>md.classList.remove('opacity-0'),10);
 };
 
@@ -675,7 +761,7 @@ window.finalCheckoutStep = async function() {
     if (earnedLoyalty) {
         const rewardDesc = globalSettings.rewardType === 'free_delivery' ? 'توصيل مجاني' : globalSettings.rewardType === 'percent' ? `خصم ${globalSettings.rewardValue}%` : `خصم ${globalSettings.rewardValue} ج.م`;
         const customMsg = globalSettings.autoPromoModalMsg || "تم إصدار كود خصم خاص بك لطلبك القادم 🎁";
-        const msgHTML = `<div class="text-5xl mb-3">🎉</div><div class="font-black text-brand-navy mb-2 text-lg">شكراً لطلبك يا ${customerName.split(' ')[0]}!</div><div class="text-green-600 font-black text-sm mb-2">${customMsg}</div><div class="bg-gray-100 border-2 border-dashed border-gray-300 p-4 rounded-xl mb-4 relative"><span class="text-xs font-bold text-gray-500 block mb-1">كود الخصم الخاص بك:</span><span class="font-black text-3xl text-brand-cyanDark tracking-wider select-all block mb-2">${newPromoCode}</span><button onclick="navigator.clipboard.writeText('${newPromoCode}'); this.innerHTML='<i class=\\'fa-solid fa-check\\'></i> تم النسخ بنجاح'; this.classList.replace('bg-brand-navy', 'bg-green-500'); setTimeout(() => { this.innerHTML='<i class=\\'fa-regular fa-copy\\'></i> انسخ الكود'; this.classList.replace('bg-green-500', 'bg-brand-navy'); }, 2000);" class="w-full bg-brand-navy hover:bg-gray-800 text-white text-sm py-2 rounded-lg font-bold transition-colors flex justify-center items-center gap-2 shadow-sm"><i class="fa-regular fa-copy"></i> انسخ الكود</button><span class="text-xs font-bold text-gray-600 block mt-3">يمنحك ${rewardDesc}</span></div><div class="text-sm font-bold text-brand-navy mt-2">الأوردر وصل السيستم بنجاح وسيتم تجهيزه.</div>`;
+        const msgHTML = `<div class="text-5xl mb-3">🎉</div><div class="font-black text-brand-navy mb-2 text-lg">شكراً لطلبك يا ${customerName.split(' ')[0]}!</div><div class="text-green-600 font-black text-sm mb-2">${customMsg}</div><div class="bg-gray-100 border-2 border-dashed border-gray-300 p-4 rounded-xl mb-4 relative"><span class="text-xs font-bold text-gray-500 block mb-1">كود الخصم الخاص بك:</span><span class="font-black text-3xl text-brand-cyanDark tracking-wider select-all block mb-2">${newPromoCode}</span><button onclick="navigator.clipboard.writeText('${newPromoCode}'); this.innerHTML='<i class=\\'fa-solid fa-check\\'></i> تم النسخ بنجاح'; this.classList.replace('bg-brand-navy', 'bg-green-500'); setTimeout(() => { this.innerHTML='<i class=\\'fa-regular fa-copy\\'></i> انسخ الكود'; this.classList.replace('bg-green-500', 'bg-brand-navy'); }, 2000);" class="w-full bg-brand-navy hover:opacity-90 text-white text-sm py-2 rounded-lg font-bold transition-colors flex justify-center items-center gap-2 shadow-sm"><i class="fa-regular fa-copy"></i> انسخ الكود</button><span class="text-xs font-bold text-gray-600 block mt-3">يمنحك ${rewardDesc}</span></div><div class="text-sm font-bold text-brand-navy mt-2">الأوردر وصل السيستم بنجاح وسيتم تجهيزه.</div>`;
         document.getElementById('alert-icon-container').classList.add('hidden'); document.getElementById('alert-title').classList.add('hidden'); document.getElementById('alert-message').innerHTML = msgHTML;
 
         const alertBtn = document.querySelector('#alert-box button'); 
