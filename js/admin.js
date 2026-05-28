@@ -98,7 +98,7 @@ const setCheck = (id, val) => { const el = document.getElementById(id); if(el) e
 
 // --- محرك بناء الواجهات الفولاذي (يبني كل الأقسام من الصفر للحماية) ---
 const buildDashboardUI = () => {
-    // 1. الإحصائيات
+    
     const pStats = document.getElementById('admin-panel-stats');
     if (pStats && pStats.innerHTML.trim() === '') {
         pStats.innerHTML = `
@@ -117,7 +117,6 @@ const buildDashboardUI = () => {
         `;
     }
 
-    // 2. المتجر والمربعات الأربعة
     const pStore = document.getElementById('admin-panel-store');
     if (pStore && pStore.innerHTML.trim() === '') {
         pStore.innerHTML = `
@@ -144,20 +143,18 @@ const buildDashboardUI = () => {
         `;
     }
 
-    // 3. الكتالوج (معرض الصور)
     const pGallery = document.getElementById('admin-panel-gallery');
     if (pGallery && pGallery.innerHTML.trim() === '') {
         pGallery.innerHTML = `
             <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-brand-yellow">
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-images text-brand-yellow"></i> معرض الكتالوج (السلايدر)</h3>
-                <p class="text-[10px] text-gray-500 font-bold mb-4">أضف مسارات الصور لعرضها في السلايدر.</p>
+                <p class="text-[10px] text-gray-500 font-bold mb-4">أضف مسارات الصور أو الروابط لعرضها في السلايدر الخاص بالعميل.</p>
                 <div id="admin-gallery-list"></div>
                 <button onclick="globalSettings.galleryImages.push(''); renderGalleryTabUI()" class="w-full mt-3 bg-brand-navy text-white hover:bg-gray-800 py-3 rounded-xl font-black text-xs transition-colors flex items-center justify-center gap-2 shadow-md"><i class="fa-solid fa-plus"></i> إضافة صورة جديدة</button>
             </div>
         `;
     }
 
-    // 4. المنتجات
     const pProducts = document.getElementById('admin-panel-products');
     if (pProducts && pProducts.innerHTML.trim() === '') {
         pProducts.innerHTML = `
@@ -169,7 +166,6 @@ const buildDashboardUI = () => {
         `;
     }
 
-    // 5. الطلبات
     const pOrders = document.getElementById('admin-panel-orders');
     if (pOrders && pOrders.innerHTML.trim() === '') {
         pOrders.innerHTML = `
@@ -186,14 +182,13 @@ const buildDashboardUI = () => {
         if (sInput) sInput.addEventListener('input', debounce(() => renderOrdersList(), 300));
     }
 
-    // 6. التوزيع (مع قائمة المناديب)
     const pDispatch = document.getElementById('admin-panel-dispatch');
     if (pDispatch && pDispatch.innerHTML.trim() === '') {
         pDispatch.innerHTML = `
             <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-truck-fast text-brand-cyanDark"></i> إرسال الطلبات للمندوبين</h3>
                 <div class="mb-3">
-                    <label class="text-[10px] font-bold text-gray-500 block mb-1">تصفية حسب المنطقة (اختياري)</label>
+                    <label class="text-[10px] font-bold text-gray-500 block mb-1">تصفية حسب المنطقة</label>
                     <select id="dispatch-zone-filter" class="w-full border rounded-lg p-2 font-bold text-brand-navy bg-white" onchange="renderDispatchOrders()"><option value="all">كل المناطق</option></select>
                 </div>
                 <div id="dispatch-orders-container" class="space-y-2 mb-4 max-h-96 overflow-y-auto cart-scroll border rounded-lg p-2 bg-gray-50"></div>
@@ -202,7 +197,7 @@ const buildDashboardUI = () => {
                     <span class="text-[10px] text-gray-500">المحدد: <span id="dispatch-selected-count" class="font-black text-brand-cyanDark">0</span></span>
                 </div>
                 <div class="mb-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                    <label class="text-[10px] font-black text-brand-navy block mb-2">اختيار المندوب (من القائمة بالأسفل)</label>
+                    <label class="text-[10px] font-black text-brand-navy block mb-2">اختيار المندوب (من القائمة المحفوظة بالأسفل)</label>
                     <select id="dispatch-driver-select" class="w-full border rounded-lg p-2 font-bold text-gray-700 bg-white mb-2" onchange="if(this.value) document.getElementById('dispatch-driver-phone').value = this.value"></select>
                     <input type="text" id="dispatch-driver-phone" class="w-full border rounded-lg p-2 font-bold text-brand-navy text-left" dir="ltr" placeholder="أو اكتب رقم الواتساب يدوياً">
                 </div>
@@ -210,21 +205,21 @@ const buildDashboardUI = () => {
                     <i class="fa-brands fa-whatsapp text-xl"></i> إرسال الطلبات للمندوب
                 </button>
             </div>
+            
             <div class="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-blue-500">
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-users text-blue-500"></i> قائمة المناديب المحفوظة</h3>
                 <div id="admin-drivers-container" class="space-y-2 mb-3"></div>
-                <button onclick="addNewAdminDriver()" class="w-full bg-gray-50 text-brand-navy text-sm font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus"></i> إضافة مندوب للقائمة</button>
+                <button onclick="addNewAdminDriver()" class="w-full bg-gray-50 text-brand-navy text-sm font-bold py-2 rounded-lg border border-gray-200 hover:bg-gray-100"><i class="fa-solid fa-plus"></i> إضافة مندوب للقائمة</button>
             </div>
         `;
     }
 
-    // 7. التوصيل
     const pDelivery = document.getElementById('admin-panel-delivery');
     if (pDelivery && pDelivery.innerHTML.trim() === '') {
         pDelivery.innerHTML = `
             <div class="bg-white border rounded-xl p-4 shadow-sm mb-4">
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-gift text-green-500"></i> التوصيل المجاني</h3>
-                <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-free-delivery-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل التوصيل المجاني</span></label>
+                <label class="flex items-center gap-2 mb-2"><input type="checkbox" id="admin-free-delivery-active" class="accent-brand-cyanDark"> <span class="text-sm font-bold">تفعيل ميزة التوصيل المجاني</span></label>
                 <input type="number" id="admin-free-delivery-threshold" placeholder="الحد الأدنى" class="w-full border rounded-lg p-2 font-bold text-brand-navy">
             </div>
             <div class="bg-white border rounded-xl p-4 shadow-sm">
@@ -235,7 +230,6 @@ const buildDashboardUI = () => {
         `;
     }
 
-    // 8. التسويق والأكواد
     const pMarketing = document.getElementById('admin-panel-marketing');
     if (pMarketing && pMarketing.innerHTML.trim() === '') {
         pMarketing.innerHTML = `
@@ -274,8 +268,8 @@ const buildDashboardUI = () => {
             <div class="bg-white border rounded-xl p-4 shadow-sm mb-4 border-l-4 border-l-blue-500">
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-bell text-blue-500"></i> الإشعارات الحية الوهمية</h3>
                 <label class="flex items-center gap-2 mb-3"><input type="checkbox" id="admin-live-noti-active" class="accent-blue-500 w-4 h-4"> <span class="text-sm font-bold text-blue-700">تفعيل الإشعارات أسفل الشاشة</span></label>
-                <div><label class="text-[10px] font-bold text-gray-500 block mb-1">الأسماء (افصل بينها بفاصلة ،)</label><textarea id="admin-noti-names" rows="2" class="w-full border rounded-lg p-2 text-xs font-bold text-brand-navy"></textarea></div>
-                <div class="mt-2"><label class="text-[10px] font-bold text-gray-500 block mb-1">المناطق (افصل بينها بفاصلة ،)</label><textarea id="admin-noti-places" rows="2" class="w-full border rounded-lg p-2 text-xs font-bold text-brand-navy"></textarea></div>
+                <div><label class="text-[10px] font-bold text-gray-500 block mb-1">الأسماء (افصل بفاصلة ،)</label><textarea id="admin-noti-names" rows="2" class="w-full border rounded-lg p-2 text-xs font-bold text-brand-navy"></textarea></div>
+                <div class="mt-2"><label class="text-[10px] font-bold text-gray-500 block mb-1">المناطق (افصل بفاصلة ،)</label><textarea id="admin-noti-places" rows="2" class="w-full border rounded-lg p-2 text-xs font-bold text-brand-navy"></textarea></div>
             </div>
 
             <div class="bg-white border rounded-xl p-4 shadow-sm mb-4 border-l-4 border-l-yellow-500">
@@ -301,7 +295,6 @@ const buildDashboardUI = () => {
         `;
     }
 
-    // 9. متقدم (الرسائل)
     const pAdvanced = document.getElementById('admin-panel-advanced');
     if (pAdvanced && pAdvanced.innerHTML.trim() === '') {
         pAdvanced.innerHTML = `
@@ -318,17 +311,16 @@ const buildDashboardUI = () => {
             <div class="bg-red-50 border border-red-200 rounded-xl p-4 shadow-sm mt-4">
                 <h3 class="font-black text-red-600 mb-3"><i class="fa-solid fa-trash-can"></i> منطقة الخطر</h3>
                 <div class="space-y-3">
-                    <button onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 shadow-md">تصفير الإحصائيات (مبيعات/طلبات)</button>
+                    <button onclick="resetStatsOnly()" class="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 shadow-md">تصفير الإحصائيات</button>
                     <button onclick="deleteAllOrders()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 shadow-md">مسح جميع سجلات الطلبات</button>
                 </div>
             </div>
         `;
     }
 
-    // 10. القاموس والمظهر
     const pTexts = document.getElementById('admin-panel-texts');
     if (pTexts && pTexts.innerHTML.trim() === '') {
-        pTexts.innerHTML = `<div class="bg-white border rounded-xl p-4 shadow-sm"><h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-book-open text-brand-cyanDark"></i> قاموس الواجهة</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="admin-texts-container"></div></div>`;
+        pTexts.innerHTML = `<div class="bg-white border rounded-xl p-4 shadow-sm"><h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-book-open text-brand-cyanDark"></i> قاموس نصوص الواجهة</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="admin-texts-container"></div></div>`;
     }
 
     const pTheme = document.getElementById('admin-panel-theme');
@@ -338,34 +330,34 @@ const buildDashboardUI = () => {
                 <h3 class="font-black text-brand-navy mb-3"><i class="fa-solid fa-palette text-brand-cyanDark"></i> ألوان الموقع</h3>
                 <div class="grid grid-cols-1 gap-4 mb-4">
                     <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
-                        <label class="text-xs text-gray-700 font-bold">اللون الأساسي (أخضر)</label>
+                        <label class="text-xs text-gray-700 font-bold">اللون الأساسي</label>
                         <input type="color" id="color-navy" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-navy', this.value, 'theme_navy')">
                     </div>
                     <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
-                        <label class="text-xs text-gray-700 font-bold">لون التميز (الأحمر)</label>
+                        <label class="text-xs text-gray-700 font-bold">لون التميز</label>
                         <input type="color" id="color-cyanDark" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-cyanDark', this.value, 'theme_cyanDark')">
                     </div>
                     <div class="flex items-center justify-between bg-gray-50 p-2 rounded-lg border">
-                        <label class="text-xs text-gray-700 font-bold">لون الأيقونات (الأصفر)</label>
+                        <label class="text-xs text-gray-700 font-bold">لون التنبيهات</label>
                         <input type="color" id="color-yellow" class="w-12 h-10 border-0 rounded cursor-pointer bg-transparent" onchange="updateThemeColor('--brand-yellow', this.value, 'theme_yellow')">
                     </div>
                 </div>
-                <button onclick="resetThemeColors()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg">استعادة ألوان ههيا الأصلية</button>
+                <button onclick="resetThemeColors()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg">استعادة الألوان الأصلية</button>
             </div>
         `;
     }
 };
 
-// --- تشغيل اللوحة وملء البيانات ---
+// --- تشغيل اللوحة وتعبئة البيانات ---
 window.openAdminDashboard = () => {
-    buildDashboardUI(); // بناء الهياكل أولاً لضمان عدم وجود أخطاء
+    buildDashboardUI(); // بناء الهياكل لتفادي أي خطأ DOM
 
     const headerDiv = document.querySelector('#admin-dashboard-modal .flex.items-center.gap-3');
     if(headerDiv && !document.getElementById('admin-logout-btn')) {
         headerDiv.innerHTML += `<button id="admin-logout-btn" onclick="adminLogout()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200 hover:bg-red-200 transition-colors mr-3 shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>`;
     }
 
-    // تهيئة البيانات للمتغيرات المؤقتة
+    // تهيئة البيانات والمصفوفات
     window.tempDrivers = JSON.parse(JSON.stringify(globalSettings.drivers || []));
     tempAdminZones = JSON.parse(JSON.stringify(globalDeliveryZones || []));
     tempPromoCodes = JSON.parse(JSON.stringify(globalSettings.promoCodes || []));
@@ -379,7 +371,7 @@ window.openAdminDashboard = () => {
         storeOpenLabel.className = (globalSettings.storeOpen !== false) ? 'mr-3 text-sm font-black text-green-600 w-12' : 'mr-3 text-sm font-black text-red-600 w-12';
     }
 
-    // تعبئة إعدادات المتجر الأساسية والمربعات
+    // إعدادات المتجر
     setVal('admin-store-name', globalSettings.storeName || ''); 
     setVal('admin-store-desc', globalSettings.storeDesc || ''); 
     setVal('admin-store-phone', globalSettings.storePhone || ''); 
@@ -387,6 +379,7 @@ window.openAdminDashboard = () => {
     setVal('admin-free-delivery-threshold', globalSettings.freeDeliveryThreshold || 0); 
     setCheck('admin-free-delivery-active', globalSettings.freeDeliveryActive);
 
+    // المربعات الأربعة
     const defaultBadges = [
         { icon: 'fa-regular fa-circle-check', title: 'أوزان دقيقة', desc: 'زي ما طلبت بالظبط' },
         { icon: 'fa-regular fa-star', title: 'طلبك باسمك', desc: 'استيكر مخصص ليك' },
@@ -400,7 +393,7 @@ window.openAdminDashboard = () => {
         setVal(`admin-badge-${i}-desc`, badges[i-1].desc);
     }
     
-    // تعبئة التسويق والأكواد
+    // التسويق والأكواد والإشعارات
     setCheck('admin-reward-active', globalSettings.rewardActive);
     setVal('admin-reward-type', globalSettings.rewardType || 'fixed');
     setVal('admin-reward-value', globalSettings.rewardValue || 0);
@@ -421,7 +414,7 @@ window.openAdminDashboard = () => {
     setCheck('admin-crosssell-active', globalSettings.crossSellActive);
     setCheck('admin-show-promo-field', globalSettings.showPromoField !== false);
 
-    // تعبئة متقدم (القوالب)
+    // القوالب المتقدمة
     setVal('admin-whatsapp-template', globalSettings.whatsappTemplate || '');
     setVal('admin-dispatch-template', globalSettings.dispatchTemplate || '');
     setVal('admin-ticktick-template', globalSettings.ticktickTemplate || '');
@@ -434,7 +427,7 @@ window.openAdminDashboard = () => {
         Object.keys(productsInfo).forEach(id => csSelect.innerHTML += `<option value="${id}" ${globalSettings.crossSellProductId===id?'selected':''}>${productsInfo[id].name}</option>`);
     }
 
-    // تعبئة القاموس
+    // القاموس
     const textsCont = document.getElementById('admin-texts-container');
     if(textsCont && typeof textsConfig !== 'undefined') {
         textsCont.innerHTML = '';
@@ -444,7 +437,7 @@ window.openAdminDashboard = () => {
         });
     }
 
-    // رسم القوائم الداخلية
+    // استدعاء دوال الرسم الفرعية
     renderAdminDrivers();
     renderAdminZones();
     renderAdminPromos();
@@ -643,6 +636,7 @@ window.addNewPromoCode = () => {
     renderAdminPromos(); 
 };
 
+// --- أوامر الطلبات والتصدير ---
 window.exportOrdersToCSV = () => {
     if(ordersList.length === 0) return showAlert("تنبيه", "لا توجد طلبات لتصديرها.");
     let csv = '\uFEFF'; 
@@ -951,7 +945,7 @@ window.generateBulkWhatsAppLinks = () => {
     showAlert("تم التجهيز بنجاح 🎉", `تم إنشاء أكواد لـ ${numbers.length} عميل. \n\n⚠️ مهم جداً: انزل تحت في لوحة التحكم ودوس "حفظ جميع التعديلات" عشان الأكواد تتفعل في السيستم وتقدر تبعت الرسايل.`);
 };
 
-// --- الدالة الذهبية لحفظ البيانات (تم تصحيحها لضمان حفظ كل شيء) ---
+// --- الدالة الذهبية لحفظ البيانات (آمنة تماماً ولا تمسح القديم) ---
 window.saveAdminData = async () => {
     syncAdminProductsFromDOM(); 
     
@@ -976,7 +970,7 @@ window.saveAdminData = async () => {
     ];
 
     const newSettings = {
-        ...globalSettings, // الحفاظ على كل البيانات السابقة اللي مش موجودة في اللوحة
+        ...globalSettings, // بيحافظ على أي إعداد قديم
         storeOpen: getSafeCheck('admin-store-open', globalSettings.storeOpen), 
         storeName: getSafeVal('admin-store-name', globalSettings.storeName), 
         storeDesc: getSafeVal('admin-store-desc', globalSettings.storeDesc), 
@@ -985,7 +979,7 @@ window.saveAdminData = async () => {
         freeDeliveryActive: getSafeCheck('admin-free-delivery-active', globalSettings.freeDeliveryActive), 
         freeDeliveryThreshold: parseInt(getSafeVal('admin-free-delivery-threshold', globalSettings.freeDeliveryThreshold)) || 0, 
         deliveryZones: tempAdminZones.filter(z => z.name.trim()),
-        drivers: window.tempDrivers.filter(d => d.name.trim() || d.phone.trim()), // حفظ المناديب
+        drivers: window.tempDrivers.filter(d => d.name.trim() || d.phone.trim()), 
         
         trustBadges: [
             { icon: getSafeVal('admin-badge-1-icon', defaultBadges[0].icon), title: getSafeVal('admin-badge-1-title', defaultBadges[0].title), desc: getSafeVal('admin-badge-1-desc', defaultBadges[0].desc) },
@@ -1006,7 +1000,7 @@ window.saveAdminData = async () => {
         crossSellActive: getSafeCheck('admin-crosssell-active', globalSettings.crossSellActive), 
         crossSellProductId: getSafeVal('admin-crosssell-product', globalSettings.crossSellProductId), 
         
-        promoCodes: tempPromoCodes.filter(p => p.code.trim()), // الحفظ الإجباري للأكواد بناءً على اللوحة فقط
+        promoCodes: tempPromoCodes.filter(p => p.code.trim()), // الحفظ الإجباري من اللوحة
         
         bestSellers: globalSettings.bestSellers,
         showPromoField: getSafeCheck('admin-show-promo-field', globalSettings.showPromoField),
