@@ -49,7 +49,7 @@ function applyUITexts() {
     setTxt('lbl-menu-title', getT('menuTitle')); 
     setTxt('lbl-extras-title', getT('extrasTitle'));
 
-    // تطبيق المربعات الأربعة من الإعدادات
+    // تطبيق المربعات الأربعة من config
     if(globalSettings.trustBadges && globalSettings.trustBadges.length === 4) {
         for(let i=1; i<=4; i++) {
             const badge = globalSettings.trustBadges[i-1];
@@ -110,8 +110,7 @@ window.moveSlider = function(direction) {
 
 window.updateSliderView = function() {
     const track = document.getElementById('slider-track');
-    // تعديل اتجاه السحب ليناسب القراءة باللغة العربية (RTL)
-    if(track) track.style.transform = `translateX(${window.currentSlide * 100}%)`;
+    if(track) track.style.transform = `translateX(${window.currentSlide * 100}%)`; // تم ضبط الحركة للغة العربية
     
     const dots = document.querySelectorAll('.slider-dot');
     dots.forEach((dot, index) => {
@@ -130,40 +129,40 @@ function renderSlider() {
     track.innerHTML = '';
     dotsContainer.innerHTML = '';
     
-    // لو مفيش صور خالص
     if(images.length === 0) {
         track.innerHTML = `<div class="w-full shrink-0 h-64 bg-gray-100 flex items-center justify-center text-gray-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
         return;
     }
 
-    // رسم الصور والنقط - تم التعديل لتملأ الشاشة وتكون تفاعلية
+    // إدراج الصور لتملأ المساحة (object-cover) ومع خاصية النقر للتكبير
     images.forEach((img, idx) => {
         track.innerHTML += `
         <div class="w-full shrink-0 h-64 bg-gray-100 overflow-hidden relative cursor-zoom-in" onclick="openImageModal('${img}')">
             <img src="${img}" class="w-full h-full object-cover object-center" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
         </div>`;
         
-        // إظهار النقط لو في أكتر من صورة
         if (images.length > 1) {
             dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="event.stopPropagation(); window.currentSlide=${idx}; window.updateSliderView();"></div>`;
         }
     });
     
-    // إخفاء زراير التقليب لو صورة واحدة
-    const rightBtn = document.querySelector('button[onclick="moveSlider(-1)"]');
-    const leftBtn = document.querySelector('button[onclick="moveSlider(1)"]');
-    if (images.length <= 1) {
-        if(rightBtn) rightBtn.classList.add('hidden');
-        if(leftBtn) leftBtn.classList.add('hidden');
-    } else {
-        if(rightBtn) rightBtn.classList.remove('hidden');
-        if(leftBtn) leftBtn.classList.remove('hidden');
+    // استعادة أزرار التقليب بناءً على عدد الصور بدقة متناهية
+    const sliderContainer = document.getElementById('main-slider-container');
+    if (sliderContainer) {
+        const buttons = sliderContainer.querySelectorAll('button');
+        buttons.forEach(btn => {
+            if (images.length <= 1) {
+                btn.classList.add('hidden');
+            } else {
+                btn.classList.remove('hidden');
+            }
+        });
     }
 
     window.currentSlide = 0;
     window.updateSliderView();
     
-    // تفعيل السحب بالإصبع (Touch Swipe) للموبايل
+    // تفعيل السحب بالإصبع (Touch Swipe)
     let touchStartX = 0; let touchEndX = 0;
     const sliderViewport = document.getElementById('slider-viewport');
     if(sliderViewport) {
@@ -236,7 +235,7 @@ function applySettingsToUI() {
     const descEl = document.getElementById('header-store-desc');
     if(descEl) {
         descEl.innerText = globalSettings.storeDesc || 'صحي وطازة'; 
-        descEl.classList.remove('hidden'); // إظهار الوصف
+        descEl.classList.remove('hidden'); 
     }
     document.getElementById('footer-store-name').innerText = globalSettings.storeName || 'سمان ههيا';
     
@@ -452,7 +451,7 @@ window.renderProducts = function() {
         else if(item.tag === 'hot') customTagHtml = `<span class="bg-orange-100 text-orange-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-orange-200">🔥 قرب يخلص</span>`;
         else if(item.tag === 'offer') customTagHtml = `<span class="bg-purple-100 text-purple-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-purple-200">⏱ عرض محدود</span>`;
 
-        // إدراج التعديل: تمديد الصورة وإضافة تفاعلية (التكبير)
+        // إدراج التعديل: تمديد الصورة وإزالة الهوامش وإضافة التفاعلية
         const cardHTML = `
             <div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[140px] relative transition-transform hover:shadow-md">
                 ${saleBadgeHtml}
