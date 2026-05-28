@@ -19,7 +19,7 @@ function getAvailableStock(id) {
     return Math.max(0, (globalStock[id] || 0) - inCart); 
 }
 
-// --- تطبيق نصوص الواجهة والمربعات האربعة (Trust Badges) ---
+// --- تطبيق نصوص الواجهة والمربعات الأربعة (Trust Badges) ---
 function applyUITexts() {
     const t = globalSettings.uiTexts || {};
     const defaultTexts = {
@@ -49,7 +49,7 @@ function applyUITexts() {
     setTxt('lbl-menu-title', getT('menuTitle')); 
     setTxt('lbl-extras-title', getT('extrasTitle'));
 
-    // تطبيق المربعات האربعة من config
+    // تطبيق المربعات الأربعة من الإعدادات
     if(globalSettings.trustBadges && globalSettings.trustBadges.length === 4) {
         for(let i=1; i<=4; i++) {
             const badge = globalSettings.trustBadges[i-1];
@@ -61,7 +61,64 @@ function applyUITexts() {
     }
 }
 
+// --- نافذة تكبير الصور (التفاعلية) ---
+window.openImageModal = function(imgSrc) {
+    if(!imgSrc || imgSrc.trim() === '') return;
+    let modal = document.getElementById('image-viewer-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'image-viewer-modal';
+        modal.className = 'fixed inset-0 z-[100] bg-brand-navy/95 flex items-center justify-center hidden opacity-0 transition-all duration-300 backdrop-blur-md p-4 cursor-zoom-out';
+        modal.onclick = function() {
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+        modal.innerHTML = `
+            <div class="relative w-full max-w-3xl h-full flex items-center justify-center">
+                <img id="image-viewer-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl scale-95 transition-transform duration-300">
+                <button class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-md transition-colors shadow-sm">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    const imgEl = document.getElementById('image-viewer-img');
+    imgEl.src = imgSrc;
+    imgEl.classList.remove('scale-100');
+    imgEl.classList.add('scale-95');
+    
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+        imgEl.classList.remove('scale-95');
+        imgEl.classList.add('scale-100');
+    }, 10);
+};
+
 // --- تشغيل الميزات المرئية الذكية (سلايدر، شريط أخبار، إشعارات) ---
+window.currentSlide = 0;
+window.sliderImages = [];
+
+window.moveSlider = function(direction) {
+    if (!window.sliderImages || window.sliderImages.length <= 1) return;
+    window.currentSlide = (window.currentSlide + direction + window.sliderImages.length) % window.sliderImages.length;
+    window.updateSliderView();
+};
+
+window.updateSliderView = function() {
+    const track = document.getElementById('slider-track');
+    // تعديل اتجاه السحب ليناسب القراءة باللغة العربية (RTL)
+    if(track) track.style.transform = `translateX(${window.currentSlide * 100}%)`;
+    
+    const dots = document.querySelectorAll('.slider-dot');
+    dots.forEach((dot, index) => {
+        dot.className = `slider-dot h-2 w-2 rounded-full transition-all duration-300 shadow-sm cursor-pointer ${index === window.currentSlide ? 'active' : 'bg-gray-300'}`;
+    });
+};
+
 function renderSlider() {
     const track = document.getElementById('slider-track');
     const dotsContainer = document.getElementById('slider-dots');
@@ -73,18 +130,50 @@ function renderSlider() {
     track.innerHTML = '';
     dotsContainer.innerHTML = '';
     
+    // لو مفيش صور خالص
     if(images.length === 0) {
         track.innerHTML = `<div class="w-full shrink-0 h-64 bg-gray-100 flex items-center justify-center text-gray-400"><i class="fa-solid fa-image text-4xl"></i></div>`;
         return;
     }
 
-    // تم تغيير object-cover لـ object-contain ليظهر دليل الأحجام بالكامل
+    // رسم الصور والنقط - تم التعديل لتملأ الشاشة وتكون تفاعلية
     images.forEach((img, idx) => {
-        track.innerHTML += `<div class="w-full shrink-0 h-64 bg-gray-100"><img src="${img}" class="w-full h-full object-contain" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
-        dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="currentSlide=${idx}; updateSliderView();"></div>`;
+        track.innerHTML += `
+        <div class="w-full shrink-0 h-64 bg-gray-100 overflow-hidden relative cursor-zoom-in" onclick="openImageModal('${img}')">
+            <img src="${img}" class="w-full h-full object-cover object-center" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
+        </div>`;
+        
+        // إظهار النقط لو في أكتر من صورة
+        if (images.length > 1) {
+            dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="event.stopPropagation(); window.currentSlide=${idx}; window.updateSliderView();"></div>`;
+        }
     });
+    
+    // إخفاء زراير التقليب لو صورة واحدة
+    const rightBtn = document.querySelector('button[onclick="moveSlider(-1)"]');
+    const leftBtn = document.querySelector('button[onclick="moveSlider(1)"]');
+    if (images.length <= 1) {
+        if(rightBtn) rightBtn.classList.add('hidden');
+        if(leftBtn) leftBtn.classList.add('hidden');
+    } else {
+        if(rightBtn) rightBtn.classList.remove('hidden');
+        if(leftBtn) leftBtn.classList.remove('hidden');
+    }
+
     window.currentSlide = 0;
-    if(typeof window.updateSliderView === 'function') window.updateSliderView();
+    window.updateSliderView();
+    
+    // تفعيل السحب بالإصبع (Touch Swipe) للموبايل
+    let touchStartX = 0; let touchEndX = 0;
+    const sliderViewport = document.getElementById('slider-viewport');
+    if(sliderViewport) {
+        sliderViewport.ontouchstart = e => { touchStartX = e.changedTouches[0].screenX; };
+        sliderViewport.ontouchend = e => { 
+            touchEndX = e.changedTouches[0].screenX; 
+            if(touchEndX < touchStartX - 30) window.moveSlider(-1); 
+            if(touchEndX > touchStartX + 30) window.moveSlider(1);  
+        };
+    }
 }
 
 function renderMarquee() {
@@ -232,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.setupEventListeners = function() {
-    const ids = ['customer-name', 'customer-phone'];
+    const ids = ['customer-name', 'customer-phone', 'customer-address'];
     ids.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', updateUI); });
     const dZone = document.getElementById('delivery-zone');
     if (dZone) dZone.addEventListener('change', updateUI);
@@ -363,10 +452,11 @@ window.renderProducts = function() {
         else if(item.tag === 'hot') customTagHtml = `<span class="bg-orange-100 text-orange-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-orange-200">🔥 قرب يخلص</span>`;
         else if(item.tag === 'offer') customTagHtml = `<span class="bg-purple-100 text-purple-700 text-[10px] font-black px-1.5 py-0.5 rounded border border-purple-200">⏱ عرض محدود</span>`;
 
+        // إدراج التعديل: تمديد الصورة وإضافة تفاعلية (التكبير)
         const cardHTML = `
-            <div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[130px] relative transition-transform hover:shadow-md">
+            <div class="bg-white rounded-2xl shadow-sm border ${isDiscountActive ? 'border-red-200' : 'border-gray-200'} overflow-hidden flex flex-row h-[140px] relative transition-transform hover:shadow-md">
                 ${saleBadgeHtml}
-                <div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0">
+                <div class="p-3 flex-1 flex flex-col justify-between bg-white min-w-0 z-10">
                     <div>
                         <div class="flex gap-1 items-center mb-1">
                             <h3 class="text-sm md:text-base font-black text-brand-navy truncate">${item.name}</h3>
@@ -382,9 +472,9 @@ window.renderProducts = function() {
                         <div class="w-28 shrink-0" id="card-action-${id}">${getCardActionHTML(id)}</div>
                     </div>
                 </div>
-                <div class="w-32 shrink-0 relative bg-gray-50 border-r border-gray-100">
+                <div class="w-32 sm:w-36 shrink-0 relative border-r border-gray-100 overflow-hidden bg-gray-50 cursor-zoom-in" onclick="openImageModal('${imgSrc}')">
                     ${bestSellerHtml}
-                    <img loading="lazy" src="${imgSrc}" class="w-full h-full object-cover">
+                    <img loading="lazy" src="${imgSrc}" class="w-full h-full object-cover object-center transition-transform duration-300 hover:scale-110" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
                 </div>
             </div>`;
 
