@@ -628,7 +628,7 @@ window.finalCheckoutStep = async function() {
         let pIndex = globalSettings.promoCodes.findIndex(p => p.code === appliedPromo.code);
         if (pIndex !== -1) {
             let pObj = globalSettings.promoCodes[pIndex];
-            if (pObj.usesLeft !== null && pObj.usesLeft !== undefined) { pObj.usesLeft -= 1; if (pObj.usesLeft <= 0) globalSettings.promoCodes.splice(pIndex, 1); } 
+            if (pObj.usesLeft !== null && pObj.usesLeft !== undefined) { pObj.usesLeft -= 1; }
             else if (pObj.isAuto) { globalSettings.promoCodes.splice(pIndex, 1); }
             promoUpdated = true;
         }
