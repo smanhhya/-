@@ -19,7 +19,7 @@ function getAvailableStock(id) {
     return Math.max(0, (globalStock[id] || 0) - inCart); 
 }
 
-// --- تطبيق نصوص الواجهة (القاموس) ---
+// --- تطبيق نصوص الواجهة والمربعات האربعة (Trust Badges) ---
 function applyUITexts() {
     const t = globalSettings.uiTexts || {};
     const defaultTexts = {
@@ -48,6 +48,17 @@ function applyUITexts() {
     setTxt('lbl-final-total', getT('finalTotalLabel')); 
     setTxt('lbl-menu-title', getT('menuTitle')); 
     setTxt('lbl-extras-title', getT('extrasTitle'));
+
+    // تطبيق المربعات האربعة من config
+    if(globalSettings.trustBadges && globalSettings.trustBadges.length === 4) {
+        for(let i=1; i<=4; i++) {
+            const badge = globalSettings.trustBadges[i-1];
+            const iconEl = document.getElementById(`badge-${i}-icon`);
+            if(iconEl) iconEl.className = `${badge.icon} text-brand-navy text-2xl mb-2`;
+            setTxt(`badge-${i}-title`, badge.title);
+            setTxt(`badge-${i}-desc`, badge.desc);
+        }
+    }
 }
 
 // --- تشغيل الميزات المرئية الذكية (سلايدر، شريط أخبار، إشعارات) ---
@@ -67,9 +78,10 @@ function renderSlider() {
         return;
     }
 
+    // تم تغيير object-cover لـ object-contain ليظهر دليل الأحجام بالكامل
     images.forEach((img, idx) => {
-        track.innerHTML += `<div class="w-full shrink-0 h-64"><img src="${img}" class="w-full h-full object-cover" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
-        dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'}" onclick="currentSlide=${idx}; updateSliderView();"></div>`;
+        track.innerHTML += `<div class="w-full shrink-0 h-64 bg-gray-100"><img src="${img}" class="w-full h-full object-contain" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'"></div>`;
+        dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="currentSlide=${idx}; updateSliderView();"></div>`;
     });
     window.currentSlide = 0;
     if(typeof window.updateSliderView === 'function') window.updateSliderView();
@@ -104,7 +116,7 @@ function startLiveNotifications() {
         const name = names[Math.floor(Math.random() * names.length)];
         const place = places.length > 0 ? places[Math.floor(Math.random() * places.length)] : "";
         const product = products[Math.floor(Math.random() * products.length)];
-        const time = Math.floor(Math.random() * 5) + 1; // من 1 لـ 5 دقايق
+        const time = Math.floor(Math.random() * 5) + 1;
 
         const placeText = place ? ` من ${place}` : "";
         document.getElementById('live-noti-text').innerHTML = `<span class="font-black text-brand-navy">${name}${placeText}</span> حجز ${product}`;
@@ -114,10 +126,9 @@ function startLiveNotifications() {
         
         setTimeout(() => {
             noti.classList.add('translate-y-20', 'opacity-0');
-        }, 5000); // تختفي بعد 5 ثواني
+        }, 5000); 
     }
 
-    // تظهر أول مرة بعد 10 ثواني، وبعدين كل 25 ثانية عشوائي
     setTimeout(() => {
         showRandomNoti();
         setInterval(showRandomNoti, 25000);
@@ -133,7 +144,11 @@ function applySettingsToUI() {
     renderSlider();
 
     document.getElementById('header-store-name').innerText = globalSettings.storeName || 'سمان ههيا'; 
-    document.getElementById('header-store-desc').innerText = globalSettings.storeDesc || 'صحي وطازة'; 
+    const descEl = document.getElementById('header-store-desc');
+    if(descEl) {
+        descEl.innerText = globalSettings.storeDesc || 'صحي وطازة'; 
+        descEl.classList.remove('hidden'); // إظهار الوصف
+    }
     document.getElementById('footer-store-name').innerText = globalSettings.storeName || 'سمان ههيا';
     
     const phoneStr = globalSettings.storePhone || "01208027294"; 
@@ -211,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }); 
             renderProducts(); 
             applySettingsToUI(); 
-            startLiveNotifications(); // تشغيل الإشعارات
+            startLiveNotifications();
         } 
     }, 3000);
 });
@@ -299,7 +314,7 @@ window.applyPromoCode = function() {
     const promo = (globalSettings.promoCodes || []).find(p => p.code.toUpperCase() === input);
     
     if (!promo) { msg.innerText = "كود غير صحيح."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
-    if (promo.usesLeft !== null && promo.usesLeft !== undefined && promo.usesLeft <= 0) { msg.innerText = "عفواً، انتهى الحد الأقصى لاستخدام هذا الكود."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
+    if (promo.usesLeft !== null && promo.usesLeft !== undefined && promo.usesLeft <= 0) { msg.innerText = "عفواً، تم استخدام هذا الكود من قبل."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.expiryDate && new Date(promo.expiryDate) < new Date(new Date().toDateString())) { msg.innerText = "عفواً، هذا الكود منتهي الصلاحية."; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     if (promo.minOrder && subTotal < promo.minOrder) { msg.innerText = `عشان تفعل الكود ده، لازم طلباتك تتخطى ${promo.minOrder} ج.م`; msg.className = "text-[11px] font-bold mt-1 text-red-500"; msg.classList.remove('hidden'); return; }
     
@@ -435,7 +450,6 @@ window.goToCheckoutStep2 = function() {
     document.getElementById('btn-back-step').classList.remove('hidden');
     document.getElementById('lbl-checkout-title').innerText = "إتمام الطلب";
     
-    // تفعيل أيقونة الخطوة التانية
     document.getElementById('step-1-indicator').classList.remove('step-active');
     document.getElementById('step-1-indicator').classList.add('step-completed');
     document.getElementById('step-line-1').classList.add('active');
@@ -451,7 +465,6 @@ window.backToCart = function() {
     document.getElementById('btn-back-step').classList.add('hidden');
     document.getElementById('lbl-checkout-title').innerText = "سلة المشتريات";
     
-    // رجوع أيقونة الخطوات
     document.getElementById('step-2-indicator').classList.remove('step-active');
     document.getElementById('step-2-indicator').classList.add('opacity-50');
     document.getElementById('step-line-1').classList.remove('active');
@@ -555,7 +568,6 @@ window.updateUI = function() {
     }
     if(document.getElementById('cart-total')) document.getElementById('cart-total').innerText = Math.round(finalTotal);
 
-    // تفعيل الأزرار
     const proceedBtn = document.getElementById('btn-proceed-checkout');
     const checkoutBtn = document.getElementById('checkout-btn'); 
     const checkoutHintStep1 = document.getElementById('checkout-hint'); 
@@ -639,7 +651,7 @@ window.sendVipWhatsApp = function(itemName) {
     closeAlert(); 
 };
 
-// --- إتمام الطلب (Checkout Flow) ---
+// --- إتمام الطلب وحفظ الكوبونات ---
 window.initiateCheckout = function() {
     if (globalSettings.crossSellActive && globalSettings.crossSellProductId && productsInfo[globalSettings.crossSellProductId] && !cart[globalSettings.crossSellProductId] && getAvailableStock(globalSettings.crossSellProductId) > 0) {
         const item = productsInfo[globalSettings.crossSellProductId]; 
@@ -710,12 +722,15 @@ window.finalCheckoutStep = async function() {
     if(deliveryFee === 0 && zoneName === 'مكان آخر' && !freeDelivery) message += `\n*(الإجمالي غير شامل رسوم التوصيل)*`;
 
     let promoUpdated = false;
+    
+    // --- تحديث الأكواد بعد الاستخدام وحفظها في قاعدة البيانات ---
     if (appliedPromo) {
         let pIndex = globalSettings.promoCodes.findIndex(p => p.code === appliedPromo.code);
         if (pIndex !== -1) {
             let pObj = globalSettings.promoCodes[pIndex];
-            if (pObj.usesLeft !== null && pObj.usesLeft !== undefined) { pObj.usesLeft -= 1; }
-            else if (pObj.isAuto) { globalSettings.promoCodes.splice(pIndex, 1); }
+            if (pObj.usesLeft !== null && pObj.usesLeft !== undefined) { 
+                pObj.usesLeft -= 1; // الكود بيتقلب "تم الاستخدام"
+            }
             promoUpdated = true;
         }
     }
@@ -728,7 +743,8 @@ window.finalCheckoutStep = async function() {
         newPromoCode = prefix + Math.floor(1000 + Math.random() * 9000); earnedLoyalty = true;
         const maxDisc = globalSettings.rewardMaxDiscount || 0;
         const newPromoObj = { code: newPromoCode, type: globalSettings.rewardType, discount: globalSettings.rewardValue, isAuto: true, usesLeft: 1, customerPhone: customerPhone, minOrder: 0, maxDiscount: maxDisc, expiryDate: '' };
-        if(!globalSettings.promoCodes) globalSettings.promoCodes = []; globalSettings.promoCodes.push(newPromoObj);
+        if(!globalSettings.promoCodes) globalSettings.promoCodes = []; 
+        globalSettings.promoCodes.push(newPromoObj); // إضافة الكود الجديد للقائمة
         if (globalSettings.rewardMaxGenerations > 0) { globalSettings.rewardMaxGenerations -= 1; }
         promoUpdated = true;
     }
@@ -750,7 +766,20 @@ window.finalCheckoutStep = async function() {
             };
             for (let id in cart) orderData.items.push({ id, name: cart[id].name, quantity: cart[id].quantity, price: cart[id].price });
             
-            await Promise.all([ db.collection("orders").add(orderData), db.collection('inventory').doc('stats').set({ sales: firebase.firestore.FieldValue.increment(finalTotal), orders: firebase.firestore.FieldValue.increment(1) }, { merge: true }), promoUpdated ? db.collection("inventory").doc("settings").set({ promoCodes: globalSettings.promoCodes, rewardMaxGenerations: globalSettings.rewardMaxGenerations, rewardActive: globalSettings.rewardActive }, { merge: true }) : Promise.resolve() ]);
+            // --- إجبار قاعدة البيانات على حفظ الأكواد الجديدة والمحروقة ---
+            let promises = [];
+            promises.push(db.collection("orders").add(orderData));
+            promises.push(db.collection('inventory').doc('stats').set({ sales: firebase.firestore.FieldValue.increment(finalTotal), orders: firebase.firestore.FieldValue.increment(1) }, { merge: true }));
+            
+            // لو تم تحديث الكوبونات (استخدام قديم أو توليد جديد)، احفظها فوراً
+            if(promoUpdated) {
+                promises.push(db.collection("inventory").doc("settings").set({ 
+                    promoCodes: globalSettings.promoCodes, 
+                    rewardMaxGenerations: globalSettings.rewardMaxGenerations 
+                }, { merge: true }));
+            }
+            
+            await Promise.all(promises);
             let updates = {}; for (let id in cart) updates[id] = firebase.firestore.FieldValue.increment(-cart[id].quantity); await db.collection('inventory').doc('stock').update(updates);
         }
     } catch(e) { console.log("Sync Error", e); }
