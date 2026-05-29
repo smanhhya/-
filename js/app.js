@@ -904,13 +904,13 @@ window.finalCheckoutStep = async function() {
         alertBtn.innerHTML = 'موافق، تحويل للواتساب <i class="fa-brands fa-whatsapp text-xl"></i>'; 
         alertBtn.onclick = () => { closeAlert(); window.location.href = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`; };
         const md = document.getElementById('alert-modal'); md.classList.remove('hidden'); setTimeout(()=>md.classList.remove('opacity-0'),10);
-            } else {
+    } else {
         // حساب يوم الاستلام (بكرة)
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const deliveryDay = tomorrow.toLocaleDateString('ar-EG', { weekday: 'long' });
 
-        // جلب الكلام من القاموس (لو الخانة فاضية هياخد الكلام الافتراضي المطمن)
+        // جلب الكلام من القاموس
         const uiTexts = globalSettings.uiTexts || {};
         const titleText = uiTexts['successTitle'] || 'تم تأكيد أوردرك بنجاح! 🎉';
         let bodyTemplate = uiTexts['successMsgTemplate'] || 'أوردرك اتسجل في السيستم عندنا خلاص ومفيش حاجة تانية مطلوبة منك. هيتم التجهيز عشان تستلمه إن شاء الله غداً (يوم {اليوم}).<br><br>لو حابب تتواصل معانا أو تتابع الأوردر، تقدر تكلمنا ع الواتساب.';
@@ -921,7 +921,7 @@ window.finalCheckoutStep = async function() {
         const waBtnText = uiTexts['waFollowUpBtn'] || 'التواصل والمتابعة ع الواتساب';
         const closeBtnText = uiTexts['closeFollowUpBtn'] || 'تمام، شكراً 👍';
 
-        // تخزين رابط الواتساب في الذاكرة بشكل آمن جداً لمنع أي كسر في الأكواد
+        // تخزين رابط الواتساب في الذاكرة
         window.currentOrderWaLink = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`;
 
         const msgHTML = `
@@ -951,13 +951,16 @@ window.finalCheckoutStep = async function() {
             </div>
         `;
         
+        // 1. إخفاء الزرار القديم "حسناً" الأول (السر هنا!)
+        const alertBtn = document.querySelector('#alert-box button');
+        if(alertBtn) alertBtn.classList.add('hidden');
+        
+        // 2. تركيب الشاشة الجديدة اللي فيها الزراير الصح
         document.getElementById('alert-icon-container').classList.add('hidden'); 
         document.getElementById('alert-title').classList.add('hidden'); 
         document.getElementById('alert-message').innerHTML = msgHTML;
         
-        const alertBtn = document.querySelector('#alert-box button');
-        if(alertBtn) alertBtn.classList.add('hidden');
-        
+        // إظهار الشاشة
         const md = document.getElementById('alert-modal'); 
         md.classList.remove('hidden'); 
         setTimeout(() => md.classList.remove('opacity-0'), 10);
