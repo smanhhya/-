@@ -904,18 +904,18 @@ window.finalCheckoutStep = async function() {
         alertBtn.innerHTML = 'موافق، تحويل للواتساب <i class="fa-brands fa-whatsapp text-xl"></i>'; 
         alertBtn.onclick = () => { closeAlert(); window.location.href = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`; };
         const md = document.getElementById('alert-modal'); md.classList.remove('hidden'); setTimeout(()=>md.classList.remove('opacity-0'),10);
-        } else {
-        // حساب يوم الاستلام تلقائياً (بكرة)
+    } else {
+        // حساب يوم الاستلام (بكرة)
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         const deliveryDay = tomorrow.toLocaleDateString('ar-EG', { weekday: 'long' });
 
-        // جلب النصوص من لوحة التحكم (تبويب القاموس) مع وضع نصوص بديلة لو الخانة فاضية
+        // جلب الكلام من القاموس (لو الخانة فاضية هياخد الكلام الافتراضي)
         const uiTexts = globalSettings.uiTexts || {};
         const titleText = uiTexts['successTitle'] || 'أوردرك اتسجل بنجاح! 🎉';
         let bodyTemplate = uiTexts['successMsgTemplate'] || 'الأوردر اتسجل في السيستم وهيتم التجهيز عشان تستلمه إن شاء الله غداً (يوم {اليوم}).<br><br>تحب نأكد التفاصيل ونتابع مع بعض على الواتساب؟';
         
-        // تبديل كلمة {اليوم} باليوم الحقيقي الديناميكي
+        // تبديل كلمة {اليوم} باليوم الحقيقي
         const bodyText = bodyTemplate.replace(/{اليوم}/g, deliveryDay);
         
         const waBtnText = uiTexts['waFollowUpBtn'] || 'أيوة، المتابعة ع الواتساب';
@@ -950,5 +950,6 @@ window.finalCheckoutStep = async function() {
         md.classList.remove('hidden'); 
         setTimeout(() => md.classList.remove('opacity-0'), 10);
     }
+
 
 };
