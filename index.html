@@ -496,31 +496,24 @@
     <script src="js/app.js"></script>
     <script src="js/admin.js"></script>
 
-    <div id="pwa-debug" class="fixed top-20 left-4 bg-black/80 text-white text-[10px] p-2 rounded z-[100] max-w-[200px] font-mono text-left" dir="ltr">
-        🔍 PWA Status:
-    </div>
-
     <script>
       let deferredPrompt;
       const installBtn = document.getElementById('install-app-btn');
 
-      // 1. تسجيل التطبيق في الخلفية
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('✅ SW Registered!'))
-            .catch(err => console.log('❌ SW Error:', err));
+            .then(reg => console.log('Sman Hhya App Registered! ✅'))
+            .catch(err => console.log('PWA Error:', err));
         });
       }
 
-      // 2. إظهار زرار التثبيت الشيك أول ما المتصفح يدي التمام
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault(); 
         deferredPrompt = e; 
         if(installBtn) installBtn.classList.remove('hidden'); 
       });
 
-      // 3. برمجة ضغطة الزرار عشان تطلع شاشة التنزيل للمستخدم
       if(installBtn) {
         installBtn.addEventListener('click', async () => {
           if (deferredPrompt) {
@@ -532,17 +525,11 @@
         });
       }
 
-      // 4. إخفاء الزرار تماماً لو العميل منزل التطبيق عنده فعلاً
       window.addEventListener('appinstalled', () => {
         if(installBtn) installBtn.classList.add('hidden');
         deferredPrompt = null;
       });
     </script>
-
-</body>
-</html>
-
-
 
 </body>
 </html>
