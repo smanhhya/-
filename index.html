@@ -504,7 +504,7 @@
       let deferredPrompt;
       const installBtn = document.getElementById('install-app-btn');
 
-      // 1. تسجيل التطبيق
+      // 1. تسجيل التطبيق في الخلفية
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
@@ -513,14 +513,14 @@
         });
       }
 
-      // 2. إظهار الزرار لما المتصفح يدي التمام
+      // 2. إظهار زرار التثبيت الشيك أول ما المتصفح يدي التمام
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault(); 
         deferredPrompt = e; 
         if(installBtn) installBtn.classList.remove('hidden'); 
       });
 
-      // 3. تشغيل شاشة التثبيت لما العميل يدوس على الزرار (دي اللي كانت ناقصة!)
+      // 3. برمجة ضغطة الزرار عشان تطلع شاشة التنزيل للمستخدم
       if(installBtn) {
         installBtn.addEventListener('click', async () => {
           if (deferredPrompt) {
@@ -532,12 +532,16 @@
         });
       }
 
-      // 4. إخفاء الزرار لو التطبيق نزل خلاص
+      // 4. إخفاء الزرار تماماً لو العميل منزل التطبيق عنده فعلاً
       window.addEventListener('appinstalled', () => {
         if(installBtn) installBtn.classList.add('hidden');
         deferredPrompt = null;
       });
     </script>
+
+</body>
+</html>
+
 
 
 </body>
