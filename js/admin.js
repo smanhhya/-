@@ -26,8 +26,10 @@ window.closeAdminLogin = () => {
 
 window.verifyAdminPin = () => { 
     const email = document.getElementById('admin-email-input')?.value.trim();
-    const pass = document.getElementById('admin-password-input')?.value.trim();
+    const passInput = document.getElementById('admin-password-input');
+    const pass = passInput?.value.trim();
     const btn = document.querySelector('#admin-login-modal button[onclick="verifyAdminPin()"]') || document.querySelector('#login-screen button');
+    
     if(!email || !pass) { showAlert("تنبيه", "يرجى كتابة البريد الإلكتروني وكلمة المرور."); return; }
     
     let origHtml = btn ? btn.innerHTML : 'دخول';
@@ -35,17 +37,23 @@ window.verifyAdminPin = () => {
     
     firebase.auth().signInWithEmailAndPassword(email, pass)
         .then(() => {
-            closeAdminLogin(); openAdminDashboard();
+            closeAdminLogin(); 
+            openAdminDashboard();
             if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
             const loginScreen = document.getElementById('login-screen');
             const dashScreen = document.getElementById('dashboard-screen');
             if(loginScreen && dashScreen) { loginScreen.classList.add('hidden'); dashScreen.classList.remove('hidden'); }
         })
-        .catch(() => {
+        .catch((error) => {
             if(btn) { btn.innerHTML = origHtml; btn.disabled = false; }
-            showAlert("خطأ", "بيانات الدخول غير صحيحة!");
-        }
-
+            if(passInput) passInput.value = '';
+            
+            if(error.code === 'auth/network-request-failed') {
+                showAlert("مشكلة في الاتصال", "تأكد من اتصالك بالإنترنت وحاول مرة أخرى.");
+            } else {
+                showAlert("خطأ", "بيانات الدخول غير صحيحة!");
+            }
+        });
 };
 
 window.adminLogout = () => {
@@ -58,6 +66,7 @@ window.adminLogout = () => {
         if(loginScreen && dashScreen) { dashScreen.classList.add('hidden'); loginScreen.classList.remove('hidden'); }
     });
 };
+
 
 let currentAdminTab = 'stats'; let ordersList = []; let orderFilter = 'all'; window.dispatchOrdersList = [];
 window.tempDrivers = []; // مصفوفة المناديب
