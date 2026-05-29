@@ -61,30 +61,41 @@ function applyUITexts() {
     }
 }
 
-// --- نافذة تكبير الصور (التفاعلية) ---
+// --- نافذة تكبير الصور (التفاعلية) مع دعم زر الرجوع للموبايل ---
 window.openImageModal = function(imgSrc) {
     if(!imgSrc || imgSrc.trim() === '') return;
     let modal = document.getElementById('image-viewer-modal');
+    
     if (!modal) {
         modal = document.createElement('div');
         modal.id = 'image-viewer-modal';
         modal.className = 'fixed inset-0 z-[100] bg-brand-navy/95 flex items-center justify-center hidden opacity-0 transition-all duration-300 backdrop-blur-md p-4 cursor-zoom-out';
+        
+        // القفل عند الضغط على الشاشة
         modal.onclick = function() {
-            modal.classList.remove('opacity-100');
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            closeImageViewer();
+            if(window.location.hash === '#catalog') {
+                history.back(); // يرجع خطوة في السجل عشان ينظف الرابط
+            }
         };
+        
+        // ضفنا علامة تحميل (Spinner) ورا الصورة عشان لو النت بطيء
         modal.innerHTML = `
             <div class="relative w-full max-w-3xl h-full flex items-center justify-center">
-                <img id="image-viewer-img" src="" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl scale-95 transition-transform duration-300">
-                <button class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-md transition-colors shadow-sm">
+                <i class="fa-solid fa-spinner fa-spin absolute text-brand-yellow text-4xl z-0" id="img-loader"></i>
+                <img id="image-viewer-img" src="" onload="document.getElementById('img-loader').style.display='none'" class="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl scale-95 transition-transform duration-300 relative z-10">
+                <button class="absolute top-4 right-4 bg-white/20 hover:bg-white/40 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-md transition-colors shadow-sm z-20">
                     <i class="fa-solid fa-xmark text-xl"></i>
                 </button>
             </div>
         `;
         document.body.appendChild(modal);
     }
+
     const imgEl = document.getElementById('image-viewer-img');
+    const loader = document.getElementById('img-loader');
+    
+    if(loader) loader.style.display = 'block'; // تشغيل علامة التحميل
     imgEl.src = imgSrc;
     imgEl.classList.remove('scale-100');
     imgEl.classList.add('scale-95');
@@ -96,7 +107,26 @@ window.openImageModal = function(imgSrc) {
         imgEl.classList.remove('scale-95');
         imgEl.classList.add('scale-100');
     }, 10);
+
+    // خدعة المتصفح: نضيف خطوة وهمية في السجل عشان زرار الرجوع يشتغل
+    history.pushState({ modalOpen: true }, "", "#catalog");
 };
+
+// دالة إغلاق الصورة (مساعدة)
+function closeImageViewer() {
+    let modal = document.getElementById('image-viewer-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+}
+
+// مراقبة زرار "الرجوع" في الموبايل
+window.addEventListener('popstate', function(event) {
+    closeImageViewer(); // لو العميل داس رجوع، اقفل الصورة بس وماتطلعش من الموقع
+});
+
 
 // --- تشغيل الميزات المرئية الذكية (سلايدر، شريط أخبار، إشعارات) ---
 window.currentSlide = 0;
