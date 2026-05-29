@@ -960,5 +960,3 @@ window.finalCheckoutStep = async function() {
         setTimeout(() => md.classList.remove('opacity-0'), 10);
     }
 };
-
-};
