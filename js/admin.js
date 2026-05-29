@@ -579,9 +579,14 @@ window.renderAdminPromos = () => {
         p.maxDiscount = p.maxDiscount || 0;
         const isUsed = p.usesLeft === 0;
         
-        let badgeHtml = '';
-        if (p.isAuto) { badgeHtml = isUsed ? `<span class="bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">🔴 تم الاستخدام</span>` : `<span class="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">🟢 صالح لم يُستخدم</span>`; } 
-        else { badgeHtml = `<span class="bg-gray-200 text-gray-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">⚙️ كود ثابت</span>`; }
+            let badgeHtml = '';
+            if (p.usesLeft !== null && p.usesLeft !== undefined && Number(p.usesLeft) <= 0) { 
+                badgeHtml = `<span class="bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">🔴 تم استهلاك الكود (مغلق)</span>`; 
+            } else if (p.isAuto) { 
+                badgeHtml = `<span class="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">🟢 صالح لم يُستخدم</span>`; 
+            } else { 
+                badgeHtml = `<span class="bg-gray-200 text-gray-700 text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm">⚙️ كود ثابت (متاح)</span>`; 
+            }
 
         c.innerHTML += `
         <div class="flex flex-col gap-2 ${p.isAuto ? 'bg-blue-50/50' : 'bg-gray-50'} p-3 border border-gray-200 rounded-xl mb-3 relative overflow-hidden shadow-sm">
