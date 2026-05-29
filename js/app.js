@@ -134,17 +134,18 @@ function renderSlider() {
         return;
     }
 
-    // إدراج الصور لتملأ المساحة (object-cover) ومع خاصية النقر للتكبير
+    // إدراج الصور لتظهر بالكامل (object-contain) ومع خاصية النقر للتكبير
     images.forEach((img, idx) => {
         track.innerHTML += `
-        <div class="w-full shrink-0 h-64 bg-gray-100 overflow-hidden relative cursor-zoom-in" onclick="openImageModal('${img}')">
-            <img src="${img}" class="w-full h-full object-cover object-center" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
+        <div class="w-full shrink-0 h-[400px] bg-[#fdfbf7] overflow-hidden relative cursor-zoom-in flex justify-center items-center p-4" onclick="openImageModal('${img}')">
+            <img src="${img}" class="max-w-full max-h-full object-contain drop-shadow-md transition-transform duration-300 hover:scale-105" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
         </div>`;
         
         if (images.length > 1) {
             dotsContainer.innerHTML += `<div class="slider-dot h-2 w-2 rounded-full transition-all duration-300 ${idx===0 ? 'active' : 'bg-gray-300'} shadow-sm cursor-pointer" onclick="event.stopPropagation(); window.currentSlide=${idx}; window.updateSliderView();"></div>`;
         }
     });
+
     
     // استعادة أزرار التقليب بناءً على عدد الصور بدقة متناهية
     const sliderContainer = document.getElementById('main-slider-container');
