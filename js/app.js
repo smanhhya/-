@@ -1003,3 +1003,26 @@ window.finalCheckoutStep = async function() {
         setTimeout(() => md.classList.remove('opacity-0'), 10);
     }
 };
+
+        function updateSliderView() {
+            const track = document.getElementById('slider-track');
+            if(track) track.style.transform = `translateX(-${window.currentSlide * 100}%)`;
+            
+            const dots = document.querySelectorAll('.slider-dot');
+            dots.forEach((dot, index) => {
+                dot.className = `slider-dot h-2 w-2 rounded-full transition-all duration-300 ${index === window.currentSlide ? 'active' : 'bg-gray-300'}`;
+            });
+        }
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const sliderViewport = document.getElementById('slider-viewport');
+        if(sliderViewport) {
+            sliderViewport.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+            sliderViewport.addEventListener('touchend', e => { 
+                touchEndX = e.changedTouches[0].screenX; 
+                if(touchEndX < touchStartX - 30) window.moveSlider(-1); 
+                if(touchEndX > touchStartX + 30) window.moveSlider(1);  
+            }, {passive: true});
+        }
+
