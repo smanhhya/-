@@ -702,9 +702,36 @@ window.toggleCart = function() {
 };
 
 window.showAlert = function(t, m) { 
-    document.getElementById('alert-title').innerText=t; 
-    document.getElementById('alert-message').innerText=m; 
-    const md=document.getElementById('alert-modal'); 
+    // 1. إرجاع الأيقونة الافتراضية
+    const iconCont = document.getElementById('alert-icon-container');
+    if(iconCont) {
+        iconCont.className = "w-16 h-16 bg-brand-light text-brand-cyanDark rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; 
+        iconCont.classList.remove('hidden');
+    }
+    const icon = document.getElementById('alert-icon');
+    if(icon) icon.className = "fa-solid fa-bell"; 
+    
+    // 2. إرجاع العنوان
+    const title = document.getElementById('alert-title');
+    if(title) {
+        title.innerText = t;
+        title.classList.remove('hidden');
+    }
+    
+    // 3. وضع الرسالة
+    document.getElementById('alert-message').innerText = m; 
+    
+    // 4. إظهار زرار "حسناً" الإجباري
+    const btn = document.querySelector('#alert-box button'); 
+    if(btn) { 
+        btn.className = "bg-brand-navy hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl w-full transition-opacity"; 
+        btn.innerHTML = 'حسناً'; 
+        btn.onclick = closeAlert; 
+        btn.classList.remove('hidden');
+    }
+
+    // فتح الشاشة
+    const md = document.getElementById('alert-modal'); 
     md.classList.remove('hidden'); 
     setTimeout(()=>md.classList.remove('opacity-0'),10); 
 };
@@ -713,29 +740,9 @@ window.closeAlert = function() {
     document.getElementById('alert-modal').classList.add('opacity-0'); 
     setTimeout(() => { 
         document.getElementById('alert-modal').classList.add('hidden'); 
-        
-        // إرجاع الأيقونة والعنوان لحالتهم الأصلية عشان التنبيهات الجاية
-        const iconCont = document.getElementById('alert-icon-container');
-        if(iconCont) {
-            iconCont.className="w-16 h-16 bg-brand-light text-brand-cyanDark rounded-full flex items-center justify-center mx-auto mb-4 text-3xl"; 
-            iconCont.classList.remove('hidden');
-        }
-        const icon = document.getElementById('alert-icon');
-        if(icon) icon.className="fa-solid fa-bell"; 
-        
-        const title = document.getElementById('alert-title');
-        if(title) title.classList.remove('hidden');
-
-        // إرجاع الزرار الافتراضي
-        const btn = document.querySelector('#alert-box button'); 
-        if(btn) { 
-            btn.className = "bg-brand-navy hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl w-full transition-opacity"; 
-            btn.innerHTML = 'حسناً'; 
-            btn.onclick = closeAlert; 
-            btn.classList.remove('hidden');
-        }
     }, 300); 
 };
+
 
 
 window.openVipPreOrder = function(id) {
