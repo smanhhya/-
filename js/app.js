@@ -134,11 +134,11 @@ function renderSlider() {
         return;
     }
 
-    // إدراج الصور لتظهر بالكامل (object-contain) ومع خاصية النقر للتكبير
+    // إدراج الصور لتظهر بالكامل (object-contain)
     images.forEach((img, idx) => {
         track.innerHTML += `
-        <div class="w-full shrink-0 h-[400px] bg-[#fdfbf7] overflow-hidden relative cursor-zoom-in flex justify-center items-center p-4" onclick="openImageModal('${img}')">
-            <img src="${img}" class="max-w-full max-h-full object-contain drop-shadow-md transition-transform duration-300 hover:scale-105" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
+        <div class="w-full shrink-0 h-[400px] bg-[#fdfbf7] overflow-hidden relative flex justify-center items-center p-2" onclick="openImageModal('${img}')">
+            <img src="${img}" class="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-105" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\'><rect width=\\'100%\\' height=\\'100%\\' fill=\\'%23f1f5f9\\'/></svg>'">
         </div>`;
         
         if (images.length > 1) {
@@ -146,8 +146,7 @@ function renderSlider() {
         }
     });
 
-    
-    // استعادة أزرار التقليب بناءً على عدد الصور بدقة متناهية
+    // إخفاء أسهم التقليب لو مفيش غير صورة واحدة
     const sliderContainer = document.getElementById('main-slider-container');
     if (sliderContainer) {
         const buttons = sliderContainer.querySelectorAll('button');
@@ -163,7 +162,7 @@ function renderSlider() {
     window.currentSlide = 0;
     window.updateSliderView();
     
-    // تفعيل السحب بالإصبع (Touch Swipe)
+    // تفعيل السحب بالإصبع
     let touchStartX = 0; let touchEndX = 0;
     const sliderViewport = document.getElementById('slider-viewport');
     if(sliderViewport) {
@@ -175,6 +174,7 @@ function renderSlider() {
         };
     }
 }
+
 
 function renderMarquee() {
     const banner = document.getElementById('top-banner');
