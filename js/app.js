@@ -904,7 +904,7 @@ window.finalCheckoutStep = async function() {
         alertBtn.innerHTML = 'موافق، تحويل للواتساب <i class="fa-brands fa-whatsapp text-xl"></i>'; 
         alertBtn.onclick = () => { closeAlert(); window.location.href = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`; };
         const md = document.getElementById('alert-modal'); md.classList.remove('hidden'); setTimeout(()=>md.classList.remove('opacity-0'),10);
-    } else {
+            } else {
         // حساب يوم الاستلام (بكرة)
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -921,6 +921,9 @@ window.finalCheckoutStep = async function() {
         const waBtnText = uiTexts['waFollowUpBtn'] || 'التواصل والمتابعة ع الواتساب';
         const closeBtnText = uiTexts['closeFollowUpBtn'] || 'تمام، شكراً 👍';
 
+        // تخزين رابط الواتساب في الذاكرة بشكل آمن جداً لمنع أي كسر في الأكواد
+        window.currentOrderWaLink = `https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}`;
+
         const msgHTML = `
             <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">
                 <i class="fa-solid fa-check"></i>
@@ -932,7 +935,7 @@ window.finalCheckoutStep = async function() {
             </div>
             
             <div class="flex flex-col gap-3">
-                <button onclick="closeAlert(); window.location.href = 'https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}';" class="w-full bg-[#25D366] hover:bg-[#1ebd57] text-white font-black py-4 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-md">
+                <button onclick="closeAlert(); window.open(window.currentOrderWaLink, '_blank');" class="w-full bg-[#25D366] hover:bg-[#1ebd57] text-white font-black py-4 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-md">
                     <i class="fa-brands fa-whatsapp text-2xl"></i> ${waBtnText}
                 </button>
                 
