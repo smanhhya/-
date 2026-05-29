@@ -501,32 +501,41 @@
     </div>
 
     <script>
-      const debugEl = document.getElementById('pwa-debug');
-      const logInfo = (msg) => { debugEl.innerHTML += `<br>👉 ${msg}`; };
-
       let deferredPrompt;
       const installBtn = document.getElementById('install-app-btn');
 
+      // 1. تسجيل التطبيق
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => logInfo('✅ SW Registered!'))
-            .catch(err => logInfo('❌ SW Error: ' + err.message));
+            .then(reg => console.log('✅ SW Registered!'))
+            .catch(err => console.log('❌ SW Error:', err));
         });
-      } else {
-          logInfo('❌ SW Not Supported');
       }
 
+      // 2. إظهار الزرار لما المتصفح يدي التمام
       window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault(); 
         deferredPrompt = e; 
-        logInfo('🚀 App is Installable!');
         if(installBtn) installBtn.classList.remove('hidden'); 
       });
 
+      // 3. تشغيل شاشة التثبيت لما العميل يدوس على الزرار (دي اللي كانت ناقصة!)
+      if(installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt(); 
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null; 
+            installBtn.classList.add('hidden'); 
+          }
+        });
+      }
+
+      // 4. إخفاء الزرار لو التطبيق نزل خلاص
       window.addEventListener('appinstalled', () => {
-        logInfo('📦 App Installed');
         if(installBtn) installBtn.classList.add('hidden');
+        deferredPrompt = null;
       });
     </script>
 
