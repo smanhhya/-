@@ -910,29 +910,38 @@ window.finalCheckoutStep = async function() {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const deliveryDay = tomorrow.toLocaleDateString('ar-EG', { weekday: 'long' });
 
-        // جلب الكلام من القاموس (لو الخانة فاضية هياخد الكلام الافتراضي)
+        // جلب الكلام من القاموس (لو الخانة فاضية هياخد الكلام الافتراضي المطمن)
         const uiTexts = globalSettings.uiTexts || {};
-        const titleText = uiTexts['successTitle'] || 'أوردرك اتسجل بنجاح! 🎉';
-        let bodyTemplate = uiTexts['successMsgTemplate'] || 'الأوردر اتسجل في السيستم وهيتم التجهيز عشان تستلمه إن شاء الله غداً (يوم {اليوم}).<br><br>تحب نأكد التفاصيل ونتابع مع بعض على الواتساب؟';
+        const titleText = uiTexts['successTitle'] || 'تم تأكيد أوردرك بنجاح! 🎉';
+        let bodyTemplate = uiTexts['successMsgTemplate'] || 'أوردرك اتسجل في السيستم عندنا خلاص ومفيش حاجة تانية مطلوبة منك. هيتم التجهيز عشان تستلمه إن شاء الله غداً (يوم {اليوم}).<br><br>لو حابب تتواصل معانا أو تتابع الأوردر، تقدر تكلمنا ع الواتساب.';
         
         // تبديل كلمة {اليوم} باليوم الحقيقي
         const bodyText = bodyTemplate.replace(/{اليوم}/g, deliveryDay);
         
-        const waBtnText = uiTexts['waFollowUpBtn'] || 'أيوة، المتابعة ع الواتساب';
-        const closeBtnText = uiTexts['closeFollowUpBtn'] || 'تمام، هنتظر الأوردر 👍';
+        const waBtnText = uiTexts['waFollowUpBtn'] || 'التواصل والمتابعة ع الواتساب';
+        const closeBtnText = uiTexts['closeFollowUpBtn'] || 'تمام، شكراً 👍';
 
         const msgHTML = `
-            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="font-black text-brand-navy mb-2 text-xl">${titleText}</div>
-            <div class="text-sm font-bold text-gray-600 mb-6 leading-relaxed bg-brand-light/30 p-3 rounded-xl border border-brand-cyan/20">
+            
+            <div class="text-sm font-bold text-green-800 mb-6 leading-relaxed bg-green-50 p-4 rounded-xl border border-green-200 shadow-inner">
                 ${bodyText}
             </div>
-            <div class="flex flex-col gap-2">
-                <button onclick="closeAlert(); window.location.href = 'https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}';" class="w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-md">
-                    <i class="fa-brands fa-whatsapp text-xl"></i> ${waBtnText}
+            
+            <div class="flex flex-col gap-3">
+                <button onclick="closeAlert(); window.location.href = 'https://api.whatsapp.com/send?phone=20${globalSettings.storePhone}&text=${encodeURIComponent(message)}';" class="w-full bg-[#25D366] hover:bg-[#1ebd57] text-white font-black py-4 px-6 rounded-xl transition-colors flex justify-center items-center gap-2 shadow-md">
+                    <i class="fa-brands fa-whatsapp text-2xl"></i> ${waBtnText}
                 </button>
+                
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink-0 mx-4 text-gray-400 text-[10px] font-bold">أو</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+
                 <button onclick="closeAlert()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm">
                     ${closeBtnText}
                 </button>
@@ -950,6 +959,6 @@ window.finalCheckoutStep = async function() {
         md.classList.remove('hidden'); 
         setTimeout(() => md.classList.remove('opacity-0'), 10);
     }
-
+};
 
 };
