@@ -2,19 +2,19 @@
   "name": "سمان ههيا - صحي وطازة",
   "short_name": "سمان ههيا",
   "description": "متجر سمان ههيا لإنتاج وتوزيع السمان والبيض الطازج بأعلى جودة ونظافة",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#0d3b2a",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "super.png",
+      "src": "./super.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "super.png",
+      "src": "./super.png",
       "sizes": "512x512",
       "type": "image/png"
     }
