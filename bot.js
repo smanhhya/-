@@ -34,7 +34,7 @@ async function runBot() {
             const status = fields.status ? fields.status.stringValue : ""; 
             const isFollowUpSent = fields.isFollowUpSent ? fields.isFollowUpSent.booleanValue : false;
 
-            if (status === "مكتمل" && !isFollowUpSent && phone) { // عدلتها لـ "مكتمل" زي ما هي في صورتك التانية
+            if (status === "Completed" && !isFollowUpSent && phone) { // عدلتها لـ "Completed" زي ما هي في صورتك التانية
                 
                 let formattedPhone = phone.startsWith("0") ? "2" + phone : phone;
                 const messageText = `أهلاً بك ${customerName} 🌟\nنتمنى تكون منتجات سمان ههيا عجبتك!\nعشان دايماً بنسعى نقدم الأفضل، رأيك في الأوردر يهمنا جداً.`;
