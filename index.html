@@ -31,7 +31,7 @@
             animation: pulse-btn 2s infinite;
         }
 
-        /* شريط الأخبار المتحرك (تم تعديل الاتجاه للعربي) */
+        /* شريط الأخبار المتحرك */
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
@@ -106,8 +106,7 @@
 
     <div id="top-banner" class="bg-[#fef3c7] text-[#92400e] py-2.5 font-bold text-sm md:text-base z-40 relative shadow-sm border-b border-[#fde68a] hidden">
         <div class="marquee-container w-full max-w-7xl mx-auto">
-            <div class="marquee-content" id="top-banner-text">
-                </div>
+            <div class="marquee-content" id="top-banner-text"></div>
         </div>
     </div>
 
@@ -254,19 +253,31 @@
 
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
                     <h3 class="font-black text-brand-navy text-sm mb-4 border-b border-gray-100 pb-2"><i class="fa-regular fa-address-card text-brand-cyanDark ml-2"></i>بيانات المستلم</h3>
+                    
                     <div id="unified-cust-fields" class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1 ml-1">الاسم الكريم <span class="text-red-500">*</span></label>
-                            <input type="text" id="customer-name" placeholder="محمد أحمد..." class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-bold text-brand-navy bg-gray-50 focus:bg-white transition-all shadow-sm">
-                        </div>
+                        
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 mb-1 ml-1">رقم الموبايل (واتساب) <span class="text-red-500">*</span></label>
-                            <input type="tel" id="customer-phone" placeholder="01X XXXX XXXX" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-black text-brand-navy bg-gray-50 focus:bg-white transition-all text-left tracking-widest shadow-sm" dir="ltr">
+                            <div class="flex gap-2">
+                                <input type="tel" id="customer-phone" placeholder="01X XXXX XXXX" class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-black text-brand-navy bg-gray-50 focus:bg-white transition-all text-left tracking-widest shadow-sm" dir="ltr">
+                                <button type="button" id="btn-verify-phone" class="bg-brand-navy text-white px-5 rounded-xl font-bold text-sm shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap">متابعة</button>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-gray-500 mb-1 ml-1">العنوان بالتفصيل (اختياري)</label>
-                            <input type="text" id="customer-address" placeholder="اسم الشارع، رقم العمارة، الدور..." class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-bold text-brand-navy bg-gray-50 focus:bg-white transition-all shadow-sm">
+
+                        <div id="welcome-msg" class="hidden bg-[#d4edda] text-[#155724] border border-[#c3e6cb] p-3 rounded-xl text-center shadow-sm text-sm font-bold transition-all">
                         </div>
+
+                        <div id="new-customer-details" class="hidden space-y-4 transition-all">
+                            <div id="name-field-container">
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 ml-1">الاسم الكريم <span class="text-red-500">*</span></label>
+                                <input type="text" id="customer-name" placeholder="محمد أحمد..." class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-bold text-brand-navy bg-gray-50 focus:bg-white transition-all shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-500 mb-1 ml-1">العنوان بالتفصيل (أو أي ملاحظات)</label>
+                                <input type="text" id="customer-address" placeholder="اسم الشارع، رقم العمارة، الدور..." class="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-brand-navy outline-none font-bold text-brand-navy bg-gray-50 focus:bg-white transition-all shadow-sm">
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -277,7 +288,7 @@
                     <div class="flex justify-between items-center pt-3 mt-1 border-t border-brand-cyan/30"><span class="font-black text-brand-navy text-sm" id="lbl-final-total">الإجمالي النهائي:</span><span class="font-black text-2xl text-brand-navy"><span id="cart-total">0</span> <span class="text-xs text-gray-500">ج.م</span></span></div>
                 </div>
                 
-                <button type="button" onclick="initiateCheckout()" id="checkout-btn" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 bg-green-500 text-white" disabled>
+                <button type="button" onclick="firebaseCheckout()" id="checkout-btn" class="w-full font-black py-4 px-4 rounded-xl transition-all flex justify-center items-center gap-2 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5 bg-green-500 text-white" style="display: none;">
                     <i class="fa-brands fa-whatsapp text-2xl" id="btn-icon"></i> <span id="btn-text">تأكيد وإرسال الطلب</span>
                 </button>
                 <p id="checkout-hint-step2" class="text-center text-[10px] text-red-500 mt-3 font-bold hidden"><i class="fa-solid fa-circle-info"></i> يرجى إكمال الخانات المطلوبة (*)</p>
@@ -456,7 +467,6 @@
             if(localStorage.getItem('theme_yellow')) { const el = document.getElementById('color-yellow'); if(el) el.value = localStorage.getItem('theme_yellow'); }
         });
         
-        // -- برمجة السلايدر --
         let currentSlide = 0;
         let sliderImages = []; 
         
@@ -487,7 +497,9 @@
                 if(touchEndX > touchStartX + 30) window.moveSlider(1);  
             }, {passive: true});
         }
-    </script> <button id="install-app-btn" class="hidden fixed bottom-24 right-4 z-[90] bg-[#0d3b2a] text-[#f2b921] font-black py-3 px-5 rounded-2xl shadow-2xl border border-[#f2b921]/30 flex items-center gap-3 transition-transform transform hover:scale-105">
+    </script> 
+    
+    <button id="install-app-btn" class="hidden fixed bottom-24 right-4 z-[90] bg-[#0d3b2a] text-[#f2b921] font-black py-3 px-5 rounded-2xl shadow-2xl border border-[#f2b921]/30 flex items-center gap-3 transition-transform transform hover:scale-105">
         <i class="fa-solid fa-download text-xl animate-bounce"></i>
         <span>تثبيت التطبيق</span>
     </button>
@@ -495,6 +507,158 @@
     <script src="js/config.js"></script>
     <script src="js/app.js"></script>
     <script src="js/admin.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7ZJP8n8fhMewPfEsTBANn0h9To_q15BY",
+            authDomain: "sman-ca8f8.firebaseapp.com",
+            projectId: "sman-ca8f8",
+            storageBucket: "sman-ca8f8.firebasestorage.app",
+            messagingSenderId: "538778803310",
+            appId: "1:538778803310:web:5eeff42bae534375a21a7f",
+            measurementId: "G-S6GETQ0K81"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let isOldCustomer = false;
+        let currentCustomerName = "";
+        
+        const phoneInput = document.getElementById('customer-phone');
+        const verifyBtn = document.getElementById('btn-verify-phone');
+        const welcomeMsg = document.getElementById('welcome-msg');
+        const newCustomerDetails = document.getElementById('new-customer-details');
+        const nameFieldContainer = document.getElementById('name-field-container');
+        const nameInput = document.getElementById('customer-name');
+        const deliveryZone = document.getElementById('delivery-zone'); 
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        // دالة فحص رقم الموبايل
+        verifyBtn.addEventListener('click', async () => {
+            const phone = phoneInput.value.trim();
+            if(!phone || phone.length < 10) {
+                alert("برجاء إدخال رقم هاتف صحيح (مثال: 01012345678)");
+                return;
+            }
+
+            verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            verifyBtn.disabled = true;
+
+            try {
+                const docRef = doc(db, "customers", phone);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // العميل موجود في قاعدة البيانات
+                    isOldCustomer = true;
+                    const data = docSnap.data();
+                    currentCustomerName = data.name;
+                    
+                    welcomeMsg.innerHTML = `أهلاً بك مجدداً يا <span class="text-brand-navy">${data.name}</span>! <br><span class="text-[10px] text-gray-600">طيورنا في انتظارك.</span>`;
+                    welcomeMsg.classList.remove('hidden');
+                    newCustomerDetails.classList.remove('hidden');
+                    
+                    // إخفاء خانة الاسم لأننا نعرفه
+                    nameFieldContainer.classList.add('hidden');
+                    
+                    // محاولة تحديد المنطقة تلقائياً إذا كانت مسجلة
+                    if(deliveryZone && data.region) {
+                        for(let i=0; i<deliveryZone.options.length; i++) {
+                            if(deliveryZone.options[i].text.includes(data.region) || deliveryZone.options[i].value === data.region) {
+                                deliveryZone.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    // عميل جديد
+                    isOldCustomer = false;
+                    welcomeMsg.classList.add('hidden');
+                    newCustomerDetails.classList.remove('hidden');
+                    nameFieldContainer.classList.remove('hidden');
+                }
+                
+                // إظهار زر تأكيد الطلب النهائي
+                if(checkoutBtn) checkoutBtn.style.display = 'flex';
+                
+            } catch (error) {
+                console.error("خطأ في جلب بيانات العميل:", error);
+                alert("حدث خطأ في الاتصال، يرجى المحاولة مرة أخرى.");
+            }
+            
+            verifyBtn.innerHTML = 'متابعة';
+            verifyBtn.disabled = false;
+        });
+
+        // دالة تأكيد وإرسال الطلب (ترفع لفايربيز ثم تشغل رسالة الواتساب)
+        window.firebaseCheckout = async function() {
+            const phone = phoneInput.value.trim();
+            let name = isOldCustomer ? currentCustomerName : nameInput.value.trim();
+            let region = deliveryZone ? deliveryZone.options[deliveryZone.selectedIndex].text : "غير محدد";
+            let address = document.getElementById('customer-address').value.trim();
+            
+            // قراءة إجمالي الفاتورة
+            let totalVal = document.getElementById('cart-total') ? document.getElementById('cart-total').innerText : "";
+            let orderSummary = `طلب من الموقع بإجمالي: ${totalVal} ج.م`;
+
+            // تحقق من البيانات الأساسية
+            if (!isOldCustomer && !name) {
+                alert("برجاء إدخال الاسم الكريم.");
+                return;
+            }
+
+            try {
+                // تغيير شكل الزر
+                const btnIcon = document.getElementById('btn-icon');
+                const btnText = document.getElementById('btn-text');
+                if(btnIcon) btnIcon.className = "fa-solid fa-spinner fa-spin text-2xl";
+                if(btnText) btnText.innerText = "جاري الحفظ...";
+                checkoutBtn.disabled = true;
+
+                // 1. تسجيل الأوردر في جدول الطلبات عشان الأتمتة (Make.com)
+                await addDoc(collection(db, "orders"), {
+                    customer_name: name,
+                    customer_phone: phone,
+                    region: region,
+                    address: address,
+                    order_details: orderSummary,
+                    status: "جديد",
+                    created_at: serverTimestamp()
+                });
+
+                // 2. تحديث بيانات العميل في جدول العملاء
+                if(!isOldCustomer) {
+                    await setDoc(doc(db, "customers", phone), {
+                        name: name,
+                        phone: phone,
+                        region: region,
+                        order_count: 1,
+                        notes: "عميل جديد من الموقع"
+                    });
+                }
+
+                // 3. استدعاء دالة الدفع الأصلية الخاصة بك (والتي تقوم بإرسال الواتساب)
+                if (typeof window.initiateCheckout === 'function') {
+                    window.initiateCheckout();
+                } else {
+                    alert("تم حفظ طلبك بنجاح!");
+                }
+
+            } catch(error) {
+                console.error("خطأ أثناء حفظ الطلب:", error);
+                alert("حدث خطأ أثناء حفظ الطلب، يرجى المحاولة مرة أخرى.");
+                
+                // إعادة الزر لشكله الطبيعي
+                if(btnIcon) btnIcon.className = "fa-brands fa-whatsapp text-2xl";
+                if(btnText) btnText.innerText = "تأكيد وإرسال الطلب";
+                checkoutBtn.disabled = false;
+            }
+        };
+    </script>
 
     <script>
       let deferredPrompt;
