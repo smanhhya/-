@@ -554,7 +554,6 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // العميل موجود في قاعدة البيانات
                     isOldCustomer = true;
                     const data = docSnap.data();
                     currentCustomerName = data.name;
@@ -563,36 +562,39 @@
                     welcomeMsg.classList.remove('hidden');
                     newCustomerDetails.classList.remove('hidden');
                     
-                    // إخفاء خانة الاسم لأننا نعرفه
                     nameFieldContainer.classList.add('hidden');
                     
-                    // --- الحل السحري لفتح الزرار الأخضر ---
-                    nameInput.value = data.name; // تعبئة الخانة مخفياً عشان كود الموقع يقرأها
-                    if(checkoutBtn) checkoutBtn.disabled = false; // تفعيل الزرار
-                    if(checkoutHint) checkoutHint.classList.add('hidden'); // إخفاء الرسالة الحمراء
-                    // ------------------------------------
+                    // --- الحل الإجباري لفتح الزرار الأخضر ---
+                    nameInput.value = data.name; 
+                    // السطرين دول بيفوقوا ملف app.js القديم عشان يحس إن الخانة اتكتب فيها
+                    nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    nameInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-                    // محاولة تحديد المنطقة تلقائياً إذا كانت مسجلة
+                    if(checkoutBtn) {
+                        checkoutBtn.disabled = false;
+                        checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                    const hint = document.getElementById('checkout-hint-step2');
+                    if(hint) hint.classList.add('hidden');
+                    // ----------------------------------------
+
                     if(deliveryZone && data.region) {
                         for(let i=0; i<deliveryZone.options.length; i++) {
                             if(deliveryZone.options[i].text.includes(data.region) || deliveryZone.options[i].value === data.region) {
                                 deliveryZone.selectedIndex = i;
-                                // تفعيل دالة التحديث القديمة عشان تحسب التوصيل صح
                                 if(typeof window.updateUI === 'function') window.updateUI();
                                 break;
                             }
                         }
                     }
                 } else {
-                    // عميل جديد
                     isOldCustomer = false;
                     welcomeMsg.classList.add('hidden');
                     newCustomerDetails.classList.remove('hidden');
                     nameFieldContainer.classList.remove('hidden');
-                    nameInput.value = ""; // تفريغ الخانة للعميل الجديد
+                    nameInput.value = ""; 
                 }
                 
-                // إظهار زر تأكيد الطلب النهائي
                 if(checkoutBtn) checkoutBtn.style.display = 'flex';
                 
             } catch (error) {
